@@ -1,0 +1,37 @@
+{
+  "name": "@pulseops/supabase",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./admin": "./src/clients/admin.ts",
+    "./browser": "./src/clients/browser.ts",
+    "./middleware": "./src/clients/middleware.ts",
+    "./server": "./src/clients/server.ts",
+    "./types": "./src/types/database.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@pulseops/env": "workspace:*",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4"
+  },
+  "devDependencies": {
+    "@pulseops/config-eslint": "workspace:*",
+    "@pulseops/config-typescript": "workspace:*",
+    "@types/node": "^24.7.2",
+    "eslint": "^9.39.1",
+    "next": "^16.0.0",
+    "server-only": "^0.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.0"
+  }
+}
