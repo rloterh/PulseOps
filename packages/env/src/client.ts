@@ -9,11 +9,19 @@ export const clientEnvSchema = sharedEnvSchema.extend({
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
 
-export function getClientEnv(): ClientEnv {
-  return clientEnvSchema.parse({
+function getRawClientEnv() {
+  return {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  });
+  };
+}
+
+export function getClientEnv(): ClientEnv {
+  return clientEnvSchema.parse(getRawClientEnv());
+}
+
+export function getClientEnvResult() {
+  return clientEnvSchema.safeParse(getRawClientEnv());
 }

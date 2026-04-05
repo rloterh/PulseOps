@@ -46,8 +46,21 @@ PulseOps is an AI-powered operations command center for multi-location service b
 
 1. Run `corepack pnpm install`.
 2. Copy `.env.example` to `.env.local`.
-3. Run `corepack pnpm dev`.
-4. Verify the workspace with `corepack pnpm check`.
+3. Fill in real Supabase values when you are ready to work on auth-backed features.
+4. Run `corepack pnpm dev`.
+5. Verify the workspace with `corepack pnpm check`.
+
+## Package Manager
+
+PulseOps is a `pnpm` workspace and does not support `npm install`.
+
+- Use `corepack pnpm install`
+- Do not run `npm i` in this repo
+- If `npm i` was already attempted after a pnpm install, remove `node_modules` and reinstall with `corepack pnpm install`
+
+## Environment Note
+
+Sprint 0 can boot without Supabase env vars in local development, but session refresh is skipped until you provide real values in `.env.local`. Production still requires valid envs.
 
 ## Docs
 
