@@ -3,6 +3,7 @@ import 'server-only';
 import type { Database } from '@pulseops/supabase/types';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
+import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import type { CreateTaskInput } from '@/features/tasks/schemas/create-task.schema';
 import { canCreateTasks } from './task-permissions';
@@ -175,6 +176,31 @@ export async function createTask(
       actorName: context.viewerName,
     });
   }
+
+  await ensureRecordWatchersInDb(supabase, {
+    target: {
+      entityType: 'task',
+      entityId: task.id,
+      organizationId: context.tenantId,
+      locationId: task.location_id,
+      title: task.title,
+      reference: task.reference,
+    },
+    watchers: [
+      {
+        userId: context.viewerId,
+        source: 'creator',
+      },
+      ...(assignee
+        ? [
+            {
+              userId: assignee.userId,
+              source: 'assignee' as const,
+            },
+          ]
+        : []),
+    ],
+  });
 
   return {
     ok: true,

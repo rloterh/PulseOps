@@ -3,6 +3,7 @@ import 'server-only';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
+import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
 import type { CreateJobInput } from '@/features/jobs/schemas/create-job.schema';
 import { canCreateJobs } from './jobs-permissions';
 import type { Database } from '@pulseops/supabase/types';
@@ -126,6 +127,31 @@ export async function createJob(
       actorName: context.viewerName,
     });
   }
+
+  await ensureRecordWatchersInDb(supabase, {
+    target: {
+      entityType: 'job',
+      entityId: job.id,
+      organizationId: context.tenantId,
+      locationId: job.location_id,
+      title: job.title,
+      reference: job.reference,
+    },
+    watchers: [
+      {
+        userId: context.viewerId,
+        source: 'creator',
+      },
+      ...(assignee
+        ? [
+            {
+              userId: assignee.userId,
+              source: 'assignee' as const,
+            },
+          ]
+        : []),
+    ],
+  });
 
   return {
     ok: true,

@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import {
+  ensureRecordWatchersInDb,
+  getCollaborationTargetFromDb,
+} from '@/features/collaboration/repositories/collaboration.repository';
+import {
   assignIncidentInDb,
   getIncidentMutationTargetFromDb,
 } from '@/features/incidents/repositories/incidents.repository';
@@ -66,8 +70,25 @@ export async function assignIncidentAction(formData: FormData) {
   }
 
   if (updated.changed) {
+    const target = await getCollaborationTargetFromDb(supabase, {
+      tenantId: context.tenantId,
+      entityType: 'incident',
+      entityId: parsed.data.incidentId,
+    });
     const previousLabel = getMemberLabel(assignees, updated.previousAssigneeUserId);
     const nextLabel = getMemberLabel(assignees, updated.assignee_user_id);
+
+    if (target && updated.assignee_user_id) {
+      await ensureRecordWatchersInDb(supabase, {
+        target,
+        watchers: [
+          {
+            userId: updated.assignee_user_id,
+            source: 'assignee',
+          },
+        ],
+      });
+    }
 
     await insertTimelineEvent(supabase, {
       kind: 'incident',

@@ -304,6 +304,213 @@ export interface Database {
           },
         ];
       };
+      record_comment_mentions: {
+        Row: {
+          comment_id: string;
+          created_at: string;
+          entity_id: string;
+          entity_type: string;
+          id: string;
+          location_id: string;
+          mentioned_by_user_id: string;
+          mentioned_user_id: string;
+          organization_id: string;
+        };
+        Insert: {
+          comment_id: string;
+          created_at?: string;
+          entity_id: string;
+          entity_type: string;
+          id?: string;
+          location_id: string;
+          mentioned_by_user_id: string;
+          mentioned_user_id: string;
+          organization_id: string;
+        };
+        Update: {
+          comment_id?: string;
+          created_at?: string;
+          entity_id?: string;
+          entity_type?: string;
+          id?: string;
+          location_id?: string;
+          mentioned_by_user_id?: string;
+          mentioned_user_id?: string;
+          organization_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'record_comment_mentions_comment_id_fkey';
+            columns: ['comment_id'];
+            referencedRelation: 'record_comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comment_mentions_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comment_mentions_mentioned_by_user_id_fkey';
+            columns: ['mentioned_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comment_mentions_mentioned_user_id_fkey';
+            columns: ['mentioned_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comment_mentions_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      record_comments: {
+        Row: {
+          author_user_id: string;
+          body: string;
+          body_text: string;
+          created_at: string;
+          deleted_at: string | null;
+          edited_at: string | null;
+          entity_id: string;
+          entity_type: string;
+          id: string;
+          is_edited: boolean;
+          kind: string;
+          location_id: string;
+          organization_id: string;
+          parent_comment_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          author_user_id: string;
+          body: string;
+          body_text: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          entity_id: string;
+          entity_type: string;
+          id?: string;
+          is_edited?: boolean;
+          kind?: string;
+          location_id: string;
+          organization_id: string;
+          parent_comment_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          author_user_id?: string;
+          body?: string;
+          body_text?: string;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          entity_id?: string;
+          entity_type?: string;
+          id?: string;
+          is_edited?: boolean;
+          kind?: string;
+          location_id?: string;
+          organization_id?: string;
+          parent_comment_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'record_comments_author_user_id_fkey';
+            columns: ['author_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comments_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comments_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_comments_parent_comment_id_fkey';
+            columns: ['parent_comment_id'];
+            referencedRelation: 'record_comments';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      record_watchers: {
+        Row: {
+          created_at: string;
+          entity_id: string;
+          entity_type: string;
+          id: string;
+          is_muted: boolean;
+          location_id: string;
+          muted_at: string | null;
+          organization_id: string;
+          source: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          entity_id: string;
+          entity_type: string;
+          id?: string;
+          is_muted?: boolean;
+          location_id: string;
+          muted_at?: string | null;
+          organization_id: string;
+          source?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          entity_id?: string;
+          entity_type?: string;
+          id?: string;
+          is_muted?: boolean;
+          location_id?: string;
+          muted_at?: string | null;
+          organization_id?: string;
+          source?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'record_watchers_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_watchers_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'record_watchers_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       task_timeline_events: {
         Row: {
           actor_name: string;
@@ -689,6 +896,12 @@ export interface Database {
         Returns: boolean;
       };
       is_member_of_org: {
+        Args: {
+          target_org_id: string;
+        };
+        Returns: boolean;
+      };
+      is_privileged_member_of_org: {
         Args: {
           target_org_id: string;
         };
