@@ -62,7 +62,7 @@ export default async function IncidentsPage({
       <IncidentFilters filters={filters} />
 
       {incidents.length > 0 ? (
-        <IncidentListTable items={incidents} />
+        <IncidentListTable items={incidents} filters={filters} />
       ) : hasActiveFilters ? (
         <EmptyState
           title="No incidents match this view"

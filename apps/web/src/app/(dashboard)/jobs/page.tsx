@@ -62,7 +62,7 @@ export default async function JobsPage({
       <JobFilters filters={filters} />
 
       {jobs.length > 0 ? (
-        <JobListTable items={jobs} />
+        <JobListTable items={jobs} filters={filters} />
       ) : hasActiveFilters ? (
         <EmptyState
           title="No jobs match this view"

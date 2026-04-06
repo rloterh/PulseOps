@@ -6,12 +6,20 @@ export type IncidentStatus =
   | 'monitoring'
   | 'resolved'
   | 'closed';
+export type IncidentListSortField =
+  | 'opened_at'
+  | 'title'
+  | 'severity'
+  | 'status';
+export type IncidentListSortDirection = 'asc' | 'desc';
 
 export interface IncidentListFilters {
   q?: string;
   severity?: IncidentSeverity | 'all';
   status?: IncidentStatus | 'all';
   slaRisk?: 'all' | 'at-risk' | 'healthy';
+  sort?: IncidentListSortField;
+  direction?: IncidentListSortDirection;
 }
 
 export interface IncidentListItem {

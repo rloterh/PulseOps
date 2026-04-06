@@ -15,6 +15,8 @@ describe('parseIncidentListFilters', () => {
       severity: 'critical',
       status: 'investigating',
       slaRisk: 'at-risk',
+      sort: 'opened_at',
+      direction: 'desc',
     });
   });
 
@@ -30,6 +32,30 @@ describe('parseIncidentListFilters', () => {
       severity: 'all',
       status: 'all',
       slaRisk: 'all',
+      sort: 'opened_at',
+      direction: 'desc',
+    });
+  });
+
+  it('normalizes valid sort params and drops invalid ones to defaults', () => {
+    expect(
+      parseIncidentListFilters({
+        sort: 'title',
+        direction: 'asc',
+      }),
+    ).toMatchObject({
+      sort: 'title',
+      direction: 'asc',
+    });
+
+    expect(
+      parseIncidentListFilters({
+        sort: 'owner',
+        direction: 'sideways',
+      }),
+    ).toMatchObject({
+      sort: 'opened_at',
+      direction: 'desc',
     });
   });
 });

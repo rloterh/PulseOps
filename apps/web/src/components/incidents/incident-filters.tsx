@@ -1,12 +1,69 @@
-import Link from 'next/link';
+'use client';
+
+import type { Route } from 'next';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import {
+  DEFAULT_INCIDENT_LIST_FILTERS,
+  serializeIncidentListFilters,
+} from '@/features/incidents/lib/incident-list-query-state';
 import type { IncidentListFilters } from '@/features/incidents/types/incident.types';
 
 export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(filters.q ?? '');
+  const [severity, setSeverity] = useState(
+    filters.severity ?? DEFAULT_INCIDENT_LIST_FILTERS.severity,
+  );
+  const [status, setStatus] = useState(
+    filters.status ?? DEFAULT_INCIDENT_LIST_FILTERS.status,
+  );
+  const [slaRisk, setSlaRisk] = useState(
+    filters.slaRisk ?? DEFAULT_INCIDENT_LIST_FILTERS.slaRisk,
+  );
+  const debouncedQ = useDebouncedValue(q, 250);
+
+  useEffect(() => {
+    setQ(filters.q ?? '');
+    setSeverity(filters.severity ?? DEFAULT_INCIDENT_LIST_FILTERS.severity);
+    setStatus(filters.status ?? DEFAULT_INCIDENT_LIST_FILTERS.status);
+    setSlaRisk(filters.slaRisk ?? DEFAULT_INCIDENT_LIST_FILTERS.slaRisk);
+  }, [filters.q, filters.severity, filters.slaRisk, filters.status]);
+
+  useEffect(() => {
+    const nextSearchParams = serializeIncidentListFilters({
+      q: debouncedQ,
+      severity,
+      status,
+      slaRisk,
+      sort: filters.sort ?? DEFAULT_INCIDENT_LIST_FILTERS.sort,
+      direction: filters.direction ?? DEFAULT_INCIDENT_LIST_FILTERS.direction,
+    });
+    const nextQuery = nextSearchParams.toString();
+
+    if (nextQuery === searchParams.toString()) {
+      return;
+    }
+
+    const href = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(href as Route, { scroll: false });
+  }, [
+    debouncedQ,
+    filters.direction,
+    filters.sort,
+    pathname,
+    router,
+    searchParams,
+    severity,
+    slaRisk,
+    status,
+  ]);
+
   return (
-    <form
-      className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)]"
-      method="get"
-    >
+    <section className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-5 shadow-[0_20px_70px_rgba(2,6,23,0.24)]">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,0.6fr))]">
         <label className="space-y-2">
           <span className="text-xs uppercase tracking-[0.18em] text-white/44">
@@ -15,7 +72,10 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
           <input
             type="search"
             name="q"
-            defaultValue={filters.q ?? ''}
+            value={q}
+            onChange={(event) => {
+              setQ(event.currentTarget.value);
+            }}
             placeholder="Search title, reference, site, or customer"
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none placeholder:text-white/30"
           />
@@ -27,7 +87,10 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
           </span>
           <select
             name="severity"
-            defaultValue={filters.severity ?? 'all'}
+            value={severity}
+            onChange={(event) => {
+              setSeverity(event.currentTarget.value as typeof severity);
+            }}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All severities</option>
@@ -44,7 +107,10 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
           </span>
           <select
             name="status"
-            defaultValue={filters.status ?? 'all'}
+            value={status}
+            onChange={(event) => {
+              setStatus(event.currentTarget.value as typeof status);
+            }}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All statuses</option>
@@ -62,7 +128,10 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
           </span>
           <select
             name="slaRisk"
-            defaultValue={filters.slaRisk ?? 'all'}
+            value={slaRisk}
+            onChange={(event) => {
+              setSlaRisk(event.currentTarget.value as typeof slaRisk);
+            }}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All incidents</option>
@@ -74,23 +143,21 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-white/46">
-          Filters stay server-rendered so the page remains branch-aware and shareable.
+          Search sync stays debounced while severity, status, and SLA controls update immediately so the list stays fast and shareable.
         </p>
-        <div className="flex gap-2">
-          <Link
-            href="/incidents"
-            className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/72 transition hover:bg-white/[0.08] hover:text-white"
-          >
-            Reset
-          </Link>
-          <button
-            type="submit"
-            className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-medium text-neutral-950 transition hover:opacity-90"
-          >
-            Apply filters
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setQ('');
+            setSeverity(DEFAULT_INCIDENT_LIST_FILTERS.severity);
+            setStatus(DEFAULT_INCIDENT_LIST_FILTERS.status);
+            setSlaRisk(DEFAULT_INCIDENT_LIST_FILTERS.slaRisk);
+          }}
+          className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/72 transition hover:bg-white/[0.08] hover:text-white"
+        >
+          Reset
+        </button>
       </div>
-    </form>
+    </section>
   );
 }

@@ -45,9 +45,7 @@ export async function getJobsListFromDb(
   let query = supabase
     .from('jobs')
     .select('*')
-    .eq('organization_id', input.tenantId)
-    .order('due_at', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: false });
+    .eq('organization_id', input.tenantId);
 
   if (input.branchId) {
     query = query.eq('location_id', input.branchId);
@@ -70,6 +68,26 @@ export async function getJobsListFromDb(
 
   if (input.filters.type && input.filters.type !== 'all') {
     query = query.eq('type', input.filters.type);
+  }
+
+  const ascending = input.filters.direction !== 'desc';
+
+  if (input.filters.sort === 'title') {
+    query = query
+      .order('title', { ascending })
+      .order('created_at', { ascending: false });
+  } else if (input.filters.sort === 'priority') {
+    query = query
+      .order('priority', { ascending })
+      .order('due_at', { ascending: true, nullsFirst: false });
+  } else if (input.filters.sort === 'status') {
+    query = query
+      .order('status', { ascending })
+      .order('due_at', { ascending: true, nullsFirst: false });
+  } else {
+    query = query
+      .order('due_at', { ascending, nullsFirst: false })
+      .order('created_at', { ascending: false });
   }
 
   const { data, error } = await query;

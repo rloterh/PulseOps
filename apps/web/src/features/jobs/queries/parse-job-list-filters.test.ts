@@ -15,6 +15,8 @@ describe('parseJobListFilters', () => {
       priority: 'high',
       status: 'scheduled',
       type: 'reactive',
+      sort: 'due_at',
+      direction: 'asc',
     });
   });
 
@@ -30,6 +32,30 @@ describe('parseJobListFilters', () => {
       priority: 'all',
       status: 'all',
       type: 'all',
+      sort: 'due_at',
+      direction: 'asc',
+    });
+  });
+
+  it('normalizes valid sort params and drops invalid ones to defaults', () => {
+    expect(
+      parseJobListFilters({
+        sort: 'title',
+        direction: 'desc',
+      }),
+    ).toMatchObject({
+      sort: 'title',
+      direction: 'desc',
+    });
+
+    expect(
+      parseJobListFilters({
+        sort: 'owner',
+        direction: 'sideways',
+      }),
+    ).toMatchObject({
+      sort: 'due_at',
+      direction: 'asc',
     });
   });
 });

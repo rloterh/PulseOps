@@ -9,12 +9,16 @@ export type JobStatus =
   | 'cancelled';
 
 export type JobType = 'reactive' | 'preventive' | 'inspection' | 'vendor';
+export type JobListSortField = 'due_at' | 'title' | 'priority' | 'status';
+export type JobListSortDirection = 'asc' | 'desc';
 
 export interface JobListFilters {
   q?: string;
   priority?: JobPriority | 'all';
   status?: JobStatus | 'all';
   type?: JobType | 'all';
+  sort?: JobListSortField;
+  direction?: JobListSortDirection;
 }
 
 export interface JobListItem {

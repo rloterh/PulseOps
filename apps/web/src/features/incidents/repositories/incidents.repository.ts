@@ -42,8 +42,7 @@ export async function getIncidentsListFromDb(
   let query = supabase
     .from('incidents')
     .select('*')
-    .eq('organization_id', input.tenantId)
-    .order('opened_at', { ascending: false });
+    .eq('organization_id', input.tenantId);
 
   if (input.branchId) {
     query = query.eq('location_id', input.branchId);
@@ -70,6 +69,24 @@ export async function getIncidentsListFromDb(
 
   if (input.filters.slaRisk === 'healthy') {
     query = query.eq('sla_risk', false);
+  }
+
+  const ascending = input.filters.direction === 'asc';
+
+  if (input.filters.sort === 'title') {
+    query = query
+      .order('title', { ascending })
+      .order('opened_at', { ascending: false });
+  } else if (input.filters.sort === 'severity') {
+    query = query
+      .order('severity', { ascending })
+      .order('opened_at', { ascending: false });
+  } else if (input.filters.sort === 'status') {
+    query = query
+      .order('status', { ascending })
+      .order('opened_at', { ascending: false });
+  } else {
+    query = query.order('opened_at', { ascending });
   }
 
   const { data, error } = await query;

@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 4D work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, and now a real watcher-driven notification feed plus inbox triage surface.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 5A1 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, a real watcher-driven notification feed plus inbox triage surface, and now higher-productivity list workflows for operations teams.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -32,6 +32,9 @@ What this branch delivers:
 - watcher-driven notifications for comments, mentions, assignments, status changes, and intake assignment events
 - a real notification panel with unread counts and mark-read controls
 - an inbox triage surface with unread, open, and archived views
+- debounced search and immediate filter URL sync on the jobs and incidents lists
+- sortable jobs and incidents table headers with route-safe query state
+- row-open list interactions with keyboard support and ctrl/cmd new-tab behavior
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -278,12 +281,13 @@ This branch is meant to demonstrate that the project foundation is:
 - buildable
 - documented
 - ready for feature sprints
+- polished enough for faster day-to-day triage in the live operations lists
 
 ## Next Likely Steps
 
 - evolve tenancy into the broader PulseOps tenant and branch model
 - add invitations and richer role or permission handling
-- extend Sprint 4 into realtime delivery and richer notification experiences
+- continue Sprint 5 into shared list preferences, saved views, and bulk actions
 - deepen the dashboard with live operations metrics
 - connect billing and subscription control paths
 
