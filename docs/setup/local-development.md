@@ -14,11 +14,28 @@
 5. Add the local Supabase values to `.env.local`.
 6. Start the app with `corepack pnpm dev`.
 
-The `db reset` step applies the tenancy foundation plus the Sprint 3 operational schema for incidents, jobs, and timeline events.
+The `db reset` step applies the current local schema through the Sprint 5 operations-list layer, including tenancy, operational records, collaboration, notifications, saved views, and related list workflows.
 
 ## Verification
 
 Run `corepack pnpm check` to execute linting, type-checking, tests, and builds across the workspace.
+
+## E2E Testing
+
+This branch includes Playwright scaffolding for the jobs and incidents list productivity flows.
+
+1. Install browsers once with `corepack pnpm --filter @pulseops/web exec playwright install chromium`.
+2. Ensure your local Supabase stack is running and the app can sign in normally.
+3. Set these environment variables in the shell you use to run Playwright:
+   - `E2E_USER_EMAIL`
+   - `E2E_USER_PASSWORD`
+4. Run `corepack pnpm test:e2e`.
+
+Notes:
+
+- the E2E tests currently target authenticated jobs and incidents list behavior
+- they expect a user who can access the protected shell and view operational data
+- if the E2E auth variables are missing, the Playwright specs are skipped rather than failing
 
 ## Package Manager Note
 

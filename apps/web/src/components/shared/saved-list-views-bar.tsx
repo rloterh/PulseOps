@@ -67,6 +67,7 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
             <input
               type="text"
               name="name"
+              aria-label="Saved view name"
               value={name}
               onChange={(event) => {
                 setName(event.currentTarget.value);

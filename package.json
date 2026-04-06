@@ -12,11 +12,14 @@
     "lint": "corepack pnpm -r --if-present lint",
     "typecheck": "corepack pnpm -r --if-present typecheck",
     "test": "corepack pnpm -r --if-present test",
+    "test:e2e": "corepack pnpm --filter @pulseops/web test:e2e",
+    "test:e2e:headed": "corepack pnpm --filter @pulseops/web test:e2e:headed",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "prettier": "^3.6.2",
     "supabase": "^2.84.10",
     "turbo": "^2.5.8",
