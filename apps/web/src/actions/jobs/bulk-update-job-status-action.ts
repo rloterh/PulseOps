@@ -11,6 +11,7 @@ import {
   parseBulkJobIds,
 } from '@/features/jobs/schemas/bulk-job-action.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
+import { createBulkActionFeedback } from '@/features/operations-list/lib/bulk-action-feedback';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
@@ -36,6 +37,7 @@ export async function bulkUpdateJobStatusAction(
   }
 
   const jobIds = parseBulkJobIds(parsed.data.jobIdsPayload);
+  const selectedCount = jobIds?.length ?? 0;
 
   if (!jobIds) {
     return {
@@ -98,16 +100,14 @@ export async function bulkUpdateJobStatusAction(
     }
   }
 
-  if (updatedCount === 0) {
-    return {
-      error: 'No jobs changed status. They may already match the selected state.',
-    };
-  }
-
   revalidatePath('/dashboard');
   revalidatePath('/jobs');
+  revalidatePath('/inbox');
 
-  return {
-    success: `Updated ${String(updatedCount)} job${updatedCount === 1 ? '' : 's'} to ${formatTokenLabel(parsed.data.status)}.`,
-  };
+  return createBulkActionFeedback({
+    resourceLabel: 'job',
+    selectedCount,
+    updatedCount,
+    statusLabel: formatTokenLabel(parsed.data.status),
+  });
 }

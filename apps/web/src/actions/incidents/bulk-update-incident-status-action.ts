@@ -11,6 +11,7 @@ import {
   parseBulkIncidentIds,
 } from '@/features/incidents/schemas/bulk-incident-action.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
+import { createBulkActionFeedback } from '@/features/operations-list/lib/bulk-action-feedback';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
@@ -36,6 +37,7 @@ export async function bulkUpdateIncidentStatusAction(
   }
 
   const incidentIds = parseBulkIncidentIds(parsed.data.incidentIdsPayload);
+  const selectedCount = incidentIds?.length ?? 0;
 
   if (!incidentIds) {
     return {
@@ -101,16 +103,14 @@ export async function bulkUpdateIncidentStatusAction(
     }
   }
 
-  if (updatedCount === 0) {
-    return {
-      error: 'No incidents changed status. They may already match the selected state.',
-    };
-  }
-
   revalidatePath('/dashboard');
   revalidatePath('/incidents');
+  revalidatePath('/inbox');
 
-  return {
-    success: `Updated ${String(updatedCount)} incident${updatedCount === 1 ? '' : 's'} to ${formatTokenLabel(parsed.data.status)}.`,
-  };
+  return createBulkActionFeedback({
+    resourceLabel: 'incident',
+    selectedCount,
+    updatedCount,
+    statusLabel: formatTokenLabel(parsed.data.status),
+  });
 }
