@@ -147,6 +147,16 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      bootstrap_organization: {
+        Args: {
+          org_name: string;
+          org_slug: string;
+          default_location_name?: string;
+          default_location_code?: string;
+          default_location_timezone?: string;
+        };
+        Returns: string;
+      };
       can_bootstrap_org_membership: {
         Args: {
           target_org_id: string;
