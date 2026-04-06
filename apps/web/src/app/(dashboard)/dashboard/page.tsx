@@ -1,80 +1,55 @@
-import { StatCard } from '@/features/dashboard/components/stat-card';
-import { getDashboardStats } from '@/lib/organizations/get-dashboard-stats';
-import { requireCurrentMembership } from '@/lib/organizations/require-current-membership';
+import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { getDashboardSummary } from '@/features/dashboard/queries/get-dashboard-summary';
+import { requireAppAccess } from '@/lib/auth/require-app-access';
+import { getActiveBranchContext } from '@/lib/tenancy/get-active-branch-context';
 
 export default async function DashboardPage() {
-  const membership = await requireCurrentMembership();
-  const stats = await getDashboardStats(membership.organization_id);
+  const { user } = await requireAppAccess();
+  const shell = await getActiveBranchContext({ userId: user.id });
+  const summary = await getDashboardSummary({
+    tenantId: shell.tenantId,
+    _branchId: shell.activeBranchId,
+    branchName: shell.activeBranchName,
+  });
 
   return (
-    <main className="space-y-8 px-6 py-8 lg:px-8">
-      <section className="rounded-[var(--radius-2xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-[var(--shadow-card)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-primary)]">
-          Workspace overview
-        </p>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-          {membership.organization.name} is ready for the next PulseOps modules.
-        </h1>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--color-fg-muted)] sm:text-base">
-          Sprint 1 establishes the first real authenticated shell, tenant
-          membership context, and onboarding path. Later operations domains can
-          now plug into a live workspace boundary instead of static placeholders.
-        </p>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Branches"
-          value={stats.locationsCount}
-          hint="Starter location records currently stand in for the branch model until the deeper operations schema lands."
-        />
-        <StatCard
-          label="Operators"
-          value={stats.membersCount}
-          hint="Organization membership is now enforced at the database layer with RLS-aware access rules."
-        />
-        <StatCard
-          label="Open jobs"
-          value={stats.openJobsCount}
-          hint="Jobs are intentionally deferred, but the protected shell is ready for the first live workload surfaces."
-        />
-        <StatCard
-          label="Workspace role"
-          value={membership.role}
-          hint="Role-aware rendering can now grow safely on top of the initial owner and admin policy model."
-        />
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <article className="rounded-[var(--radius-2xl)] border border-[var(--color-border)] bg-white/90 p-7 shadow-[var(--shadow-card)]">
-          <h2 className="text-xl font-semibold tracking-tight">
-            What Sprint 1 delivers
+    <main className="space-y-6">
+      <DashboardHeader
+        tenantName={shell.tenantName}
+        branchName={shell.activeBranchName}
+      />
+      <DashboardGrid summary={summary} />
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <article className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] p-6">
+          <p className="text-xs uppercase tracking-[0.22em] text-emerald-300/72">
+            Sprint 2 shell
+          </p>
+          <h2 className="mt-4 text-xl font-semibold tracking-tight text-white">
+            The dashboard is now a real app surface.
           </h2>
-          <ul className="mt-5 grid gap-3 text-sm leading-6 text-[var(--color-fg-muted)]">
-            <li>Secure Supabase sign-up, sign-in, callback, and sign-out flows</li>
-            <li>Profile bootstrapping through the auth users trigger path</li>
-            <li>Organization and membership records with RLS as the tenancy root</li>
-            <li>Protected route handling that funnels first-time users into onboarding</li>
+          <ul className="mt-5 grid gap-3 text-sm leading-6 text-white/54">
+            <li>Protected shell with responsive sidebar, topbar, and mobile drawer</li>
+            <li>Branch switcher, notifications shell, and command palette interactions</li>
+            <li>Typed widget contracts that can accept real domain data in Sprint 3</li>
           </ul>
         </article>
 
-        <article className="rounded-[var(--radius-2xl)] border border-[var(--color-border)] bg-[var(--color-sidebar)] p-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-primary)]">
-            Current workspace
+        <article className="rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] p-6">
+          <p className="text-xs uppercase tracking-[0.22em] text-white/38">
+            Current context
           </p>
           <dl className="mt-5 grid gap-4 text-sm">
             <div>
-              <dt className="text-[var(--color-fg-muted)]">Slug</dt>
-              <dd className="mt-1 font-medium text-[var(--color-fg)]">
-                {membership.organization.slug}
+              <dt className="text-white/42">Active branch</dt>
+              <dd className="mt-1 font-medium text-white">
+                {shell.activeBranchName ?? 'No active branch selected'}
               </dd>
             </div>
             <div>
-              <dt className="text-[var(--color-fg-muted)]">Created</dt>
-              <dd className="mt-1 font-medium text-[var(--color-fg)]">
-                {new Intl.DateTimeFormat('en-GB', {
-                  dateStyle: 'medium',
-                }).format(new Date(membership.organization.created_at))}
+              <dt className="text-white/42">Viewer</dt>
+              <dd className="mt-1 font-medium text-white">
+                {shell.viewer.fullName ?? shell.viewer.email}
               </dd>
             </div>
           </dl>

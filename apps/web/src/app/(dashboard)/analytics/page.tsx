@@ -1,11 +1,11 @@
-import { RoutePlaceholder } from '@/components/route-placeholder';
+import { ModulePlaceholder } from '@/components/dashboard/module-placeholder';
 
 export default function AnalyticsPage() {
   return (
-    <RoutePlaceholder
-      eyebrow="Dashboard"
-      title="Analytics module placeholder"
-      description="Executive metrics and branch comparison views will plug into this route without changing the top-level information architecture."
+    <ModulePlaceholder
+      eyebrow="Analytics"
+      title="Analytics will deepen after the shell stabilizes."
+      description="Sprint 2 keeps analytics intentionally scaffolded while the command-center layout, branch context, and widget contracts are locked into place."
     />
   );
 }

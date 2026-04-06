@@ -1,11 +1,11 @@
-import { RoutePlaceholder } from '@/components/route-placeholder';
+import { ModulePlaceholder } from '@/components/dashboard/module-placeholder';
 
 export default function IncidentsPage() {
   return (
-    <RoutePlaceholder
-      eyebrow="Dashboard"
-      title="Incidents module placeholder"
-      description="Incident workflows and audit trails land later, but the route and shell are stable now."
+    <ModulePlaceholder
+      eyebrow="Incidents"
+      title="Incident management will plug into this shell next."
+      description="The route now sits inside the full Sprint 2 app shell, so incident triage, severity handling, and audit flows can land in the next sprint without layout or navigation churn."
     />
   );
 }
