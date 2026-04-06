@@ -3,20 +3,28 @@
 import type { Route } from 'next';
 import { useEffect, useEffectEvent } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { cn } from '@pulseops/utils';
-import type { NotificationItem } from '@/features/notifications/types/notification.types';
+import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
+import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
+import type { NotificationFeed, NotificationItem } from '@/features/notifications/types/notification.types';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppIcon } from './app-icon';
 
 const kindLabel: Record<NotificationItem['kind'], string> = {
   incident: 'Incident',
   job: 'Job',
-  system: 'System',
-  billing: 'Billing',
+  task: 'Task',
 };
 
-export function NotificationPanel({ items }: { items: NotificationItem[] }) {
+export function NotificationPanel({
+  notifications,
+}: {
+  notifications: NotificationFeed;
+}) {
+  const pathname = usePathname();
   const { isNotificationsOpen, closeNotifications } = useShellUiStore();
+  const returnPath = pathname;
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       closeNotifications();
@@ -59,17 +67,46 @@ export function NotificationPanel({ items }: { items: NotificationItem[] }) {
               Operational feed
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={closeNotifications}
-            className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/80 transition hover:bg-white/10 hover:text-white"
-          >
-            <AppIcon name="close" />
-          </button>
+          <div className="flex items-center gap-2">
+            {notifications.unreadCount > 0 ? (
+              <form action={markAllNotificationsReadAction}>
+                <input type="hidden" name="returnPath" value={returnPath} />
+                <button
+                  type="submit"
+                  className="rounded-full border border-white/10 bg-white/6 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  Mark all read
+                </button>
+              </form>
+            ) : null}
+            <button
+              type="button"
+              onClick={closeNotifications}
+              className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              <AppIcon name="close" />
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 flex-1 space-y-3 overflow-y-auto pr-1">
-          {items.map((item) => {
+          {notifications.items.length === 0 ? (
+            <div className="rounded-[1.3rem] border border-dashed border-white/10 bg-white/[0.03] px-5 py-8 text-center">
+              <p className="text-sm font-medium text-white">No notifications yet</p>
+              <p className="mt-2 text-sm leading-6 text-white/54">
+                Record updates, mentions, and watcher activity will appear here as the workspace gets active.
+              </p>
+              <Link
+                href={'/inbox' as Route}
+                onClick={closeNotifications}
+                className="mt-5 inline-flex rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+              >
+                Open inbox
+              </Link>
+            </div>
+          ) : null}
+
+          {notifications.items.map((item) => {
             const cardClasses = cn(
               'block rounded-[1.3rem] border px-4 py-4 transition',
               item.unread
@@ -91,27 +128,47 @@ export function NotificationPanel({ items }: { items: NotificationItem[] }) {
                   ) : null}
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.18em] text-white/38">
-                  <span>{kindLabel[item.kind]}</span>
+                  <span>{item.branchName ?? kindLabel[item.kind]}</span>
                   <span>{item.createdAtLabel}</span>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-white/36">
+                    {kindLabel[item.kind]}
+                  </span>
+                  {item.unread ? (
+                    <form action={markNotificationReadAction}>
+                      <input type="hidden" name="notificationId" value={item.id} />
+                      <input type="hidden" name="returnPath" value={returnPath} />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
+                      >
+                        Mark read
+                      </button>
+                    </form>
+                  ) : null}
                 </div>
               </>
             );
 
-            return item.href ? (
-              <Link
-                key={item.id}
-                href={item.href as Route}
-                onClick={closeNotifications}
-                className={cardClasses}
-              >
-                {content}
-              </Link>
-            ) : (
+            return (
               <div key={item.id} className={cardClasses}>
-                {content}
+                <Link href={item.href as Route} onClick={closeNotifications} className="block">
+                  {content}
+                </Link>
               </div>
             );
           })}
+        </div>
+
+        <div className="mt-5 border-t border-white/8 pt-4">
+          <Link
+            href={'/inbox' as Route}
+            onClick={closeNotifications}
+            className="inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+          >
+            Open inbox
+          </Link>
         </div>
       </aside>
     </>

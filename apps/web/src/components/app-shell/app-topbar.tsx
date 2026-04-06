@@ -1,7 +1,7 @@
 'use client';
 
 import type { AppShellContext } from '@/features/shell/types/shell.types';
-import type { NotificationItem } from '@/features/notifications/types/notification.types';
+import type { NotificationFeed } from '@/features/notifications/types/notification.types';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppIcon } from './app-icon';
 import { BranchSwitcher } from './branch-switcher';
@@ -13,7 +13,7 @@ export function AppTopbar({
   notifications,
 }: {
   shell: AppShellContext;
-  notifications: NotificationItem[];
+  notifications: NotificationFeed;
 }) {
   const {
     openMobileNav,
@@ -21,7 +21,7 @@ export function AppTopbar({
     toggleNotifications,
     isNotificationsOpen,
   } = useShellUiStore();
-  const unreadCount = notifications.filter((item) => item.unread).length;
+  const unreadCount = notifications.unreadCount;
 
   return (
     <>
@@ -92,7 +92,7 @@ export function AppTopbar({
         </div>
       </header>
 
-      <NotificationPanel items={notifications} />
+      <NotificationPanel notifications={notifications} />
     </>
   );
 }

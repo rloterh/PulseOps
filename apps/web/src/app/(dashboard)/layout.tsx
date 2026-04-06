@@ -16,10 +16,9 @@ export default async function DashboardLayout({
 }) {
   const { user } = await requireAppAccess();
   const shell = await getActiveBranchContext({ userId: user.id });
-  const notifications = getNotificationFeed({
-    tenantName: shell.tenantName,
-    viewerName: shell.viewer.fullName,
-    activeBranchName: shell.activeBranchName,
+  const notifications = await getNotificationFeed({
+    tenantId: shell.tenantId,
+    viewerId: user.id,
   });
 
   return (

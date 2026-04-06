@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 4C work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, and now the first collaboration layer with comments, internal notes, mentions-ready markup, and record watchers.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 4D work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, and now a real watcher-driven notification feed plus inbox triage surface.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -29,6 +29,9 @@ What this branch delivers:
 - comments and internal notes with secure server-side validation and deletion rules
 - mentions-ready comment markup with org-safe member validation
 - watcher subscriptions with auto-subscribe behavior for creators, assignees, and comment participants
+- watcher-driven notifications for comments, mentions, assignments, status changes, and intake assignment events
+- a real notification panel with unread counts and mark-read controls
+- an inbox triage surface with unread, open, and archived views
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -39,7 +42,7 @@ What this branch does not claim yet:
 - the final long-term tenant and branch schema for the whole product
 - invitation flows, fine-grained permissions, or customer portal auth
 - Stripe integration
-- realtime notifications, inbox triage, or attachment uploads
+- realtime updates or attachment uploads
 - AI features beyond structural preparation
 
 ## Why This Branch Exists
@@ -159,6 +162,8 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - Record comments and internal notes with soft-delete support
 - Mention extraction and persistence for future notification fan-out
 - Watch and mute controls with automatic watcher enrollment for participants
+- Watcher-driven notification generation backed by a real notifications table
+- Inbox triage actions for mark read, archive, restore, and bulk acknowledgement
 
 ### Sprint 2 Shell
 
@@ -259,6 +264,7 @@ Current schema scope:
 - `record_comments`
 - `record_comment_mentions`
 - `record_watchers`
+- `record_notifications`
 
 This is the first real operational schema slice, not yet the full long-term PulseOps domain model.
 
@@ -277,7 +283,7 @@ This branch is meant to demonstrate that the project foundation is:
 
 - evolve tenancy into the broader PulseOps tenant and branch model
 - add invitations and richer role or permission handling
-- extend Sprint 4 into notifications, inbox, and realtime delivery
+- extend Sprint 4 into realtime delivery and richer notification experiences
 - deepen the dashboard with live operations metrics
 - connect billing and subscription control paths
 
