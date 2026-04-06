@@ -69,6 +69,7 @@ export interface Database {
           assignee_user_id: string | null;
           created_at: string;
           customer_name: string;
+          first_response_at: string | null;
           id: string;
           impact_summary: string;
           location_id: string;
@@ -77,6 +78,7 @@ export interface Database {
           organization_id: string;
           owner_user_id: string;
           reference: string;
+          resolved_at: string | null;
           severity: Database['public']['Enums']['incident_severity'];
           site_name: string;
           sla_risk: boolean;
@@ -89,6 +91,7 @@ export interface Database {
           assignee_user_id?: string | null;
           created_at?: string;
           customer_name: string;
+          first_response_at?: string | null;
           id?: string;
           impact_summary?: string;
           location_id: string;
@@ -97,6 +100,7 @@ export interface Database {
           organization_id: string;
           owner_user_id: string;
           reference: string;
+          resolved_at?: string | null;
           severity?: Database['public']['Enums']['incident_severity'];
           site_name: string;
           sla_risk?: boolean;
@@ -109,6 +113,7 @@ export interface Database {
           assignee_user_id?: string | null;
           created_at?: string;
           customer_name?: string;
+          first_response_at?: string | null;
           id?: string;
           impact_summary?: string;
           location_id?: string;
@@ -117,6 +122,7 @@ export interface Database {
           organization_id?: string;
           owner_user_id?: string;
           reference?: string;
+          resolved_at?: string | null;
           severity?: Database['public']['Enums']['incident_severity'];
           site_name?: string;
           sla_risk?: boolean;
@@ -215,12 +221,14 @@ export interface Database {
           created_by_user_id: string;
           customer_name: string;
           due_at: string | null;
+          first_response_at: string | null;
           id: string;
           incident_id: string | null;
           location_id: string;
           organization_id: string;
           priority: Database['public']['Enums']['job_priority'];
           reference: string;
+          resolved_at: string | null;
           resolution_summary: string | null;
           site_name: string;
           status: Database['public']['Enums']['job_status'];
@@ -236,12 +244,14 @@ export interface Database {
           created_by_user_id: string;
           customer_name: string;
           due_at?: string | null;
+          first_response_at?: string | null;
           id?: string;
           incident_id?: string | null;
           location_id: string;
           organization_id: string;
           priority?: Database['public']['Enums']['job_priority'];
           reference: string;
+          resolved_at?: string | null;
           resolution_summary?: string | null;
           site_name: string;
           status?: Database['public']['Enums']['job_status'];
@@ -257,12 +267,14 @@ export interface Database {
           created_by_user_id?: string;
           customer_name?: string;
           due_at?: string | null;
+          first_response_at?: string | null;
           id?: string;
           incident_id?: string | null;
           location_id?: string;
           organization_id?: string;
           priority?: Database['public']['Enums']['job_priority'];
           reference?: string;
+          resolved_at?: string | null;
           resolution_summary?: string | null;
           site_name?: string;
           status?: Database['public']['Enums']['job_status'];
@@ -575,6 +587,215 @@ export interface Database {
           },
         ];
       };
+      sla_policies: {
+        Row: {
+          created_at: string;
+          created_by_user_id: string | null;
+          description: string | null;
+          entity_type: Database['public']['Enums']['sla_entity_type'] | null;
+          escalate_on_first_response_breach: boolean;
+          escalate_on_resolution_breach: boolean;
+          escalation_owner_enabled: boolean;
+          escalation_role: Database['public']['Enums']['organization_role'] | null;
+          escalation_user_id: string | null;
+          first_response_target_minutes: number | null;
+          id: string;
+          is_active: boolean;
+          location_id: string | null;
+          name: string;
+          organization_id: string;
+          precedence: number;
+          priority: Database['public']['Enums']['job_priority'] | null;
+          resolution_target_minutes: number | null;
+          severity: Database['public']['Enums']['incident_severity'] | null;
+          updated_at: string;
+          updated_by_user_id: string | null;
+          warn_before_breach_minutes: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_by_user_id?: string | null;
+          description?: string | null;
+          entity_type?: Database['public']['Enums']['sla_entity_type'] | null;
+          escalate_on_first_response_breach?: boolean;
+          escalate_on_resolution_breach?: boolean;
+          escalation_owner_enabled?: boolean;
+          escalation_role?: Database['public']['Enums']['organization_role'] | null;
+          escalation_user_id?: string | null;
+          first_response_target_minutes?: number | null;
+          id?: string;
+          is_active?: boolean;
+          location_id?: string | null;
+          name: string;
+          organization_id: string;
+          precedence?: number;
+          priority?: Database['public']['Enums']['job_priority'] | null;
+          resolution_target_minutes?: number | null;
+          severity?: Database['public']['Enums']['incident_severity'] | null;
+          updated_at?: string;
+          updated_by_user_id?: string | null;
+          warn_before_breach_minutes?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          created_by_user_id?: string | null;
+          description?: string | null;
+          entity_type?: Database['public']['Enums']['sla_entity_type'] | null;
+          escalate_on_first_response_breach?: boolean;
+          escalate_on_resolution_breach?: boolean;
+          escalation_owner_enabled?: boolean;
+          escalation_role?: Database['public']['Enums']['organization_role'] | null;
+          escalation_user_id?: string | null;
+          first_response_target_minutes?: number | null;
+          id?: string;
+          is_active?: boolean;
+          location_id?: string | null;
+          name?: string;
+          organization_id?: string;
+          precedence?: number;
+          priority?: Database['public']['Enums']['job_priority'] | null;
+          resolution_target_minutes?: number | null;
+          severity?: Database['public']['Enums']['incident_severity'] | null;
+          updated_at?: string;
+          updated_by_user_id?: string | null;
+          warn_before_breach_minutes?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'sla_policies_created_by_user_id_fkey';
+            columns: ['created_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'sla_policies_escalation_user_id_fkey';
+            columns: ['escalation_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'sla_policies_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'sla_policies_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'sla_policies_updated_by_user_id_fkey';
+            columns: ['updated_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      work_item_slas: {
+        Row: {
+          created_at: string;
+          entity_id: string;
+          entity_type: Database['public']['Enums']['sla_entity_type'];
+          escalation_state: Database['public']['Enums']['sla_escalation_state'];
+          escalation_triggered_at: string | null;
+          first_response_breached_at: string | null;
+          first_responded_at: string | null;
+          first_response_due_at: string | null;
+          first_response_target_minutes: number | null;
+          id: string;
+          last_evaluated_at: string | null;
+          location_id: string;
+          organization_id: string;
+          paused_at: string | null;
+          paused_reason: string | null;
+          policy_id: string | null;
+          resolution_breached_at: string | null;
+          resolution_due_at: string | null;
+          resolution_target_minutes: number | null;
+          resolved_at: string | null;
+          risk_level: Database['public']['Enums']['sla_risk_level'];
+          status_category: Database['public']['Enums']['sla_status_category'];
+          total_paused_seconds: number;
+          updated_at: string;
+          warning_sent_at: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          entity_id: string;
+          entity_type: Database['public']['Enums']['sla_entity_type'];
+          escalation_state?: Database['public']['Enums']['sla_escalation_state'];
+          escalation_triggered_at?: string | null;
+          first_response_breached_at?: string | null;
+          first_responded_at?: string | null;
+          first_response_due_at?: string | null;
+          first_response_target_minutes?: number | null;
+          id?: string;
+          last_evaluated_at?: string | null;
+          location_id: string;
+          organization_id: string;
+          paused_at?: string | null;
+          paused_reason?: string | null;
+          policy_id?: string | null;
+          resolution_breached_at?: string | null;
+          resolution_due_at?: string | null;
+          resolution_target_minutes?: number | null;
+          resolved_at?: string | null;
+          risk_level?: Database['public']['Enums']['sla_risk_level'];
+          status_category?: Database['public']['Enums']['sla_status_category'];
+          total_paused_seconds?: number;
+          updated_at?: string;
+          warning_sent_at?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          entity_id?: string;
+          entity_type?: Database['public']['Enums']['sla_entity_type'];
+          escalation_state?: Database['public']['Enums']['sla_escalation_state'];
+          escalation_triggered_at?: string | null;
+          first_response_breached_at?: string | null;
+          first_responded_at?: string | null;
+          first_response_due_at?: string | null;
+          first_response_target_minutes?: number | null;
+          id?: string;
+          last_evaluated_at?: string | null;
+          location_id?: string;
+          organization_id?: string;
+          paused_at?: string | null;
+          paused_reason?: string | null;
+          policy_id?: string | null;
+          resolution_breached_at?: string | null;
+          resolution_due_at?: string | null;
+          resolution_target_minutes?: number | null;
+          resolved_at?: string | null;
+          risk_level?: Database['public']['Enums']['sla_risk_level'];
+          status_category?: Database['public']['Enums']['sla_status_category'];
+          total_paused_seconds?: number;
+          updated_at?: string;
+          warning_sent_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'work_item_slas_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'work_item_slas_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'work_item_slas_policy_id_fkey';
+            columns: ['policy_id'];
+            referencedRelation: 'sla_policies';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       record_watchers: {
         Row: {
           created_at: string;
@@ -698,6 +919,7 @@ export interface Database {
           created_at: string;
           created_by_user_id: string;
           due_at: string | null;
+          first_response_at: string | null;
           id: string;
           linked_incident_id: string | null;
           linked_job_id: string | null;
@@ -705,6 +927,7 @@ export interface Database {
           organization_id: string;
           priority: Database['public']['Enums']['job_priority'];
           reference: string;
+          resolved_at: string | null;
           status: Database['public']['Enums']['task_status'];
           summary: string;
           title: string;
@@ -716,6 +939,7 @@ export interface Database {
           created_at?: string;
           created_by_user_id: string;
           due_at?: string | null;
+          first_response_at?: string | null;
           id?: string;
           linked_incident_id?: string | null;
           linked_job_id?: string | null;
@@ -723,6 +947,7 @@ export interface Database {
           organization_id: string;
           priority?: Database['public']['Enums']['job_priority'];
           reference: string;
+          resolved_at?: string | null;
           status?: Database['public']['Enums']['task_status'];
           summary: string;
           title: string;
@@ -734,6 +959,7 @@ export interface Database {
           created_at?: string;
           created_by_user_id?: string;
           due_at?: string | null;
+          first_response_at?: string | null;
           id?: string;
           linked_incident_id?: string | null;
           linked_job_id?: string | null;
@@ -741,6 +967,7 @@ export interface Database {
           organization_id?: string;
           priority?: Database['public']['Enums']['job_priority'];
           reference?: string;
+          resolved_at?: string | null;
           status?: Database['public']['Enums']['task_status'];
           summary?: string;
           title?: string;
@@ -1050,6 +1277,23 @@ export interface Database {
         };
         Returns: string;
       };
+      resolve_sla_policy: {
+        Args: {
+          p_entity_type: Database['public']['Enums']['sla_entity_type'];
+          p_location_id: string;
+          p_organization_id: string;
+          p_priority?: Database['public']['Enums']['job_priority'] | null;
+          p_severity?: Database['public']['Enums']['incident_severity'] | null;
+        };
+        Returns: string | null;
+      };
+      resolve_sla_status_category: {
+        Args: {
+          p_entity_type: Database['public']['Enums']['sla_entity_type'];
+          p_status: string;
+        };
+        Returns: Database['public']['Enums']['sla_status_category'];
+      };
       search_assignable_directory: {
         Args: {
           p_limit?: number;
@@ -1067,6 +1311,21 @@ export interface Database {
           org_role: Database['public']['Enums']['organization_role'];
           user_id: string;
         }[];
+      };
+      upsert_work_item_sla_snapshot: {
+        Args: {
+          p_entity_id: string;
+          p_entity_type: Database['public']['Enums']['sla_entity_type'];
+          p_first_response_at?: string | null;
+          p_location_id: string;
+          p_opened_at: string;
+          p_organization_id: string;
+          p_priority?: Database['public']['Enums']['job_priority'] | null;
+          p_resolved_at?: string | null;
+          p_severity?: Database['public']['Enums']['incident_severity'] | null;
+          p_status: string;
+        };
+        Returns: string;
       };
     };
     Enums: {
@@ -1100,6 +1359,10 @@ export interface Database {
         | 'completed';
       job_type: 'reactive' | 'preventive' | 'inspection' | 'vendor';
       organization_role: 'owner' | 'admin' | 'manager' | 'agent';
+      sla_entity_type: 'incident' | 'job' | 'task';
+      sla_escalation_state: 'none' | 'warning' | 'escalated';
+      sla_risk_level: 'normal' | 'at_risk' | 'breached';
+      sla_status_category: 'active' | 'paused' | 'terminal';
       task_status: 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
       task_timeline_event_type:
         | 'created'

@@ -1,12 +1,12 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/ops-list-polish` branch now carries Sprint 5A4 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, a real watcher-driven notification feed plus inbox triage surface, and now higher-productivity operational list workflows with saved views, bulk-status actions, lightweight user-side view preferences, and Playwright E2E scaffolding for the core list flows.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/sla-escalations-activity-audit` branch carries Sprint 6A work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, collaboration and notifications, higher-productivity list workflows, and now the first SLA data foundation for policies and per-record SLA snapshots.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
 ## Branch Status
 
-Current branch: `feature/ops-list-polish`
+Current branch: `feature/sla-escalations-activity-audit`
 
 What this branch delivers:
 
@@ -39,6 +39,9 @@ What this branch delivers:
 - real per-user saved views for jobs and incidents, backed by the database
 - bulk status updates for selected jobs and incidents inside the live list surfaces
 - Playwright E2E scaffolding for jobs and incidents list productivity flows
+- SLA policy storage for organization-wide and branch-specific rules
+- per-record SLA snapshots for incidents, jobs, and tasks
+- a typed SLA repository layer and tested app-side status-category helper to support the upcoming evaluator and escalation work
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, verification tooling, and initial E2E test harness
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -51,6 +54,7 @@ What this branch does not claim yet:
 - Stripe integration
 - realtime updates or attachment uploads
 - AI features beyond structural preparation
+- the Sprint 6 evaluator, escalations engine, activity feed UI, or full audit-log surfaces
 
 ## Why This Branch Exists
 
@@ -60,7 +64,7 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - tenant bootstrap with RLS-backed organization membership
 - protected routing and onboarding redirects
 - org-scoped reads in the dashboard shell
-- a professional base for later collaboration, customer, billing, and analytics work
+- a professional base for later SLA automation, activity, audit, customer, billing, and analytics work
 
 ## Tech Stack
 
@@ -184,6 +188,15 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - GitHub Actions CI workflow
 - Dockerfile and local compose baseline
 - ADR, architecture, setup, deployment, API, product, and security docs
+
+### Sprint 6A SLA Foundation
+
+- SLA policy tables with organization-wide and location-specific scope
+- per-record SLA snapshots for incidents, jobs, and tasks
+- additive `first_response_at` and `resolved_at` timestamps on operational records
+- branch-aware policy resolution and snapshot upsert RPCs
+- typed SLA enums, records, and repository wrappers for future evaluator work
+- a tested app-side status-category helper that mirrors the new SQL status normalization rules
 
 ## Running This Branch
 
