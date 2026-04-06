@@ -1,12 +1,12 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The `setup` branch is the Sprint 0 foundation branch: it focuses on architecture, tooling, workspace boundaries, developer experience, and app scaffolding rather than finished product modules.
+PulseOps is an operations command center for multi-location service businesses. The `feature/auth-tenancy` branch is the Sprint 1 branch: it turns the Sprint 0 foundation into the first real product slice with authentication, workspace onboarding, database tenancy, and a protected dashboard shell.
 
-This branch is meant to show how the project is being built, not pretend the full product is already complete.
+This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
 ## Branch Status
 
-Current branch: `setup`
+Current branch: `feature/auth-tenancy`
 
 What this branch delivers:
 
@@ -15,28 +15,30 @@ What this branch delivers:
 - shared TypeScript, ESLint, and Prettier config packages
 - typed environment validation with Zod
 - Supabase client boundaries for browser, server, admin, and edge session refresh
+- a real Supabase migration for profiles, organizations, memberships, and starter locations
+- sign-up, sign-in, callback, verify, sign-out, and first-workspace onboarding flows
+- a protected dashboard shell with org-aware overview, branches, and settings surfaces
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
-- placeholder marketing, auth, dashboard, and portal routes aligned to the PulseOps domain model
+- marketing and dashboard routes aligned to the PulseOps domain model
 
 What this branch does not claim yet:
 
-- production auth flows
-- real tenant onboarding
-- implemented jobs, branches, incidents, analytics, billing, or customer workflows
-- completed database schema migrations and RLS policies
+- implemented jobs, incidents, analytics, billing, or customer workflows
+- the final long-term tenant and branch schema for the whole product
+- invitation flows, fine-grained permissions, or customer portal auth
 - Stripe integration
 - AI features beyond structural preparation
 
 ## Why This Branch Exists
 
-PulseOps is intended to become a premium B2B SaaS platform, so the first branch establishes the standards that later feature sprints will build on:
+PulseOps is intended to become a premium B2B SaaS platform, so this branch proves the first vertical slice on top of the earlier foundation:
 
-- domain-first structure instead of dumping logic into route files
-- server-aware environment boundaries
-- explicit Supabase runtime separation
-- repeatable CI and local development workflows
-- a professional base for future auth, tenancy, billing, and analytics work
+- real auth and callback handling
+- tenant bootstrap with RLS-backed organization membership
+- protected routing and onboarding redirects
+- org-scoped reads in the dashboard shell
+- a professional base for later jobs, branches, incidents, billing, and analytics work
 
 ## Tech Stack
 
@@ -81,22 +83,25 @@ PulseOps is intended to become a premium B2B SaaS platform, so the first branch 
 ### Web App Scaffold
 
 - App Router route groups for marketing, auth, and dashboard surfaces
-- Stable placeholder routes for:
+- Live routes for:
   - `/`
-  - `/pricing`
-  - `/docs`
-  - `/contact`
   - `/sign-in`
   - `/sign-up`
   - `/verify`
+  - `/callback`
+  - `/onboarding`
   - `/dashboard`
-  - `/jobs`
   - `/branches`
+  - `/settings`
+- Placeholder routes preserved for:
+  - `/pricing`
+  - `/docs`
+  - `/contact`
+  - `/jobs`
   - `/incidents`
   - `/analytics`
   - `/billing`
   - `/customers`
-  - `/settings`
   - `/portal`
 - Global layout, loading state, error boundary, not-found screen, and health endpoint
 
@@ -104,9 +109,17 @@ PulseOps is intended to become a premium B2B SaaS platform, so the first branch 
 
 - Zod-validated env access in `packages/env`
 - Supabase client factories in `packages/supabase`
-- Proxy-based session refresh scaffold in the web app
+- Proxy-based session refresh and route protection
 - Security headers baseline
 - Lightweight logging helper
+
+### Database And Tenancy
+
+- Initial migration in `supabase/migrations/20260406_000001_sprint_1_auth_orgs.sql`
+- Profile bootstrap trigger from `auth.users`
+- `organizations`, `organization_members`, and `locations` tables
+- Starter RLS policies for self-profile access, org membership reads, workspace creation, and location access
+- Seed data that creates a demo workspace and starter locations when a profile exists
 
 ### Delivery Baseline
 
@@ -131,6 +144,13 @@ corepack pnpm install
 
 ```bash
 corepack pnpm dev
+```
+
+### Start local Supabase
+
+```bash
+corepack pnpm exec supabase start
+corepack pnpm exec supabase db reset
 ```
 
 ### Verify the branch
@@ -167,13 +187,23 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Important behavior on this branch:
 
-- the app can boot locally without Supabase env values during Sprint 0
+- the marketing and route shell can still boot locally without Supabase env values
 - when those values are missing, proxy-based session refresh is skipped in local development
+- auth, onboarding, and protected dashboard flows require valid Supabase configuration
 - production still requires valid env configuration
 
 ## Database Status
 
-The repo already includes Supabase scaffolding under [`supabase/`](./supabase), but this branch does not yet include the real PulseOps schema migrations. That means the database workflow is prepared, but the product schema still needs to be implemented in follow-up work.
+This branch now includes the first real schema migration and seed flow under [`supabase/`](./supabase). The database is still early, but it is no longer only scaffolding.
+
+Current schema scope:
+
+- `profiles`
+- `organizations`
+- `organization_members`
+- `locations`
+
+This is the Sprint 1 tenancy root, not the final full PulseOps domain model.
 
 ## Quality Bar On This Branch
 
@@ -188,11 +218,11 @@ This branch is meant to demonstrate that the project foundation is:
 
 ## Next Likely Steps
 
-- implement the initial PulseOps schema migrations
-- add auth and tenant onboarding
-- introduce request-context authorization helpers
-- build the authenticated app shell from placeholder to functional shell
-- begin the jobs and branch domains on top of the established workspace boundaries
+- evolve tenancy into the broader PulseOps tenant and branch model
+- add invitations and richer role or permission handling
+- begin real jobs and incidents schema work
+- deepen the dashboard with live operations metrics
+- connect billing and subscription control paths
 
 ## Supporting Docs
 
