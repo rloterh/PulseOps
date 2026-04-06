@@ -320,3 +320,139 @@ cross join (
   limit 1
 ) as context
 on conflict (id) do nothing;
+
+insert into public.tasks (
+  id,
+  organization_id,
+  location_id,
+  linked_incident_id,
+  linked_job_id,
+  reference,
+  title,
+  summary,
+  priority,
+  status,
+  due_at,
+  created_by_user_id,
+  assignee_user_id,
+  completion_summary
+)
+select
+  task_seed.id,
+  '11111111-1111-1111-1111-111111111111',
+  task_seed.location_id,
+  task_seed.linked_incident_id,
+  task_seed.linked_job_id,
+  task_seed.reference,
+  task_seed.title,
+  task_seed.summary,
+  task_seed.priority::public.job_priority,
+  task_seed.status::public.task_status,
+  task_seed.due_at::timestamptz,
+  context.profile_id,
+  context.profile_id,
+  task_seed.completion_summary
+from (
+  select
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1'::uuid as id,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'NTH-001' limit 1) as location_id,
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'::uuid as linked_incident_id,
+    null::uuid as linked_job_id,
+    'TASK-3001' as reference,
+    'Send tenant HVAC update' as title,
+    'Confirm the latest response window and send the next tenant communication update from the incident bridge.' as summary,
+    'high' as priority,
+    'in_progress' as status,
+    '2026-04-05T10:00:00Z' as due_at,
+    null::text as completion_summary
+  union all
+  select
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2'::uuid,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'HQ-001' limit 1),
+    null::uuid,
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'::uuid,
+    'TASK-3002',
+    'Capture leak inspection photos',
+    'Upload the inspection photo set and tag the damaged wall section before contractor handoff.',
+    'medium',
+    'todo',
+    '2026-04-05T16:30:00Z',
+    null::text
+  union all
+  select
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3'::uuid,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'WST-001' limit 1),
+    null::uuid,
+    null::uuid,
+    'TASK-3003',
+    'Verify west hub badge fallback plan',
+    'Confirm lobby staff understand the temporary badge fallback checklist before the morning shift.',
+    'low',
+    'todo',
+    '2026-04-06T07:30:00Z',
+    null::text
+) as task_seed
+cross join (
+  select p.id as profile_id
+  from public.profiles p
+  order by p.created_at asc
+  limit 1
+) as context
+where task_seed.location_id is not null
+on conflict (id) do nothing;
+
+insert into public.task_timeline_events (
+  id,
+  organization_id,
+  task_id,
+  event_type,
+  title,
+  description,
+  actor_user_id,
+  actor_name,
+  created_at
+)
+select
+  event_seed.id,
+  '11111111-1111-1111-1111-111111111111',
+  event_seed.task_id,
+  event_seed.event_type::public.task_timeline_event_type,
+  event_seed.title,
+  event_seed.description,
+  context.profile_id,
+  coalesce(context.actor_name, 'Operations Lead'),
+  event_seed.created_at::timestamptz
+from (
+  select
+    'ffffffff-ffff-ffff-ffff-fffffffffff1'::uuid as id,
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1'::uuid as task_id,
+    'created' as event_type,
+    'Task created' as title,
+    'Follow-up task created to keep tenant communication current during the HVAC outage.' as description,
+    '2026-04-05T08:50:00Z' as created_at
+  union all
+  select
+    'ffffffff-ffff-ffff-ffff-fffffffffff2'::uuid,
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1'::uuid,
+    'assignment',
+    'Task assigned',
+    'The operations lead picked up the tenant communication follow-up task.',
+    '2026-04-05T08:52:00Z'
+  union all
+  select
+    'ffffffff-ffff-ffff-ffff-fffffffffff3'::uuid,
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2'::uuid,
+    'created',
+    'Task created',
+    'Leak documentation task created from the active plumbing inspection job.',
+    '2026-04-05T09:40:00Z'
+) as event_seed
+cross join (
+  select
+    p.id as profile_id,
+    coalesce(p.full_name, p.email, 'Operations Lead') as actor_name
+  from public.profiles p
+  order by p.created_at asc
+  limit 1
+) as context
+on conflict (id) do nothing;

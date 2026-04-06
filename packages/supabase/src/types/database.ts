@@ -304,6 +304,155 @@ export interface Database {
           },
         ];
       };
+      task_timeline_events: {
+        Row: {
+          actor_name: string;
+          actor_user_id: string | null;
+          created_at: string;
+          description: string;
+          event_type: Database['public']['Enums']['task_timeline_event_type'];
+          id: string;
+          organization_id: string;
+          task_id: string;
+          title: string;
+        };
+        Insert: {
+          actor_name?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          description: string;
+          event_type: Database['public']['Enums']['task_timeline_event_type'];
+          id?: string;
+          organization_id: string;
+          task_id: string;
+          title: string;
+        };
+        Update: {
+          actor_name?: string;
+          actor_user_id?: string | null;
+          created_at?: string;
+          description?: string;
+          event_type?: Database['public']['Enums']['task_timeline_event_type'];
+          id?: string;
+          organization_id?: string;
+          task_id?: string;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'task_timeline_events_actor_user_id_fkey';
+            columns: ['actor_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'task_timeline_events_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'task_timeline_events_task_id_fkey';
+            columns: ['task_id'];
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tasks: {
+        Row: {
+          assignee_user_id: string | null;
+          completion_summary: string | null;
+          created_at: string;
+          created_by_user_id: string;
+          due_at: string | null;
+          id: string;
+          linked_incident_id: string | null;
+          linked_job_id: string | null;
+          location_id: string;
+          organization_id: string;
+          priority: Database['public']['Enums']['job_priority'];
+          reference: string;
+          status: Database['public']['Enums']['task_status'];
+          summary: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          assignee_user_id?: string | null;
+          completion_summary?: string | null;
+          created_at?: string;
+          created_by_user_id: string;
+          due_at?: string | null;
+          id?: string;
+          linked_incident_id?: string | null;
+          linked_job_id?: string | null;
+          location_id: string;
+          organization_id: string;
+          priority?: Database['public']['Enums']['job_priority'];
+          reference: string;
+          status?: Database['public']['Enums']['task_status'];
+          summary: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          assignee_user_id?: string | null;
+          completion_summary?: string | null;
+          created_at?: string;
+          created_by_user_id?: string;
+          due_at?: string | null;
+          id?: string;
+          linked_incident_id?: string | null;
+          linked_job_id?: string | null;
+          location_id?: string;
+          organization_id?: string;
+          priority?: Database['public']['Enums']['job_priority'];
+          reference?: string;
+          status?: Database['public']['Enums']['task_status'];
+          summary?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_assignee_user_id_fkey';
+            columns: ['assignee_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_created_by_user_id_fkey';
+            columns: ['created_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_linked_incident_id_fkey';
+            columns: ['linked_incident_id'];
+            referencedRelation: 'incidents';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_linked_job_id_fkey';
+            columns: ['linked_job_id'];
+            referencedRelation: 'jobs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       location_member_access: {
         Row: {
           created_at: string;
@@ -551,6 +700,18 @@ export interface Database {
         };
         Returns: string;
       };
+      next_incident_reference: {
+        Args: {
+          target_org_id: string;
+        };
+        Returns: string;
+      };
+      next_task_reference: {
+        Args: {
+          target_org_id: string;
+        };
+        Returns: string;
+      };
       search_assignable_directory: {
         Args: {
           p_limit?: number;
@@ -601,6 +762,13 @@ export interface Database {
         | 'completed';
       job_type: 'reactive' | 'preventive' | 'inspection' | 'vendor';
       organization_role: 'owner' | 'admin' | 'manager' | 'agent';
+      task_status: 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
+      task_timeline_event_type:
+        | 'created'
+        | 'assignment'
+        | 'status_change'
+        | 'note'
+        | 'completed';
     };
     CompositeTypes: Record<string, never>;
   };

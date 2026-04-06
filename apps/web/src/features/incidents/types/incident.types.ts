@@ -64,3 +64,7 @@ export interface IncidentDetail {
   linkedJobs: IncidentLinkedJob[];
   timeline: IncidentTimelineEntry[];
 }
+
+export interface CreateIncidentActionState {
+  error?: string;
+}

@@ -20,4 +20,14 @@ export type TimelineInsertInput =
       description: string;
       actorUserId: string;
       actorName: string;
+    }
+  | {
+      kind: 'task';
+      tenantId: string;
+      parentId: string;
+      eventType: Database['public']['Enums']['task_timeline_event_type'];
+      title: string;
+      description: string;
+      actorUserId: string;
+      actorName: string;
     };

@@ -93,3 +93,25 @@ export async function loadJobReferenceMap(
 
   return new Map(data.map((job) => [job.id, job.reference]));
 }
+
+export async function loadTaskReferenceMap(
+  supabase: SupabaseClient<Database>,
+  taskIds: string[],
+) {
+  const uniqueTaskIds = Array.from(new Set(taskIds));
+
+  if (uniqueTaskIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('id, reference')
+    .in('id', uniqueTaskIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(data.map((task) => [task.id, task.reference]));
+}

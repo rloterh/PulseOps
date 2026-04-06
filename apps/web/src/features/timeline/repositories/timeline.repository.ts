@@ -24,6 +24,24 @@ export async function insertTimelineEvent(
     return;
   }
 
+  if (input.kind === 'task') {
+    const { error } = await supabase.from('task_timeline_events').insert({
+      organization_id: input.tenantId,
+      task_id: input.parentId,
+      event_type: input.eventType,
+      title: input.title,
+      description: input.description,
+      actor_user_id: input.actorUserId,
+      actor_name: input.actorName,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return;
+  }
+
   const { error } = await supabase.from('job_timeline_events').insert({
     organization_id: input.tenantId,
     job_id: input.parentId,
