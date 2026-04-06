@@ -4,6 +4,7 @@ import { getClientEnvResult } from '@pulseops/env/client';
 import { getServerEnv } from '@pulseops/env/server';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { redirect } from 'next/navigation';
+import { getPostAuthRedirectPath } from '@/lib/auth/get-post-auth-redirect-path';
 import type { AuthActionState } from '../types';
 import { signUpSchema } from '../schemas/sign-up-schema';
 
@@ -55,5 +56,17 @@ export async function signUpAction(
     };
   }
 
-  redirect('/dashboard');
+  if (!data.user) {
+    return {
+      error:
+        'Your account was created, but PulseOps could not resolve the signed-in user. Try signing in again.',
+    };
+  }
+
+  redirect(
+    await getPostAuthRedirectPath({
+      userId: data.user.id,
+      next: '/onboarding',
+    }),
+  );
 }

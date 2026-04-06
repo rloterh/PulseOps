@@ -2,13 +2,14 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getClientEnvResult } from '@pulseops/env/client';
 import { SignUpForm } from '@/features/auth/components/sign-up-form';
+import { getPostAuthRedirectPath } from '@/lib/auth/get-post-auth-redirect-path';
 import { getSessionUser } from '@/lib/auth/get-session-user';
 
 export default async function SignUpPage() {
   const user = await getSessionUser();
 
   if (user) {
-    redirect('/dashboard');
+    redirect(await getPostAuthRedirectPath({ userId: user.id }));
   }
 
   const supabaseConfigured = getClientEnvResult().success;

@@ -3,7 +3,7 @@
 import { getClientEnvResult } from '@pulseops/env/client';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { redirect } from 'next/navigation';
-import { getSafeNextPath } from '@/lib/auth/get-safe-next-path';
+import { getPostAuthRedirectPath } from '@/lib/auth/get-post-auth-redirect-path';
 import type { AuthActionState } from '../types';
 import { signInSchema } from '../schemas/sign-in-schema';
 
@@ -31,7 +31,7 @@ export async function signInAction(
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
@@ -42,5 +42,10 @@ export async function signInAction(
     };
   }
 
-  redirect(getSafeNextPath(parsed.data.next));
+  redirect(
+    await getPostAuthRedirectPath({
+      userId: data.user.id,
+      next: parsed.data.next,
+    }),
+  );
 }

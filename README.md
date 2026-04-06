@@ -116,9 +116,11 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 ### Database And Tenancy
 
 - Initial migration in `supabase/migrations/20260406_000001_sprint_1_auth_orgs.sql`
+- Follow-up hardening migration in `supabase/migrations/20260406_000002_sprint_1_followups.sql`
 - Profile bootstrap trigger from `auth.users`
 - `organizations`, `organization_members`, and `locations` tables
 - Starter RLS policies for self-profile access, org membership reads, workspace creation, and location access
+- Retry-safe `bootstrap_organization` RPC to keep workspace onboarding atomic
 - Seed data that creates a demo workspace and starter locations when a profile exists
 
 ### Delivery Baseline

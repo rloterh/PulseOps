@@ -7,10 +7,12 @@ describe('getSafeNextPath', () => {
     expect(getSafeNextPath('/settings?tab=profile')).toBe('/settings?tab=profile');
   });
 
-  it('falls back when the value is missing or external', () => {
+  it('falls back when the value is missing, external, or points back to auth routes', () => {
     expect(getSafeNextPath(undefined)).toBe('/dashboard');
     expect(getSafeNextPath(null)).toBe('/dashboard');
     expect(getSafeNextPath('https://example.com')).toBe('/dashboard');
     expect(getSafeNextPath('//evil.example')).toBe('/dashboard');
+    expect(getSafeNextPath('/sign-in')).toBe('/dashboard');
+    expect(getSafeNextPath('/verify?status=invalid-link')).toBe('/dashboard');
   });
 });

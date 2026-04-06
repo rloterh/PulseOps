@@ -14,6 +14,8 @@
 5. Add the local Supabase values to `.env.local`.
 6. Start the app with `corepack pnpm dev`.
 
+The `db reset` step applies both the base Sprint 1 schema and the follow-up hardening migration, including the retry-safe workspace bootstrap RPC.
+
 ## Verification
 
 Run `corepack pnpm check` to execute linting, type-checking, tests, and builds across the workspace.

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getClientEnvResult } from '@pulseops/env/client';
 import { createSupabaseMiddlewareClient } from '@pulseops/supabase/middleware';
-import { isAuthRoute, isProtectedRoute } from '@/lib/auth/route-access';
+import { isProtectedRoute } from '@/lib/auth/route-access';
 
 const sessionRefreshExclusions = [
   '/api/health',
@@ -49,10 +49,6 @@ export async function proxy(request: NextRequest) {
 
     signInUrl.searchParams.set('next', `${pathname}${search}`);
     return NextResponse.redirect(signInUrl);
-  }
-
-  if (user && isAuthRoute(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;

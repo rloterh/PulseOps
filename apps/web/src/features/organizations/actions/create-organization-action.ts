@@ -4,6 +4,7 @@ import { getClientEnvResult } from '@pulseops/env/client';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth/require-user';
+import { getCurrentMembership } from '@/lib/organizations/get-current-membership';
 import { createOrganizationSchema } from '../schemas/create-organization-schema';
 import type { CreateOrganizationActionState } from '../types';
 import { slugifyOrganizationName } from '@/lib/organizations/slugify-organization-name';
@@ -32,50 +33,34 @@ export async function createOrganizationAction(
     };
   }
 
+  const existingMembership = await getCurrentMembership(user.id);
+
+  if (existingMembership) {
+    redirect('/dashboard');
+  }
+
   const supabase = await createSupabaseServerClient();
-  const { data: organization, error: organizationError } = await supabase
-    .from('organizations')
-    .insert({
-      name: parsed.data.name,
-      slug: parsed.data.slug,
-      created_by: user.id,
-    })
-    .select('id')
-    .single();
+  const { error: organizationError } = await supabase.rpc(
+    'bootstrap_organization',
+    {
+      org_name: parsed.data.name,
+      org_slug: parsed.data.slug,
+      default_location_name: 'Head Office',
+      default_location_code: 'HQ-001',
+      default_location_timezone: 'UTC',
+    },
+  );
 
   if (organizationError) {
+    if (organizationError.message.includes('You already belong to a workspace')) {
+      redirect('/dashboard');
+    }
+
     return {
       error:
         organizationError.code === '23505'
           ? 'That workspace slug is already in use.'
           : organizationError.message,
-    };
-  }
-
-  const { error: membershipError } = await supabase
-    .from('organization_members')
-    .insert({
-      organization_id: organization.id,
-      user_id: user.id,
-      role: 'owner',
-    });
-
-  if (membershipError) {
-    return {
-      error: membershipError.message,
-    };
-  }
-
-  const { error: locationError } = await supabase.from('locations').insert({
-    organization_id: organization.id,
-    name: 'Head Office',
-    code: 'HQ-001',
-    timezone: 'UTC',
-  });
-
-  if (locationError) {
-    return {
-      error: locationError.message,
     };
   }
 
