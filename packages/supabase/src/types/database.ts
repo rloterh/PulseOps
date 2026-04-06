@@ -529,6 +529,52 @@ export interface Database {
           },
         ];
       };
+      saved_list_views: {
+        Row: {
+          created_at: string;
+          filters: Json;
+          id: string;
+          name: string;
+          organization_id: string;
+          resource_type: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          filters?: Json;
+          id?: string;
+          name: string;
+          organization_id: string;
+          resource_type: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          filters?: Json;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          resource_type?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'saved_list_views_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'saved_list_views_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       record_watchers: {
         Row: {
           created_at: string;
