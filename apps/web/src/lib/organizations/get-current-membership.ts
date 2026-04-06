@@ -18,6 +18,7 @@ export async function getCurrentMembership(
     .from('organization_members')
     .select('id, organization_id, role')
     .eq('user_id', sessionUser.id)
+    .eq('is_active', true)
     .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle();

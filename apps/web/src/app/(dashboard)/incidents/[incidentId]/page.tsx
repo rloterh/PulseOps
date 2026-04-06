@@ -13,14 +13,12 @@ export default async function IncidentDetailPage({
 }) {
   const { incidentId } = await params;
   const context = await requireTenantMember();
-  const [incident, assignees] = await Promise.all([
-    getIncidentById({
-      tenantId: context.tenantId,
-      branchId: context.branchId,
-      incidentId,
-    }),
-    getMemberOptions(context.tenantId),
-  ]);
+  const incident = await getIncidentById({
+    tenantId: context.tenantId,
+    branchId: context.branchId,
+    incidentId,
+  });
+  const assignees = await getMemberOptions(context.tenantId, incident.branchId);
 
   return (
     <main className="space-y-6">

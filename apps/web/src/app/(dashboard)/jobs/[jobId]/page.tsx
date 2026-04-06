@@ -13,14 +13,12 @@ export default async function JobDetailPage({
 }) {
   const { jobId } = await params;
   const context = await requireTenantMember();
-  const [job, assignees] = await Promise.all([
-    getJobById({
-      tenantId: context.tenantId,
-      branchId: context.branchId,
-      jobId,
-    }),
-    getMemberOptions(context.tenantId),
-  ]);
+  const job = await getJobById({
+    tenantId: context.tenantId,
+    branchId: context.branchId,
+    jobId,
+  });
+  const assignees = await getMemberOptions(context.tenantId, job.branchId);
 
   return (
     <main className="space-y-6">

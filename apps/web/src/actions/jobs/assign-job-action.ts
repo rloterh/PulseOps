@@ -23,7 +23,7 @@ export async function assignJobAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
-  const assignees = await getMemberOptions(context.tenantId);
+  const assignees = await getMemberOptions(context.tenantId, context.branchId);
 
   if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
     return;

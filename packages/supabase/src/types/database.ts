@@ -304,6 +304,52 @@ export interface Database {
           },
         ];
       };
+      location_member_access: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          location_id: string;
+          organization_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          location_id: string;
+          organization_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          location_id?: string;
+          organization_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'location_member_access_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'location_member_access_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'location_member_access_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       locations: {
         Row: {
           code: string | null;
@@ -345,6 +391,7 @@ export interface Database {
         Row: {
           created_at: string;
           id: string;
+          is_active: boolean;
           organization_id: string;
           role: Database['public']['Enums']['organization_role'];
           user_id: string;
@@ -352,6 +399,7 @@ export interface Database {
         Insert: {
           created_at?: string;
           id?: string;
+          is_active?: boolean;
           organization_id: string;
           role?: Database['public']['Enums']['organization_role'];
           user_id: string;
@@ -359,6 +407,7 @@ export interface Database {
         Update: {
           created_at?: string;
           id?: string;
+          is_active?: boolean;
           organization_id?: string;
           role?: Database['public']['Enums']['organization_role'];
           user_id?: string;
@@ -419,6 +468,7 @@ export interface Database {
           email: string | null;
           full_name: string | null;
           id: string;
+          is_active: boolean;
           updated_at: string;
         };
         Insert: {
@@ -427,6 +477,7 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           id: string;
+          is_active?: boolean;
           updated_at?: string;
         };
         Update: {
@@ -435,6 +486,7 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           id?: string;
+          is_active?: boolean;
           updated_at?: string;
         };
         Relationships: [];
@@ -459,10 +511,31 @@ export interface Database {
         };
         Returns: boolean;
       };
+      can_user_access_location: {
+        Args: {
+          target_location_id: string;
+          target_org_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
+      can_view_profile: {
+        Args: {
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
       has_org_role: {
         Args: {
           allowed_roles: Database['public']['Enums']['organization_role'][];
           target_org_id: string;
+        };
+        Returns: boolean;
+      };
+      is_active_member_user_of_org: {
+        Args: {
+          target_org_id: string;
+          target_user_id: string;
         };
         Returns: boolean;
       };
@@ -471,6 +544,30 @@ export interface Database {
           target_org_id: string;
         };
         Returns: boolean;
+      };
+      next_job_reference: {
+        Args: {
+          target_org_id: string;
+        };
+        Returns: string;
+      };
+      search_assignable_directory: {
+        Args: {
+          p_limit?: number;
+          p_location_id?: string | null;
+          p_org_id: string;
+          p_query?: string;
+        };
+        Returns: {
+          avatar_url: string | null;
+          email: string | null;
+          full_name: string | null;
+          is_current_user: boolean;
+          location_id: string | null;
+          location_name: string | null;
+          org_role: Database['public']['Enums']['organization_role'];
+          user_id: string;
+        }[];
       };
     };
     Enums: {
