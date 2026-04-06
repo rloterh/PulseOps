@@ -68,3 +68,17 @@ export interface IncidentDetail {
 export interface CreateIncidentActionState {
   error?: string;
 }
+
+export interface IncidentEditRecord {
+  id: string;
+  branchId: string;
+  branchName: string;
+  title: string;
+  summary: string;
+  customerName: string;
+  severity: IncidentSeverity;
+  reportedAt: string;
+  slaRisk: boolean;
+  impactSummary: string;
+  nextAction: string;
+}

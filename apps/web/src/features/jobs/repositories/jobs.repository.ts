@@ -15,7 +15,10 @@ import type {
 
 type JobRow = Database['public']['Tables']['jobs']['Row'];
 type JobTimelineRecord = Database['public']['Tables']['job_timeline_events']['Row'];
-type JobMutationRecord = Pick<JobRow, 'id' | 'title' | 'status' | 'assignee_user_id'>;
+type JobMutationRecord = Pick<
+  JobRow,
+  'id' | 'title' | 'status' | 'assignee_user_id' | 'location_id'
+>;
 
 interface ScopedJobInput {
   tenantId: string;
@@ -149,7 +152,13 @@ export async function getJobDetailFromDb(
 export async function updateJobStatusInDb(
   supabase: SupabaseClient<Database>,
   input: UpdateJobStatusInput,
-): Promise<(JobMutationRecord & { changed: boolean }) | null> {
+): Promise<
+  | (JobMutationRecord & {
+      changed: boolean;
+      previousStatus: Database['public']['Enums']['job_status'];
+    })
+  | null
+> {
   const current = await getScopedJobForMutation(supabase, input);
 
   if (!current) {
@@ -157,21 +166,18 @@ export async function updateJobStatusInDb(
   }
 
   if (current.status === input.status) {
-    return { ...current, changed: false as const };
+    return { ...current, changed: false as const, previousStatus: current.status };
   }
 
-  let query = supabase
+  const query = supabase
     .from('jobs')
     .update({ status: input.status })
     .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
     .eq('id', input.jobId);
 
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .single();
 
   if (error) {
@@ -181,13 +187,27 @@ export async function updateJobStatusInDb(
   return {
     ...data,
     changed: true as const,
+    previousStatus: current.status,
   };
+}
+
+export async function getJobMutationTargetFromDb(
+  supabase: SupabaseClient<Database>,
+  input: ScopedJobInput,
+) {
+  return getScopedJobForMutation(supabase, input);
 }
 
 export async function assignJobInDb(
   supabase: SupabaseClient<Database>,
   input: AssignJobInput,
-): Promise<(JobMutationRecord & { changed: boolean }) | null> {
+): Promise<
+  | (JobMutationRecord & {
+      changed: boolean;
+      previousAssigneeUserId: string | null;
+    })
+  | null
+> {
   const current = await getScopedJobForMutation(supabase, input);
 
   if (!current) {
@@ -195,21 +215,22 @@ export async function assignJobInDb(
   }
 
   if (current.assignee_user_id === input.assigneeUserId) {
-    return { ...current, changed: false as const };
+    return {
+      ...current,
+      changed: false as const,
+      previousAssigneeUserId: current.assignee_user_id,
+    };
   }
 
-  let query = supabase
+  const query = supabase
     .from('jobs')
     .update({ assignee_user_id: input.assigneeUserId })
     .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
     .eq('id', input.jobId);
 
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .single();
 
   if (error) {
@@ -219,6 +240,7 @@ export async function assignJobInDb(
   return {
     ...data,
     changed: true as const,
+    previousAssigneeUserId: current.assignee_user_id,
   };
 }
 
@@ -226,17 +248,12 @@ async function getScopedJobForMutation(
   supabase: SupabaseClient<Database>,
   input: ScopedJobInput,
 ): Promise<JobMutationRecord | null> {
-  let query = supabase
+  const { data, error } = await supabase
     .from('jobs')
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .eq('organization_id', input.tenantId)
-    .eq('id', input.jobId);
-
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
-  const { data, error } = await query.maybeSingle();
+    .eq('id', input.jobId)
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);

@@ -6,6 +6,7 @@ import { updateIncidentStatusInDb } from '@/features/incidents/repositories/inci
 import { updateIncidentStatusSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 
 export async function updateIncidentStatusAction(formData: FormData) {
   const parsed = updateIncidentStatusSchema.safeParse({
@@ -40,10 +41,7 @@ export async function updateIncidentStatusAction(formData: FormData) {
         parsed.data.status === 'resolved'
           ? 'Incident resolved'
           : 'Incident status updated',
-      description:
-        parsed.data.status === 'resolved'
-          ? `${updated.title} was marked as resolved.`
-          : `${updated.title} moved to ${parsed.data.status.replaceAll('_', ' ')}.`,
+      description: `Status: ${formatTokenLabel(updated.previousStatus)} -> ${formatTokenLabel(parsed.data.status)}.`,
       actorUserId: context.viewerId,
       actorName: context.viewerName,
     });

@@ -50,6 +50,20 @@ export interface CreateJobActionState {
   error?: string;
 }
 
+export interface JobEditRecord {
+  id: string;
+  branchId: string;
+  branchName: string;
+  title: string;
+  summary: string;
+  customerName: string;
+  priority: JobPriority;
+  type: JobType;
+  dueAt: string | null;
+  checklistSummary: string;
+  resolutionSummary: string;
+}
+
 export interface JobDetail {
   id: string;
   reference: string;

@@ -16,11 +16,23 @@ import type {
 
 type TaskRow = Database['public']['Tables']['tasks']['Row'];
 type TaskTimelineRecord = Database['public']['Tables']['task_timeline_events']['Row'];
+type TaskMutationRecord = Pick<
+  TaskRow,
+  'id' | 'title' | 'status' | 'assignee_user_id' | 'location_id'
+>;
 
 interface ScopedTaskInput {
   tenantId: string;
   branchId: string | null;
   taskId: string;
+}
+
+interface UpdateTaskStatusInput extends ScopedTaskInput {
+  status: Database['public']['Enums']['task_status'];
+}
+
+interface AssignTaskInput extends ScopedTaskInput {
+  assigneeUserId: string | null;
 }
 
 export async function getTasksListFromDb(
@@ -188,6 +200,119 @@ export async function getTaskLinkOptionsFromDb(
       entityType: 'job' as const,
     })),
   ];
+}
+
+export async function updateTaskStatusInDb(
+  supabase: SupabaseClient<Database>,
+  input: UpdateTaskStatusInput,
+): Promise<
+  | (TaskMutationRecord & {
+      changed: boolean;
+      previousStatus: Database['public']['Enums']['task_status'];
+    })
+  | null
+> {
+  const current = await getScopedTaskForMutation(supabase, input);
+
+  if (!current) {
+    return null;
+  }
+
+  if (current.status === input.status) {
+    return {
+      ...current,
+      changed: false as const,
+      previousStatus: current.status,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ status: input.status })
+    .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
+    .eq('id', input.taskId)
+    .select('id, title, status, assignee_user_id, location_id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    changed: true as const,
+    previousStatus: current.status,
+  };
+}
+
+export async function getTaskMutationTargetFromDb(
+  supabase: SupabaseClient<Database>,
+  input: ScopedTaskInput,
+) {
+  return getScopedTaskForMutation(supabase, input);
+}
+
+export async function assignTaskInDb(
+  supabase: SupabaseClient<Database>,
+  input: AssignTaskInput,
+): Promise<
+  | (TaskMutationRecord & {
+      changed: boolean;
+      previousAssigneeUserId: string | null;
+    })
+  | null
+> {
+  const current = await getScopedTaskForMutation(supabase, input);
+
+  if (!current) {
+    return null;
+  }
+
+  if (current.assignee_user_id === input.assigneeUserId) {
+    return {
+      ...current,
+      changed: false as const,
+      previousAssigneeUserId: current.assignee_user_id,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ assignee_user_id: input.assigneeUserId })
+    .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
+    .eq('id', input.taskId)
+    .select('id, title, status, assignee_user_id, location_id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    changed: true as const,
+    previousAssigneeUserId: current.assignee_user_id,
+  };
+}
+
+async function getScopedTaskForMutation(
+  supabase: SupabaseClient<Database>,
+  input: ScopedTaskInput,
+): Promise<TaskMutationRecord | null> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('id, title, status, assignee_user_id, location_id')
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.taskId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 function mapTaskListItem(

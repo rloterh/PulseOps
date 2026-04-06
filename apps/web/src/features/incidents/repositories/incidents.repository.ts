@@ -14,7 +14,7 @@ type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id' | 'referenc
 type IncidentTimelineRecord = Database['public']['Tables']['incident_timeline_events']['Row'];
 type IncidentMutationRecord = Pick<
   IncidentRow,
-  'id' | 'title' | 'status' | 'assignee_user_id'
+  'id' | 'title' | 'status' | 'assignee_user_id' | 'location_id'
 >;
 
 interface ScopedIncidentInput {
@@ -166,7 +166,13 @@ export async function getIncidentDetailFromDb(
 export async function updateIncidentStatusInDb(
   supabase: SupabaseClient<Database>,
   input: UpdateIncidentStatusInput,
-): Promise<(IncidentMutationRecord & { changed: boolean }) | null> {
+): Promise<
+  | (IncidentMutationRecord & {
+      changed: boolean;
+      previousStatus: Database['public']['Enums']['incident_status'];
+    })
+  | null
+> {
   const current = await getScopedIncidentForMutation(supabase, input);
 
   if (!current) {
@@ -174,21 +180,22 @@ export async function updateIncidentStatusInDb(
   }
 
   if (current.status === input.status) {
-    return { ...current, changed: false as const };
+    return {
+      ...current,
+      changed: false as const,
+      previousStatus: current.status,
+    };
   }
 
-  let query = supabase
+  const query = supabase
     .from('incidents')
     .update({ status: input.status })
     .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
     .eq('id', input.incidentId);
 
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .single();
 
   if (error) {
@@ -198,13 +205,27 @@ export async function updateIncidentStatusInDb(
   return {
     ...data,
     changed: true as const,
+    previousStatus: current.status,
   };
+}
+
+export async function getIncidentMutationTargetFromDb(
+  supabase: SupabaseClient<Database>,
+  input: ScopedIncidentInput,
+) {
+  return getScopedIncidentForMutation(supabase, input);
 }
 
 export async function assignIncidentInDb(
   supabase: SupabaseClient<Database>,
   input: AssignIncidentInput,
-): Promise<(IncidentMutationRecord & { changed: boolean }) | null> {
+): Promise<
+  | (IncidentMutationRecord & {
+      changed: boolean;
+      previousAssigneeUserId: string | null;
+    })
+  | null
+> {
   const current = await getScopedIncidentForMutation(supabase, input);
 
   if (!current) {
@@ -212,21 +233,22 @@ export async function assignIncidentInDb(
   }
 
   if (current.assignee_user_id === input.assigneeUserId) {
-    return { ...current, changed: false as const };
+    return {
+      ...current,
+      changed: false as const,
+      previousAssigneeUserId: current.assignee_user_id,
+    };
   }
 
-  let query = supabase
+  const query = supabase
     .from('incidents')
     .update({ assignee_user_id: input.assigneeUserId })
     .eq('organization_id', input.tenantId)
+    .eq('location_id', current.location_id)
     .eq('id', input.incidentId);
 
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .single();
 
   if (error) {
@@ -236,6 +258,7 @@ export async function assignIncidentInDb(
   return {
     ...data,
     changed: true as const,
+    previousAssigneeUserId: current.assignee_user_id,
   };
 }
 
@@ -243,17 +266,12 @@ async function getScopedIncidentForMutation(
   supabase: SupabaseClient<Database>,
   input: ScopedIncidentInput,
 ): Promise<IncidentMutationRecord | null> {
-  let query = supabase
+  const { data, error } = await supabase
     .from('incidents')
-    .select('id, title, status, assignee_user_id')
+    .select('id, title, status, assignee_user_id, location_id')
     .eq('organization_id', input.tenantId)
-    .eq('id', input.incidentId);
-
-  if (input.branchId) {
-    query = query.eq('location_id', input.branchId);
-  }
-
-  const { data, error } = await query.maybeSingle();
+    .eq('id', input.incidentId)
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);

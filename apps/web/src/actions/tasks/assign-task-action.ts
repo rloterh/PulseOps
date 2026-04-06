@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import {
-  assignJobInDb,
-  getJobMutationTargetFromDb,
-} from '@/features/jobs/repositories/jobs.repository';
-import { assignJobSchema } from '@/features/jobs/schemas/job-mutation.schemas';
+  assignTaskInDb,
+  getTaskMutationTargetFromDb,
+} from '@/features/tasks/repositories/tasks.repository';
+import { assignTaskSchema } from '@/features/tasks/schemas/task-mutation.schemas';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
@@ -23,12 +23,12 @@ function getMemberLabel(
   return members.find((member) => member.id === userId)?.label ?? 'Unknown assignee';
 }
 
-export async function assignJobAction(formData: FormData) {
+export async function assignTaskAction(formData: FormData) {
   const rawAssignee = formData.get('assigneeUserId');
   const assigneeUserId =
     typeof rawAssignee === 'string' && rawAssignee.length > 0 ? rawAssignee : null;
-  const parsed = assignJobSchema.safeParse({
-    jobId: formData.get('jobId'),
+  const parsed = assignTaskSchema.safeParse({
+    taskId: formData.get('taskId'),
     assigneeUserId,
   });
 
@@ -38,10 +38,10 @@ export async function assignJobAction(formData: FormData) {
 
   const context = await requireTenantMember();
   const supabase = await createSupabaseServerClient();
-  const current = await getJobMutationTargetFromDb(supabase, {
+  const current = await getTaskMutationTargetFromDb(supabase, {
     tenantId: context.tenantId,
     branchId: context.branchId,
-    jobId: parsed.data.jobId,
+    taskId: parsed.data.taskId,
   });
 
   if (!current) {
@@ -54,10 +54,10 @@ export async function assignJobAction(formData: FormData) {
     return;
   }
 
-  const updated = await assignJobInDb(supabase, {
+  const updated = await assignTaskInDb(supabase, {
     tenantId: context.tenantId,
     branchId: context.branchId,
-    jobId: parsed.data.jobId,
+    taskId: parsed.data.taskId,
     assigneeUserId: parsed.data.assigneeUserId,
   });
 
@@ -70,20 +70,18 @@ export async function assignJobAction(formData: FormData) {
     const nextLabel = getMemberLabel(assignees, updated.assignee_user_id);
 
     await insertTimelineEvent(supabase, {
-      kind: 'job',
+      kind: 'task',
       tenantId: context.tenantId,
-      parentId: parsed.data.jobId,
+      parentId: parsed.data.taskId,
       eventType: 'assignment',
-      title: parsed.data.assigneeUserId ? 'Job assigned' : 'Job unassigned',
+      title: parsed.data.assigneeUserId ? 'Task assigned' : 'Task unassigned',
       description: `Assignee: ${previousLabel} -> ${nextLabel}.`,
       actorUserId: context.viewerId,
       actorName: context.viewerName,
     });
 
     revalidatePath('/dashboard');
-    revalidatePath('/jobs');
-    revalidatePath(`/jobs/${parsed.data.jobId}`);
+    revalidatePath('/tasks');
+    revalidatePath(`/tasks/${parsed.data.taskId}`);
   }
-
-  return;
 }

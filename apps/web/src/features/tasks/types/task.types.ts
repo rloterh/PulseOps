@@ -64,3 +64,16 @@ export interface TaskLinkOption {
 export interface CreateTaskActionState {
   error?: string;
 }
+
+export interface TaskEditRecord {
+  id: string;
+  branchId: string;
+  branchName: string;
+  title: string;
+  summary: string;
+  priority: JobPriority;
+  dueAt: string | null;
+  completionSummary: string;
+  linkedEntityKind: 'none' | 'incident' | 'job';
+  linkedEntityId: string | null;
+}
