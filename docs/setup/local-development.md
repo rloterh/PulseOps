@@ -38,3 +38,10 @@ Sprint 1 auth, onboarding, and protected dashboard flows require these values:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+
+Sprint 2 builds on that foundation with a richer protected shell, so it is worth validating these browser flows locally after setup:
+
+- sign in and sign out
+- onboarding redirect behavior
+- dashboard, team, inbox, and branch navigation
+- command palette with `Ctrl+K`

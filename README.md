@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The `feature/auth-tenancy` branch is the Sprint 1 branch: it turns the Sprint 0 foundation into the first real product slice with authentication, workspace onboarding, database tenancy, and a protected dashboard shell.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/auth-tenancy` branch now carries Sprint 2A work on top of the Sprint 1 foundation: authentication, workspace onboarding, database tenancy, and a premium protected app shell.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -17,7 +17,8 @@ What this branch delivers:
 - Supabase client boundaries for browser, server, admin, and edge session refresh
 - a real Supabase migration for profiles, organizations, memberships, and starter locations
 - sign-up, sign-in, callback, verify, sign-out, and first-workspace onboarding flows
-- a protected dashboard shell with org-aware overview, branches, and settings surfaces
+- a responsive protected shell with sidebar, topbar, mobile drawer, branch switcher, notifications shell, and command palette
+- a richer dashboard scaffold with typed KPI and widget contracts
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -92,6 +93,8 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
   - `/onboarding`
   - `/dashboard`
   - `/branches`
+  - `/team`
+  - `/inbox`
   - `/settings`
 - Placeholder routes preserved for:
   - `/pricing`
@@ -110,6 +113,7 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - Zod-validated env access in `packages/env`
 - Supabase client factories in `packages/supabase`
 - Proxy-based session refresh and route protection
+- Shell UI state managed in a focused client-side Zustand store
 - Security headers baseline
 - Lightweight logging helper
 
@@ -122,6 +126,13 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - Starter RLS policies for self-profile access, org membership reads, workspace creation, and location access
 - Retry-safe `bootstrap_organization` RPC to keep workspace onboarding atomic
 - Seed data that creates a demo workspace and starter locations when a profile exists
+
+### Sprint 2 Shell
+
+- Premium dark app shell with responsive desktop and mobile navigation
+- Branch switcher shell backed by current organization locations
+- Notification panel and keyboard-triggered command palette
+- Dashboard widgets fed by typed summary and notification contracts
 
 ### Delivery Baseline
 
