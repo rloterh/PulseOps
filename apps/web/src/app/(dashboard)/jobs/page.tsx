@@ -2,12 +2,16 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListPageHeader } from '@/components/shared/list-page-header';
+import { SavedListViewsBar } from '@/components/shared/saved-list-views-bar';
 import { StatPill } from '@/components/shared/stat-pill';
 import { JobFilters } from '@/components/jobs/job-filters';
 import { JobListTable } from '@/components/jobs/job-list-table';
+import { serializeJobListFilters } from '@/features/jobs/lib/job-list-query-state';
 import { canCreateJobs } from '@/features/jobs/lib/jobs-permissions';
 import { getJobsList } from '@/features/jobs/queries/get-jobs-list';
 import { parseJobListFilters } from '@/features/jobs/queries/parse-job-list-filters';
+import type { JobListFilters as SavedJobListFilters } from '@/features/jobs/types/job.types';
+import { getSavedListViewsFromDb } from '@/features/list-views/repositories/saved-list-views.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 
 export default async function JobsPage({
@@ -21,6 +25,27 @@ export default async function JobsPage({
     tenantId: context.tenantId,
     branchId: context.branchId,
     filters,
+  });
+  const savedViews = (await getSavedListViewsFromDb(
+    context.supabase,
+    {
+      tenantId: context.tenantId,
+      viewerId: context.viewerId,
+      resourceType: 'jobs',
+    },
+  )).map((view) => {
+    const viewFilters = view.filters as SavedJobListFilters;
+    const query = serializeJobListFilters(viewFilters).toString();
+    const currentQuery = serializeJobListFilters(filters).toString();
+
+    return {
+      id: view.id,
+      name: view.name,
+      resourceType: 'jobs' as const,
+      filters: viewFilters,
+      href: query ? `/jobs?${query}` : '/jobs',
+      isActive: query === currentQuery,
+    };
   });
   const canCreate = canCreateJobs(context.membershipRole);
   const hasActiveFilters =
@@ -60,9 +85,15 @@ export default async function JobsPage({
       />
 
       <JobFilters filters={filters} />
+      <SavedListViewsBar
+        resourceType="jobs"
+        pageHref="/jobs"
+        filtersPayload={JSON.stringify(filters)}
+        views={savedViews}
+      />
 
       {jobs.length > 0 ? (
-        <JobListTable items={jobs} filters={filters} />
+        <JobListTable items={jobs} filters={filters} canManage={canCreate} />
       ) : hasActiveFilters ? (
         <EmptyState
           title="No jobs match this view"

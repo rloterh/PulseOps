@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -18,6 +19,7 @@ import {
 import type { ListViewPreferenceOptions } from '@/features/operations-list/lib/list-view-preferences';
 import { useRecordRowOpen } from '@/hooks/use-record-row-open';
 import { usePersistentListViewPreferences } from '@/hooks/use-persistent-list-view-preferences';
+import { IncidentBulkStatusToolbar } from './incident-bulk-status-toolbar';
 import { IncidentSeverityBadge } from './incident-severity-badge';
 import { IncidentStatusBadge } from './incident-status-badge';
 
@@ -86,9 +88,11 @@ function SortHeaderButton({
 export function IncidentListTable({
   items,
   filters,
+  canManage,
 }: {
   items: IncidentListItem[];
   filters: IncidentListFilters;
+  canManage: boolean;
 }) {
   const { openRecord } = useRecordRowOpen();
   const { preferences, setDensity, setPageSize, toggleColumn } =
@@ -109,6 +113,7 @@ export function IncidentListTable({
   const showStatus = visibleColumns.includes('status');
   const showOwner = visibleColumns.includes('owner');
   const showOpened = visibleColumns.includes('opened');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   function openIncident(
     event: MouseEvent<HTMLTableRowElement> | KeyboardEvent<HTMLTableRowElement>,
@@ -130,6 +135,32 @@ export function IncidentListTable({
     openRecord(href, { newTab });
   }
 
+  useEffect(() => {
+    const visibleIdSet = new Set(visibleItems.map((item) => item.id));
+
+    setSelectedIds((current) =>
+      current.filter((selectedId) => visibleIdSet.has(selectedId)),
+    );
+  }, [visibleItems]);
+
+  function toggleSelection(incidentId: string) {
+    setSelectedIds((current) =>
+      current.includes(incidentId)
+        ? current.filter((selectedId) => selectedId !== incidentId)
+        : [...current, incidentId],
+    );
+  }
+
+  function toggleAllVisible() {
+    const visibleIds = visibleItems.map((item) => item.id);
+
+    setSelectedIds((current) =>
+      visibleIds.every((incidentId) => current.includes(incidentId))
+        ? []
+        : visibleIds,
+    );
+  }
+
   return (
     <section className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] shadow-[0_20px_70px_rgba(2,6,23,0.24)]">
       <ListViewControls
@@ -144,11 +175,33 @@ export function IncidentListTable({
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
       />
+      {canManage ? (
+        <IncidentBulkStatusToolbar
+          selectedIds={selectedIds}
+          onClearSelection={() => {
+            setSelectedIds([]);
+          }}
+        />
+      ) : null}
 
       <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-white/8">
           <thead>
             <tr className="text-left text-xs uppercase tracking-[0.18em] text-white/40">
+              {canManage ? (
+                <th className="px-5 py-4 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={
+                      visibleItems.length > 0 &&
+                      visibleItems.every((item) => selectedIds.includes(item.id))
+                    }
+                    onChange={toggleAllVisible}
+                    aria-label="Select visible incidents"
+                    className="h-4 w-4 accent-white"
+                  />
+                </th>
+              ) : null}
               <th className="px-5 py-4 font-medium">
                 <SortHeaderButton
                   label="Incident"
@@ -203,6 +256,19 @@ export function IncidentListTable({
                 }}
                 className="cursor-pointer transition hover:bg-white/[0.03] focus-visible:bg-white/[0.05] focus-visible:outline-none"
               >
+                {canManage ? (
+                  <td className={`${rowPaddingClass} align-top`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={() => {
+                        toggleSelection(item.id);
+                      }}
+                      aria-label={`Select ${item.title}`}
+                      className="mt-1 h-4 w-4 accent-white"
+                    />
+                  </td>
+                ) : null}
                 <td className={`${rowPaddingClass} align-top`}>
                   <div className="block">
                     <p className="font-medium text-white">{item.title}</p>
@@ -264,9 +330,27 @@ export function IncidentListTable({
                   {item.reference} / {item.siteName}
                 </p>
               </div>
-              {showSeverity ? (
-                <IncidentSeverityBadge severity={item.severity} />
-              ) : null}
+              <div className="flex items-start gap-3">
+                {canManage ? (
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={(event) => {
+                      event.preventDefault();
+                      toggleSelection(item.id);
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
+                    aria-label={`Select ${item.title}`}
+                    className="mt-1 h-4 w-4 accent-white"
+                  />
+                ) : null}
+                {showSeverity ? (
+                  <IncidentSeverityBadge severity={item.severity} />
+                ) : null}
+              </div>
             </div>
             {(showStatus || showBranch) ? (
               <div className="mt-4 flex flex-wrap gap-2">

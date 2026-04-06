@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -15,6 +16,7 @@ import type { ListViewPreferenceOptions } from '@/features/operations-list/lib/l
 import { useRecordRowOpen } from '@/hooks/use-record-row-open';
 import { usePersistentListViewPreferences } from '@/hooks/use-persistent-list-view-preferences';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { JobBulkStatusToolbar } from './job-bulk-status-toolbar';
 import { JobPriorityBadge } from './job-priority-badge';
 import { JobStatusBadge } from './job-status-badge';
 
@@ -77,9 +79,11 @@ function SortHeaderButton({
 export function JobListTable({
   items,
   filters,
+  canManage,
 }: {
   items: JobListItem[];
   filters: JobListFilters;
+  canManage: boolean;
 }) {
   const { openRecord } = useRecordRowOpen();
   const { preferences, setDensity, setPageSize, toggleColumn } =
@@ -100,6 +104,7 @@ export function JobListTable({
   const showStatus = visibleColumns.includes('status');
   const showAssignee = visibleColumns.includes('assignee');
   const showDue = visibleColumns.includes('due');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   function openJob(
     event: MouseEvent<HTMLTableRowElement> | KeyboardEvent<HTMLTableRowElement>,
@@ -121,6 +126,30 @@ export function JobListTable({
     openRecord(href, { newTab });
   }
 
+  useEffect(() => {
+    const visibleIdSet = new Set(visibleItems.map((item) => item.id));
+
+    setSelectedIds((current) =>
+      current.filter((selectedId) => visibleIdSet.has(selectedId)),
+    );
+  }, [visibleItems]);
+
+  function toggleSelection(jobId: string) {
+    setSelectedIds((current) =>
+      current.includes(jobId)
+        ? current.filter((selectedId) => selectedId !== jobId)
+        : [...current, jobId],
+    );
+  }
+
+  function toggleAllVisible() {
+    const visibleIds = visibleItems.map((item) => item.id);
+
+    setSelectedIds((current) =>
+      visibleIds.every((jobId) => current.includes(jobId)) ? [] : visibleIds,
+    );
+  }
+
   return (
     <section className="rounded-[1.8rem] border border-white/8 bg-white/[0.04] shadow-[0_20px_70px_rgba(2,6,23,0.24)]">
       <ListViewControls
@@ -135,11 +164,33 @@ export function JobListTable({
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
       />
+      {canManage ? (
+        <JobBulkStatusToolbar
+          selectedIds={selectedIds}
+          onClearSelection={() => {
+            setSelectedIds([]);
+          }}
+        />
+      ) : null}
 
       <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-white/8">
           <thead>
             <tr className="text-left text-xs uppercase tracking-[0.18em] text-white/40">
+              {canManage ? (
+                <th className="px-5 py-4 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={
+                      visibleItems.length > 0 &&
+                      visibleItems.every((item) => selectedIds.includes(item.id))
+                    }
+                    onChange={toggleAllVisible}
+                    aria-label="Select visible jobs"
+                    className="h-4 w-4 accent-white"
+                  />
+                </th>
+              ) : null}
               <th className="px-5 py-4 font-medium">
                 <SortHeaderButton label="Job" field="title" filters={filters} />
               </th>
@@ -186,6 +237,19 @@ export function JobListTable({
                 }}
                 className="cursor-pointer transition hover:bg-white/[0.03] focus-visible:bg-white/[0.05] focus-visible:outline-none"
               >
+                {canManage ? (
+                  <td className={`${rowPaddingClass} align-top`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={() => {
+                        toggleSelection(item.id);
+                      }}
+                      aria-label={`Select ${item.title}`}
+                      className="mt-1 h-4 w-4 accent-white"
+                    />
+                  </td>
+                ) : null}
                 <td className={`${rowPaddingClass} align-top`}>
                   <div className="block">
                     <p className="font-medium text-white">{item.title}</p>
@@ -244,7 +308,25 @@ export function JobListTable({
                   {item.reference} / {item.siteName}
                 </p>
               </div>
-              {showPriority ? <JobPriorityBadge priority={item.priority} /> : null}
+              <div className="flex items-start gap-3">
+                {canManage ? (
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={(event) => {
+                      event.preventDefault();
+                      toggleSelection(item.id);
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
+                    aria-label={`Select ${item.title}`}
+                    className="mt-1 h-4 w-4 accent-white"
+                  />
+                ) : null}
+                {showPriority ? <JobPriorityBadge priority={item.priority} /> : null}
+              </div>
             </div>
             {(showStatus || showBranch) ? (
               <div className="mt-4 flex flex-wrap gap-2">

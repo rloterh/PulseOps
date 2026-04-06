@@ -2,12 +2,16 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListPageHeader } from '@/components/shared/list-page-header';
+import { SavedListViewsBar } from '@/components/shared/saved-list-views-bar';
 import { StatPill } from '@/components/shared/stat-pill';
 import { IncidentFilters } from '@/components/incidents/incident-filters';
 import { IncidentListTable } from '@/components/incidents/incident-list-table';
+import { serializeIncidentListFilters } from '@/features/incidents/lib/incident-list-query-state';
 import { canCreateIncidents } from '@/features/incidents/lib/incident-permissions';
 import { getIncidentsList } from '@/features/incidents/queries/get-incidents-list';
 import { parseIncidentListFilters } from '@/features/incidents/queries/parse-incident-list-filters';
+import type { IncidentListFilters as SavedIncidentListFilters } from '@/features/incidents/types/incident.types';
+import { getSavedListViewsFromDb } from '@/features/list-views/repositories/saved-list-views.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 
 export default async function IncidentsPage({
@@ -21,6 +25,27 @@ export default async function IncidentsPage({
     tenantId: context.tenantId,
     branchId: context.branchId,
     filters,
+  });
+  const savedViews = (await getSavedListViewsFromDb(
+    context.supabase,
+    {
+      tenantId: context.tenantId,
+      viewerId: context.viewerId,
+      resourceType: 'incidents',
+    },
+  )).map((view) => {
+    const viewFilters = view.filters as SavedIncidentListFilters;
+    const query = serializeIncidentListFilters(viewFilters).toString();
+    const currentQuery = serializeIncidentListFilters(filters).toString();
+
+    return {
+      id: view.id,
+      name: view.name,
+      resourceType: 'incidents' as const,
+      filters: viewFilters,
+      href: query ? `/incidents?${query}` : '/incidents',
+      isActive: query === currentQuery,
+    };
   });
   const canCreate = canCreateIncidents(context.membershipRole);
   const hasActiveFilters =
@@ -60,9 +85,15 @@ export default async function IncidentsPage({
       />
 
       <IncidentFilters filters={filters} />
+      <SavedListViewsBar
+        resourceType="incidents"
+        pageHref="/incidents"
+        filtersPayload={JSON.stringify(filters)}
+        views={savedViews}
+      />
 
       {incidents.length > 0 ? (
-        <IncidentListTable items={incidents} filters={filters} />
+        <IncidentListTable items={incidents} filters={filters} canManage={canCreate} />
       ) : hasActiveFilters ? (
         <EmptyState
           title="No incidents match this view"
