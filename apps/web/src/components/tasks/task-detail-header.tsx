@@ -30,6 +30,12 @@ export function TaskDetailHeader({ task }: { task: TaskDetail }) {
         </div>
 
         <div className="grid gap-3 rounded-[1.6rem] border border-white/8 bg-black/16 p-4 text-sm xl:min-w-[18rem]">
+          <Link
+            href={`/tasks/${task.id}/edit` as Route}
+            className="inline-flex justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+          >
+            Edit task
+          </Link>
           <DetailRow label="Created by" value={task.createdByName} />
           <DetailRow label="Assignee" value={task.assigneeName ?? 'Unassigned'} />
           <DetailRow label="Due" value={task.dueAtLabel} />

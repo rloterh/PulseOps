@@ -1,7 +1,10 @@
+import { TaskAssigneeForm } from '@/components/tasks/task-assignee-form';
 import { TaskDetailHeader } from '@/components/tasks/task-detail-header';
+import { TaskStatusForm } from '@/components/tasks/task-status-form';
 import { TaskTimeline } from '@/components/tasks/task-timeline';
 import { getTaskById } from '@/features/tasks/queries/get-task-by-id';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getMemberOptions } from '@/lib/organizations/get-member-options';
 
 export default async function TaskDetailPage({
   params,
@@ -15,6 +18,7 @@ export default async function TaskDetailPage({
     branchId: context.branchId,
     taskId,
   });
+  const assignees = await getMemberOptions(context.tenantId, task.branchId);
 
   return (
     <main className="space-y-6">
@@ -26,6 +30,12 @@ export default async function TaskDetailPage({
         </div>
 
         <aside className="space-y-4 xl:col-span-4">
+          <TaskStatusForm taskId={task.id} currentStatus={task.status} />
+          <TaskAssigneeForm
+            taskId={task.id}
+            currentAssigneeUserId={task.currentAssigneeUserId}
+            assignees={assignees}
+          />
           <section className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5">
             <h2 className="text-lg font-semibold tracking-tight text-white">Execution</h2>
             <dl className="mt-4 grid gap-3 text-sm">

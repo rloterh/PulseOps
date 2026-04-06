@@ -31,6 +31,12 @@ export function JobDetailHeader({ job }: { job: JobDetail }) {
         </div>
 
         <div className="grid gap-3 rounded-[1.6rem] border border-white/8 bg-black/16 p-4 text-sm xl:min-w-[18rem]">
+          <Link
+            href={`/jobs/${job.id}/edit` as Route}
+            className="inline-flex justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+          >
+            Edit job
+          </Link>
           <DetailRow label="Site" value={job.siteName} />
           <DetailRow label="Customer" value={job.customerName} />
           <DetailRow label="Assignee" value={job.assigneeName ?? 'Unassigned'} />
