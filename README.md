@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 5A1 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, a real watcher-driven notification feed plus inbox triage surface, and now higher-productivity list workflows for operations teams.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 5A2 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, a real watcher-driven notification feed plus inbox triage surface, and now higher-productivity operational list workflows with lightweight user-side view preferences.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -35,6 +35,7 @@ What this branch delivers:
 - debounced search and immediate filter URL sync on the jobs and incidents lists
 - sortable jobs and incidents table headers with route-safe query state
 - row-open list interactions with keyboard support and ctrl/cmd new-tab behavior
+- persistent list density, visible-column, and rows-per-view preferences for jobs and incidents
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -287,7 +288,7 @@ This branch is meant to demonstrate that the project foundation is:
 
 - evolve tenancy into the broader PulseOps tenant and branch model
 - add invitations and richer role or permission handling
-- continue Sprint 5 into shared list preferences, saved views, and bulk actions
+- continue Sprint 5 into saved views, bulk actions, and deeper list productivity actions
 - deepen the dashboard with live operations metrics
 - connect billing and subscription control paths
 
