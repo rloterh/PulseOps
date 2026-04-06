@@ -1,6 +1,7 @@
 'use client';
 
 import type { Route } from 'next';
+import { useEffect, useEffectEvent } from 'react';
 import Link from 'next/link';
 import { cn } from '@pulseops/utils';
 import type { NotificationItem } from '@/features/notifications/types/notification.types';
@@ -16,6 +17,23 @@ const kindLabel: Record<NotificationItem['kind'], string> = {
 
 export function NotificationPanel({ items }: { items: NotificationItem[] }) {
   const { isNotificationsOpen, closeNotifications } = useShellUiStore();
+  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      closeNotifications();
+    }
+  });
+
+  useEffect(() => {
+    if (!isNotificationsOpen) {
+      return undefined;
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown, isNotificationsOpen]);
 
   if (!isNotificationsOpen) {
     return null;

@@ -1,8 +1,11 @@
 import 'server-only';
 
+import { cookies } from 'next/headers';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { AppShellContext } from '@/features/shell/types/shell.types';
 import { requireCurrentMembership } from '@/lib/organizations/require-current-membership';
+import { ACTIVE_BRANCH_COOKIE_NAME } from './active-branch-preference';
+import { resolveActiveBranchId } from './resolve-active-branch';
 
 interface Input {
   userId: string;
@@ -13,6 +16,7 @@ export async function getActiveBranchContext({
 }: Input): Promise<AppShellContext> {
   const membership = await requireCurrentMembership(userId);
   const supabase = await createSupabaseServerClient();
+  const cookieStore = await cookies();
   const [{ data: profile, error: profileError }, { data: locations, error: locationsError }] =
     await Promise.all([
       supabase
@@ -36,7 +40,8 @@ export async function getActiveBranchContext({
     throw new Error(locationsError.message);
   }
 
-  const branches = locations.map((location, index) => ({
+  const preferredBranchId = cookieStore.get(ACTIVE_BRANCH_COOKIE_NAME)?.value ?? null;
+  const mappedBranches = locations.map((location, index) => ({
     id: location.id,
     name: location.name,
     code: location.code,
@@ -45,6 +50,11 @@ export async function getActiveBranchContext({
       ? `Timezone ${location.timezone}`
       : 'No timezone configured',
     isActive: index === 0,
+  }));
+  const activeBranchId = resolveActiveBranchId(mappedBranches, preferredBranchId);
+  const branches = mappedBranches.map((branch) => ({
+    ...branch,
+    isActive: branch.id === activeBranchId,
   }));
 
   const activeBranch = branches.find((branch) => branch.isActive) ?? null;

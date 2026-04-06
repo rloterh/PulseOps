@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@pulseops/utils';
+import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import type { BranchOption } from '@/features/shell/types/shell.types';
+import { persistActiveBranchPreference } from '@/lib/tenancy/active-branch-preference';
 import { AppIcon } from './app-icon';
 
 export function BranchSwitcher({
@@ -16,12 +19,13 @@ export function BranchSwitcher({
   tone?: 'dark' | 'light';
   compact?: boolean;
 }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedBranchId, setSelectedBranchId] = useState(activeBranchId);
+  const { activeBranchId: selectedBranchId, setActiveBranchId } = useShellUiStore();
 
   useEffect(() => {
-    setSelectedBranchId(activeBranchId);
-  }, [activeBranchId]);
+    setActiveBranchId(activeBranchId);
+  }, [activeBranchId, setActiveBranchId]);
 
   const selectedBranch =
     branches.find((branch) => branch.id === selectedBranchId) ?? branches[0] ?? null;
@@ -116,8 +120,16 @@ export function BranchSwitcher({
                     key={branch.id}
                     type="button"
                     onClick={() => {
-                      setSelectedBranchId(branch.id);
                       setIsOpen(false);
+                      if (branch.id === selectedBranchId) {
+                        return;
+                      }
+
+                      setActiveBranchId(branch.id);
+                      persistActiveBranchPreference(branch.id);
+                      startTransition(() => {
+                        router.refresh();
+                      });
                     }}
                     className={cn(
                       'flex w-full items-start justify-between rounded-[1rem] px-3 py-3 text-left transition',

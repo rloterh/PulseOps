@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useEffectEvent } from 'react';
 import type { AppShellContext } from '@/features/shell/types/shell.types';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppLogo } from './app-logo';
@@ -9,6 +10,23 @@ import { BranchSwitcher } from './branch-switcher';
 
 export function MobileNavDrawer({ shell }: { shell: AppShellContext }) {
   const { isMobileNavOpen, closeMobileNav } = useShellUiStore();
+  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      closeMobileNav();
+    }
+  });
+
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return undefined;
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [closeMobileNav, handleKeyDown, isMobileNavOpen]);
 
   if (!isMobileNavOpen) {
     return null;
