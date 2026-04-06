@@ -1,11 +1,22 @@
 import { createServerClient } from '@supabase/ssr';
 import { getClientEnv, type ClientEnv } from '@pulseops/env/client';
-import type { NextRequest, NextResponse } from 'next/server';
 import type { Database } from '../types/database';
 
+interface MiddlewareRequestLike {
+  cookies: {
+    getAll(): { name: string; value: string }[];
+  };
+}
+
+interface MiddlewareResponseLike {
+  cookies: {
+    set(...args: unknown[]): unknown;
+  };
+}
+
 export function createSupabaseMiddlewareClient(
-  request: NextRequest,
-  response: NextResponse,
+  request: MiddlewareRequestLike,
+  response: MiddlewareResponseLike,
   env: ClientEnv = getClientEnv(),
 ) {
   return createServerClient<Database>(
