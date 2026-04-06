@@ -14,13 +14,14 @@ import type {
 
 const initialState: SavedListViewActionState = {};
 
-function SaveViewButton() {
+function SaveViewButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || disabled;
 
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={isDisabled}
       className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-neutral-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? 'Saving...' : 'Save view'}
@@ -41,6 +42,8 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
 }) {
   const [state, formAction] = useActionState(createSavedListViewAction, initialState);
   const [name, setName] = useState('');
+  const trimmedName = name.trim();
+  const canSave = trimmedName.length >= 2;
 
   useEffect(() => {
     if (state.success) {
@@ -61,7 +64,15 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
             </p>
           </div>
 
-          <form action={formAction} className="flex flex-col gap-3 sm:flex-row">
+          <form
+            action={formAction}
+            onSubmit={(event) => {
+              if (!canSave) {
+                event.preventDefault();
+              }
+            }}
+            className="flex flex-col gap-3 sm:flex-row"
+          >
             <input type="hidden" name="resourceType" value={resourceType} />
             <input type="hidden" name="filtersPayload" value={filtersPayload} />
             <input
@@ -75,7 +86,7 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
               placeholder="Morning triage"
               className="h-10 min-w-[13rem] rounded-full border border-white/10 bg-black/20 px-4 text-sm text-white outline-none placeholder:text-white/30"
             />
-            <SaveViewButton />
+            <SaveViewButton disabled={!canSave} />
           </form>
         </div>
 
@@ -83,6 +94,10 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
           <p className="text-sm text-red-200">{state.error}</p>
         ) : state.success ? (
           <p className="text-sm text-emerald-200">{state.success}</p>
+        ) : !canSave && name.length > 0 ? (
+          <p className="text-sm text-white/42">
+            Use at least 2 non-space characters for the saved view name.
+          </p>
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
