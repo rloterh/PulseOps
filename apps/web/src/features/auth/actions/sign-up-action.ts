@@ -1,0 +1,59 @@
+'use server';
+
+import { getClientEnvResult } from '@pulseops/env/client';
+import { getServerEnv } from '@pulseops/env/server';
+import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import { redirect } from 'next/navigation';
+import type { AuthActionState } from '../types';
+import { signUpSchema } from '../schemas/sign-up-schema';
+
+export async function signUpAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = signUpSchema.safeParse({
+    fullName: formData.get('fullName'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+  });
+
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? 'Invalid account details.',
+    };
+  }
+
+  if (!getClientEnvResult().success) {
+    return {
+      error:
+        'Supabase auth is not configured yet. Add your local environment values before creating an account.',
+    };
+  }
+
+  const env = getServerEnv();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: {
+      data: {
+        full_name: parsed.data.fullName,
+      },
+      emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}/callback?next=/dashboard`,
+    },
+  });
+
+  if (error) {
+    return {
+      error: error.message,
+    };
+  }
+
+  if (!data.session) {
+    return {
+      success: 'Check your email to confirm your account, then continue to PulseOps.',
+    };
+  }
+
+  redirect('/dashboard');
+}
