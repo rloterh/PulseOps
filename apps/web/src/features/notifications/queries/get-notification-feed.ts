@@ -1,48 +1,37 @@
 import 'server-only';
 
-import type { NotificationItem } from '@/features/notifications/types/notification.types';
+import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import {
+  getNotificationCountsFromDb,
+  getNotificationItemsFromDb,
+} from '@/features/notifications/repositories/notifications.repository';
+import type { NotificationFeed } from '@/features/notifications/types/notification.types';
 
 interface Input {
-  tenantName: string;
-  viewerName: string | null;
-  activeBranchName: string | null;
+  tenantId: string;
+  viewerId: string;
 }
 
-export function getNotificationFeed({
-  tenantName,
-  viewerName,
-  activeBranchName,
-}: Input): NotificationItem[] {
-  const branchLabel = activeBranchName ?? 'the active branch';
-  const viewerLabel = viewerName ?? 'your ops lead';
+export async function getNotificationFeed({
+  tenantId,
+  viewerId,
+}: Input): Promise<NotificationFeed> {
+  const supabase = await createSupabaseServerClient();
+  const [items, counts] = await Promise.all([
+    getNotificationItemsFromDb(supabase, {
+      tenantId,
+      viewerId,
+      view: 'all',
+      limit: 8,
+    }),
+    getNotificationCountsFromDb(supabase, {
+      tenantId,
+      viewerId,
+    }),
+  ]);
 
-  return [
-    {
-      id: 'notif_incident_1',
-      title: 'Critical incident opened',
-      body: `${branchLabel} needs immediate review in ${tenantName}.`,
-      createdAtLabel: '10 min ago',
-      kind: 'incident',
-      unread: true,
-      href: '/incidents',
-    },
-    {
-      id: 'notif_job_1',
-      title: 'Job queue needs triage',
-      body: `${viewerLabel}, three upcoming jobs are waiting on sequencing.`,
-      createdAtLabel: '42 min ago',
-      kind: 'job',
-      unread: true,
-      href: '/jobs',
-    },
-    {
-      id: 'notif_system_1',
-      title: 'Ops foundation refreshed',
-      body: 'The Sprint 3 incidents and jobs foundation refreshed the latest operational summary.',
-      createdAtLabel: 'Today',
-      kind: 'system',
-      unread: false,
-      href: '/dashboard',
-    },
-  ];
+  return {
+    items,
+    unreadCount: counts.unreadCount,
+  };
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import {
   ensureRecordWatchersInDb,
@@ -11,6 +12,7 @@ import {
   getIncidentMutationTargetFromDb,
 } from '@/features/incidents/repositories/incidents.repository';
 import { assignIncidentSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
@@ -100,6 +102,17 @@ export async function assignIncidentAction(formData: FormData) {
       actorUserId: context.viewerId,
       actorName: context.viewerName,
     });
+
+    if (target) {
+      await createRecordNotifications({
+        supabase: createSupabaseAdminClient(),
+        target,
+        actorUserId: context.viewerId,
+        eventType: 'assignment',
+        title: `${target.reference} assignment updated`,
+        body: `${context.viewerName} changed the assignee from ${previousLabel} to ${nextLabel}.`,
+      });
+    }
 
     revalidatePath('/dashboard');
     revalidatePath('/incidents');

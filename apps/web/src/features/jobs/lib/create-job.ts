@@ -1,9 +1,11 @@
 import 'server-only';
 
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
 import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import type { CreateJobInput } from '@/features/jobs/schemas/create-job.schema';
 import { canCreateJobs } from './jobs-permissions';
 import type { Database } from '@pulseops/supabase/types';
@@ -152,6 +154,24 @@ export async function createJob(
         : []),
     ],
   });
+
+  if (assignee) {
+    await createRecordNotifications({
+      supabase: createSupabaseAdminClient(),
+      target: {
+        entityType: 'job',
+        entityId: job.id,
+        organizationId: context.tenantId,
+        locationId: job.location_id,
+        title: job.title,
+        reference: job.reference,
+      },
+      actorUserId: context.viewerId,
+      eventType: 'record_created',
+      title: `New job assigned: ${job.reference}`,
+      body: `${context.viewerName} created ${job.title} and assigned it during intake.`,
+    });
+  }
 
   return {
     ok: true,

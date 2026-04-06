@@ -2,9 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { canUseInternalNotes } from '@/features/collaboration/lib/collaboration-permissions';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
@@ -124,6 +126,33 @@ export async function createRecordCommentAction(
     actorUserId: context.viewerId,
     actorName: context.viewerName,
   });
+
+  if (parsed.data.kind === 'comment') {
+    const adminSupabase = createSupabaseAdminClient();
+    const mentionedUserIds = mentionTokens.map((mention) => mention.userId);
+
+    if (mentionedUserIds.length > 0) {
+      await createRecordNotifications({
+        supabase: adminSupabase,
+        target,
+        actorUserId: context.viewerId,
+        eventType: 'mention',
+        title: `${context.viewerName} mentioned you on ${target.reference}`,
+        body: `${target.title} has a new comment that needs your attention.`,
+        recipientUserIds: mentionedUserIds,
+      });
+    }
+
+    await createRecordNotifications({
+      supabase: adminSupabase,
+      target,
+      actorUserId: context.viewerId,
+      eventType: 'comment',
+      title: `New comment on ${target.reference}`,
+      body: `${context.viewerName} commented on ${target.title}.`,
+      excludeRecipientUserIds: mentionedUserIds,
+    });
+  }
 
   const returnPath = getSafeRecordReturnPath(
     parsed.data.entityType,

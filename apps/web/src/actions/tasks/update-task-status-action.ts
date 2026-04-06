@@ -1,9 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import { getCollaborationTargetFromDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { updateTaskStatusInDb } from '@/features/tasks/repositories/tasks.repository';
 import { updateTaskStatusSchema } from '@/features/tasks/schemas/task-mutation.schemas';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
@@ -32,6 +35,12 @@ export async function updateTaskStatusAction(formData: FormData) {
   }
 
   if (updated.changed) {
+    const target = await getCollaborationTargetFromDb(supabase, {
+      tenantId: context.tenantId,
+      entityType: 'task',
+      entityId: parsed.data.taskId,
+    });
+
     await insertTimelineEvent(supabase, {
       kind: 'task',
       tenantId: context.tenantId,
@@ -42,6 +51,17 @@ export async function updateTaskStatusAction(formData: FormData) {
       actorUserId: context.viewerId,
       actorName: context.viewerName,
     });
+
+    if (target) {
+      await createRecordNotifications({
+        supabase: createSupabaseAdminClient(),
+        target,
+        actorUserId: context.viewerId,
+        eventType: 'status_change',
+        title: `${target.reference} status changed`,
+        body: `${context.viewerName} moved ${target.title} to ${formatTokenLabel(parsed.data.status)}.`,
+      });
+    }
 
     revalidatePath('/dashboard');
     revalidatePath('/tasks');

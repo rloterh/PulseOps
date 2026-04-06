@@ -1,9 +1,11 @@
 import 'server-only';
 
 import type { Database } from '@pulseops/supabase/types';
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
 import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import type { CreateTaskInput } from '@/features/tasks/schemas/create-task.schema';
 import { canCreateTasks } from './task-permissions';
@@ -201,6 +203,24 @@ export async function createTask(
         : []),
     ],
   });
+
+  if (assignee) {
+    await createRecordNotifications({
+      supabase: createSupabaseAdminClient(),
+      target: {
+        entityType: 'task',
+        entityId: task.id,
+        organizationId: context.tenantId,
+        locationId: task.location_id,
+        title: task.title,
+        reference: task.reference,
+      },
+      actorUserId: context.viewerId,
+      eventType: 'record_created',
+      title: `New task assigned: ${task.reference}`,
+      body: `${context.viewerName} created ${task.title} and assigned it during intake.`,
+    });
+  }
 
   return {
     ok: true,

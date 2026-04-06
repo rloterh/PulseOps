@@ -1,9 +1,11 @@
 import 'server-only';
 
 import type { Database } from '@pulseops/supabase/types';
+import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
 import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
+import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import type { CreateIncidentInput } from '@/features/incidents/schemas/create-incident.schema';
 import { canCreateIncidents } from './incident-permissions';
@@ -151,6 +153,24 @@ export async function createIncident(
         : []),
     ],
   });
+
+  if (assignee) {
+    await createRecordNotifications({
+      supabase: createSupabaseAdminClient(),
+      target: {
+        entityType: 'incident',
+        entityId: incident.id,
+        organizationId: context.tenantId,
+        locationId: incident.location_id,
+        title: incident.title,
+        reference: incident.reference,
+      },
+      actorUserId: context.viewerId,
+      eventType: 'record_created',
+      title: `New incident assigned: ${incident.reference}`,
+      body: `${context.viewerName} reported ${incident.title} and assigned it during intake.`,
+    });
+  }
 
   return {
     ok: true,

@@ -456,3 +456,83 @@ cross join (
   limit 1
 ) as context
 on conflict (id) do nothing;
+
+insert into public.record_notifications (
+  id,
+  organization_id,
+  location_id,
+  entity_type,
+  entity_id,
+  event_type,
+  recipient_user_id,
+  actor_user_id,
+  title,
+  body,
+  href,
+  read_at,
+  archived_at,
+  created_at
+)
+select
+  notification_seed.id,
+  '11111111-1111-1111-1111-111111111111',
+  notification_seed.location_id,
+  notification_seed.entity_type,
+  notification_seed.entity_id,
+  notification_seed.event_type,
+  context.profile_id,
+  context.profile_id,
+  notification_seed.title,
+  notification_seed.body,
+  notification_seed.href,
+  notification_seed.read_at::timestamptz,
+  notification_seed.archived_at::timestamptz,
+  notification_seed.created_at::timestamptz
+from (
+  select
+    '12121212-1212-1212-1212-121212121211'::uuid as id,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'NTH-001' limit 1) as location_id,
+    'incident' as entity_type,
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'::uuid as entity_id,
+    'comment' as event_type,
+    'New comment on INC-1001' as title,
+    'The site team requested another tenant update before the noon engineering check-in.' as body,
+    '/incidents/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1' as href,
+    null::text as read_at,
+    null::text as archived_at,
+    '2026-04-06T10:10:00Z' as created_at
+  union all
+  select
+    '12121212-1212-1212-1212-121212121212'::uuid,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'HQ-001' limit 1),
+    'job',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'::uuid,
+    'assignment',
+    'JOB-2002 assignment updated',
+    'Leak isolation work was reassigned for the next available facilities lead.',
+    '/jobs/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
+    '2026-04-06T09:30:00Z',
+    null::text,
+    '2026-04-06T09:25:00Z'
+  union all
+  select
+    '12121212-1212-1212-1212-121212121213'::uuid,
+    (select id from public.locations where organization_id = '11111111-1111-1111-1111-111111111111' and code = 'WST-001' limit 1),
+    'task',
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3'::uuid,
+    'status_change',
+    'TASK-3003 status changed',
+    'The fallback badge plan task was moved to in progress for the early shift check.',
+    '/tasks/eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3',
+    '2026-04-06T08:20:00Z',
+    '2026-04-06T08:35:00Z',
+    '2026-04-06T08:15:00Z'
+) as notification_seed
+cross join (
+  select p.id as profile_id
+  from public.profiles p
+  order by p.created_at asc
+  limit 1
+) as context
+where notification_seed.location_id is not null
+on conflict (id) do nothing;
