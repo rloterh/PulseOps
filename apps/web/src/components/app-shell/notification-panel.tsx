@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@pulseops/utils';
 import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
 import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
+import { openNotificationAction } from '@/features/notifications/actions/open-notification-action';
 import type { NotificationFeed, NotificationItem } from '@/features/notifications/types/notification.types';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppIcon } from './app-icon';
@@ -108,14 +109,14 @@ export function NotificationPanel({
 
           {notifications.items.map((item) => {
             const cardClasses = cn(
-              'block rounded-[1.3rem] border px-4 py-4 transition',
+              'rounded-[1.3rem] border px-4 py-4 transition',
               item.unread
                 ? 'border-emerald-300/22 bg-emerald-300/8'
                 : 'border-white/8 bg-white/[0.04] hover:bg-white/[0.06]',
             );
 
-            const content = (
-              <>
+            return (
+              <div key={item.id} className={cardClasses}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-white">{item.title}</p>
@@ -131,31 +132,37 @@ export function NotificationPanel({
                   <span>{item.branchName ?? kindLabel[item.kind]}</span>
                   <span>{item.createdAtLabel}</span>
                 </div>
-                <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                   <span className="text-[11px] uppercase tracking-[0.18em] text-white/36">
                     {kindLabel[item.kind]}
                   </span>
-                  {item.unread ? (
-                    <form action={markNotificationReadAction}>
+                  <div className="flex items-center gap-2">
+                    {item.unread ? (
+                      <form action={markNotificationReadAction}>
+                        <input type="hidden" name="notificationId" value={item.id} />
+                        <input type="hidden" name="returnPath" value={returnPath} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
+                        >
+                          Mark read
+                        </button>
+                      </form>
+                    ) : null}
+                    <form action={openNotificationAction}>
                       <input type="hidden" name="notificationId" value={item.id} />
+                      <input type="hidden" name="href" value={item.href} />
                       <input type="hidden" name="returnPath" value={returnPath} />
                       <button
                         type="submit"
-                        className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
+                        onClick={closeNotifications}
+                        className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
                       >
-                        Mark read
+                        Open
                       </button>
                     </form>
-                  ) : null}
+                  </div>
                 </div>
-              </>
-            );
-
-            return (
-              <div key={item.id} className={cardClasses}>
-                <Link href={item.href as Route} onClick={closeNotifications} className="block">
-                  {content}
-                </Link>
               </div>
             );
           })}

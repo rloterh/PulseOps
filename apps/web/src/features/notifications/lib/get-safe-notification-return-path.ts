@@ -9,3 +9,10 @@ export function getSafeNotificationReturnPath(
 ): Route {
   return getSafeNextPath(returnPath, fallback);
 }
+
+export function getSafeNotificationDestinationPath(
+  href: string | null | undefined,
+  fallback: Route = defaultReturnPath,
+): Route {
+  return getSafeNextPath(href, fallback);
+}

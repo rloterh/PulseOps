@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { archiveNotificationAction } from '@/features/notifications/actions/archive-notification-action';
 import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
 import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
+import { openNotificationAction } from '@/features/notifications/actions/open-notification-action';
 import { unarchiveNotificationAction } from '@/features/notifications/actions/unarchive-notification-action';
 import { parseNotificationView } from '@/features/notifications/lib/parse-notification-view';
 import { getInboxNotifications } from '@/features/notifications/queries/get-inbox-notifications';
@@ -144,12 +145,17 @@ export default async function InboxPage({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                  <Link
-                    href={item.href as Route}
-                    className="inline-flex rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-                  >
-                    Open record
-                  </Link>
+                  <form action={openNotificationAction}>
+                    <input type="hidden" name="notificationId" value={item.id} />
+                    <input type="hidden" name="href" value={item.href} />
+                    <input type="hidden" name="returnPath" value={returnPath} />
+                    <button
+                      type="submit"
+                      className="inline-flex rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                    >
+                      Open record
+                    </button>
+                  </form>
                   {item.unread ? (
                     <form action={markNotificationReadAction}>
                       <input type="hidden" name="notificationId" value={item.id} />
