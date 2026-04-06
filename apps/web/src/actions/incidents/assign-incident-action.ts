@@ -6,6 +6,8 @@ import { assignIncidentInDb } from '@/features/incidents/repositories/incidents.
 import { assignIncidentSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getMemberOptions } from '@/lib/organizations/get-member-options';
+import { isMemberSelectionAllowed } from '@/lib/organizations/member-selection';
 
 export async function assignIncidentAction(formData: FormData) {
   const rawAssignee = formData.get('assigneeUserId');
@@ -21,6 +23,12 @@ export async function assignIncidentAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+  const assignees = await getMemberOptions(context.tenantId);
+
+  if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const updated = await assignIncidentInDb(supabase, {
     tenantId: context.tenantId,

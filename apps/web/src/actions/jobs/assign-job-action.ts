@@ -6,6 +6,8 @@ import { assignJobInDb } from '@/features/jobs/repositories/jobs.repository';
 import { assignJobSchema } from '@/features/jobs/schemas/job-mutation.schemas';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getMemberOptions } from '@/lib/organizations/get-member-options';
+import { isMemberSelectionAllowed } from '@/lib/organizations/member-selection';
 
 export async function assignJobAction(formData: FormData) {
   const rawAssignee = formData.get('assigneeUserId');
@@ -21,6 +23,12 @@ export async function assignJobAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+  const assignees = await getMemberOptions(context.tenantId);
+
+  if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const updated = await assignJobInDb(supabase, {
     tenantId: context.tenantId,
