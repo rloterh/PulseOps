@@ -8,6 +8,7 @@ export interface AppNavItem {
     | 'branches'
     | 'incidents'
     | 'jobs'
+    | 'tasks'
     | 'customers'
     | 'team'
     | 'inbox'

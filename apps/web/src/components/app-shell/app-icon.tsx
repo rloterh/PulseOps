@@ -5,6 +5,7 @@ type AppIconName =
   | 'branches'
   | 'incidents'
   | 'jobs'
+  | 'tasks'
   | 'customers'
   | 'team'
   | 'inbox'
@@ -44,6 +45,13 @@ const iconPaths: Record<AppIconName, React.ReactNode> = {
     <>
       <rect x="4" y="5" width="16" height="15" rx="3" />
       <path d="M8 9h8M8 13h8M8 17h5" />
+    </>
+  ),
+  tasks: (
+    <>
+      <rect x="5" y="4.5" width="14" height="15" rx="3" />
+      <path d="M8.5 8.5h7M8.5 12h4.5M8.5 15.5h6" />
+      <path d="M15.5 4.5v-1h-7v1" />
     </>
   ),
   customers: (

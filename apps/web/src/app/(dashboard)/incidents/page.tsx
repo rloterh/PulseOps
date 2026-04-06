@@ -1,8 +1,11 @@
+import type { Route } from 'next';
+import Link from 'next/link';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListPageHeader } from '@/components/shared/list-page-header';
 import { StatPill } from '@/components/shared/stat-pill';
 import { IncidentFilters } from '@/components/incidents/incident-filters';
 import { IncidentListTable } from '@/components/incidents/incident-list-table';
+import { canCreateIncidents } from '@/features/incidents/lib/incident-permissions';
 import { getIncidentsList } from '@/features/incidents/queries/get-incidents-list';
 import { parseIncidentListFilters } from '@/features/incidents/queries/parse-incident-list-filters';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -19,6 +22,12 @@ export default async function IncidentsPage({
     branchId: context.branchId,
     filters,
   });
+  const canCreate = canCreateIncidents(context.membershipRole);
+  const hasActiveFilters =
+    Boolean(filters.q) ||
+    filters.severity !== 'all' ||
+    filters.status !== 'all' ||
+    filters.slaRisk !== 'all';
   const atRiskCount = incidents.filter((incident) => incident.slaRisk).length;
   const activeCount = incidents.filter((incident) =>
     ['open', 'investigating', 'monitoring'].includes(incident.status),
@@ -38,6 +47,14 @@ export default async function IncidentsPage({
               label={`${String(atRiskCount)} at risk`}
               tone={atRiskCount > 0 ? 'danger' : 'success'}
             />
+            {canCreate ? (
+              <Link
+                href={'/incidents/new' as Route}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90"
+              >
+                New incident
+              </Link>
+            ) : null}
           </>
         }
       />
@@ -46,12 +63,24 @@ export default async function IncidentsPage({
 
       {incidents.length > 0 ? (
         <IncidentListTable items={incidents} />
-      ) : (
+      ) : hasActiveFilters ? (
         <EmptyState
           title="No incidents match this view"
           description="Try widening the filters or switching to another branch context from the shell if you need a broader operational picture."
           actionHref="/incidents"
           actionLabel="Clear filters"
+        />
+      ) : canCreate ? (
+        <EmptyState
+          title="No incidents match this view"
+          description="Try widening the filters or switching to another branch context from the shell if you need a broader operational picture."
+          actionHref={'/incidents/new' as Route}
+          actionLabel="Create an incident"
+        />
+      ) : (
+        <EmptyState
+          title="No incidents match this view"
+          description="Try widening the filters or switching to another branch context from the shell if you need a broader operational picture."
         />
       )}
     </main>

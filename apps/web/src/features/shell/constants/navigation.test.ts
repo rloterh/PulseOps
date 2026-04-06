@@ -11,5 +11,6 @@ describe('isNavItemActive', () => {
     expect(isNavItemActive('/jobs', '/jobs', 'startsWith')).toBe(true);
     expect(isNavItemActive('/jobs/queue', '/jobs', 'startsWith')).toBe(true);
     expect(isNavItemActive('/job-board', '/jobs', 'startsWith')).toBe(false);
+    expect(isNavItemActive('/tasks/new', '/tasks', 'startsWith')).toBe(true);
   });
 });

@@ -1,15 +1,20 @@
+import type { Route } from 'next';
 import Link from 'next/link';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { getDashboardSummary } from '@/features/dashboard/queries/get-dashboard-summary';
+import { canCreateIncidents } from '@/features/incidents/lib/incident-permissions';
 import { canCreateJobs } from '@/features/jobs/lib/jobs-permissions';
+import { canCreateTasks } from '@/features/tasks/lib/task-permissions';
 import { requireAppAccess } from '@/lib/auth/require-app-access';
 import { getActiveBranchContext } from '@/lib/tenancy/get-active-branch-context';
 
 export default async function DashboardPage() {
   const { user } = await requireAppAccess();
   const shell = await getActiveBranchContext({ userId: user.id });
-  const canCreate = canCreateJobs(shell.viewer.role);
+  const canReportIncidents = canCreateIncidents(shell.viewer.role);
+  const canCreateJobsFromDashboard = canCreateJobs(shell.viewer.role);
+  const canCreateTask = canCreateTasks(shell.viewer.role);
   const summary = await getDashboardSummary({
     tenantId: shell.tenantId,
     _branchId: shell.activeBranchId,
@@ -22,13 +27,33 @@ export default async function DashboardPage() {
         tenantName={shell.tenantName}
         branchName={shell.activeBranchName}
         actions={
-          canCreate && shell.branches.length > 0 ? (
-            <Link
-              href="/jobs/new"
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90"
-            >
-              Create job
-            </Link>
+          shell.branches.length > 0 ? (
+            <>
+              {canReportIncidents ? (
+                <Link
+                  href={'/incidents/new' as Route}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                >
+                  New incident
+                </Link>
+              ) : null}
+              {canCreateJobsFromDashboard ? (
+                <Link
+                  href={'/jobs/new' as Route}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90"
+                >
+                  Create job
+                </Link>
+              ) : null}
+              {canCreateTask ? (
+                <Link
+                  href={'/tasks/new' as Route}
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                >
+                  New task
+                </Link>
+              ) : null}
+            </>
           ) : null
         }
       />

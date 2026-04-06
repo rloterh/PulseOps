@@ -16,6 +16,7 @@ export const protectedRoutePrefixes = [
   '/onboarding',
   '/dashboard',
   '/jobs',
+  '/tasks',
   '/branches',
   '/incidents',
   '/team',

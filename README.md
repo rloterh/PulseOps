@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 4A1 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, the first real operational modules for incidents and jobs, and now the first production-grade create flow for jobs plus a real assignable directory foundation.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/customers-billing-portal` branch now carries Sprint 4A2 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, the first real operational modules for incidents and jobs, a real assignable directory foundation, and now production-grade creation flows for incidents, jobs, and tasks.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -21,7 +21,8 @@ What this branch delivers:
 - a richer dashboard scaffold with typed KPI and widget contracts
 - real incidents and jobs list/detail surfaces with branch-aware reads, filters, timelines, and status or assignee mutation flows
 - a branch-aware assignee directory with location-scoped eligibility checks
-- a production-grade create-job workflow with server-side validation, secure assignee enforcement, activity logging, and dashboard/list entry points
+- production-grade create flows for incidents, jobs, and tasks with server-side validation, secure assignee enforcement, activity logging, and shell entry points
+- a first-class tasks module with task list, detail, timeline, and optional linking to incidents or jobs
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
@@ -42,7 +43,7 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - tenant bootstrap with RLS-backed organization membership
 - protected routing and onboarding redirects
 - org-scoped reads in the dashboard shell
-- a professional base for later jobs, branches, incidents, billing, and analytics work
+- a professional base for later edit, reassignment, collaboration, customer, billing, and analytics work
 
 ## Tech Stack
 
@@ -97,7 +98,11 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
   - `/dashboard`
   - `/branches`
   - `/incidents`
+  - `/incidents/new`
   - `/jobs`
+  - `/jobs/new`
+  - `/tasks`
+  - `/tasks/new`
   - `/team`
   - `/inbox`
   - `/settings`
@@ -129,6 +134,17 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - Starter RLS policies for self-profile access, org membership reads, workspace creation, and location access
 - Retry-safe `bootstrap_organization` RPC to keep workspace onboarding atomic
 - Seed data that creates a demo workspace and starter locations when a profile exists
+- Location-scoped member access and directory search for safe assignee lookup
+- Server-side reference generation for incidents, jobs, and tasks
+- Task tables and timeline storage for the first lightweight follow-up workflow
+
+### Sprint 4A Creation Flows
+
+- Real directory-backed assignee search for branch-aware intake flows
+- New incident flow with severity, SLA-risk, timeline logging, and guarded assignment
+- New job flow with server-generated references and intake timeline activity
+- New task flow with optional linking to incidents or jobs in the same branch
+- Dashboard and module entry points for the new create flows
 
 ### Sprint 2 Shell
 
@@ -222,6 +238,10 @@ Current schema scope:
 - `incident_timeline_events`
 - `jobs`
 - `job_timeline_events`
+- `tasks`
+- `task_timeline_events`
+- `location_member_access`
+- `organization_reference_counters`
 
 This is the first real operational schema slice, not yet the full long-term PulseOps domain model.
 
@@ -240,8 +260,7 @@ This branch is meant to demonstrate that the project foundation is:
 
 - evolve tenancy into the broader PulseOps tenant and branch model
 - add invitations and richer role or permission handling
-- deepen the jobs and incidents modules with creation flows, richer permissions, and more complete lifecycle handling
-- extend Sprint 4 into incident creation, task intake, edit and reassignment flows, collaboration, and notifications
+- extend Sprint 4 into edit and reassignment flows, richer lifecycle handling, collaboration, and notifications
 - deepen the dashboard with live operations metrics
 - connect billing and subscription control paths
 
