@@ -1,0 +1,333 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@pulseops/supabase/types';
+import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
+import { loadLocationNameMap, loadProfileLabelMap } from '@/lib/data/load-label-maps';
+import type {
+  IncidentDetail,
+  IncidentListFilters,
+  IncidentListItem,
+  IncidentTimelineEntry,
+} from '@/features/incidents/types/incident.types';
+
+type IncidentRow = Database['public']['Tables']['incidents']['Row'];
+type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id'>;
+type IncidentTimelineRecord = Database['public']['Tables']['incident_timeline_events']['Row'];
+type IncidentMutationRecord = Pick<
+  IncidentRow,
+  'id' | 'title' | 'status' | 'assignee_user_id'
+>;
+
+interface ScopedIncidentInput {
+  tenantId: string;
+  branchId: string | null;
+  incidentId: string;
+}
+
+interface UpdateIncidentStatusInput extends ScopedIncidentInput {
+  status: Database['public']['Enums']['incident_status'];
+}
+
+interface AssignIncidentInput extends ScopedIncidentInput {
+  assigneeUserId: string | null;
+}
+
+export async function getIncidentsListFromDb(
+  supabase: SupabaseClient<Database>,
+  input: {
+    tenantId: string;
+    branchId: string | null;
+    filters: IncidentListFilters;
+  },
+): Promise<IncidentListItem[]> {
+  let query = supabase
+    .from('incidents')
+    .select('*')
+    .eq('organization_id', input.tenantId)
+    .order('opened_at', { ascending: false });
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  if (input.filters.q) {
+    const q = sanitizeSearchQuery(input.filters.q);
+    query = query.or(
+      `title.ilike.%${q}%,reference.ilike.%${q}%,site_name.ilike.%${q}%,customer_name.ilike.%${q}%`,
+    );
+  }
+
+  if (input.filters.severity && input.filters.severity !== 'all') {
+    query = query.eq('severity', input.filters.severity);
+  }
+
+  if (input.filters.status && input.filters.status !== 'all') {
+    query = query.eq('status', input.filters.status);
+  }
+
+  if (input.filters.slaRisk === 'at-risk') {
+    query = query.eq('sla_risk', true);
+  }
+
+  if (input.filters.slaRisk === 'healthy') {
+    query = query.eq('sla_risk', false);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const locationNames = await loadLocationNameMap(
+    supabase,
+    data.map((row) => row.location_id),
+  );
+  const profileLabels = await loadProfileLabelMap(
+    supabase,
+    data.flatMap((row) =>
+      row.assignee_user_id ? [row.owner_user_id, row.assignee_user_id] : [row.owner_user_id],
+    ),
+  );
+
+  return data.map((row) => mapIncidentListItem(row, locationNames, profileLabels));
+}
+
+export async function getIncidentDetailFromDb(
+  supabase: SupabaseClient<Database>,
+  input: ScopedIncidentInput,
+): Promise<IncidentDetail | null> {
+  let incidentQuery = supabase
+    .from('incidents')
+    .select('*')
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.incidentId)
+    .maybeSingle();
+
+  if (input.branchId) {
+    incidentQuery = supabase
+      .from('incidents')
+      .select('*')
+      .eq('organization_id', input.tenantId)
+      .eq('location_id', input.branchId)
+      .eq('id', input.incidentId)
+      .maybeSingle();
+  }
+
+  const { data: incident, error } = await incidentQuery;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!incident) {
+    return null;
+  }
+
+  const [linkedJobsResult, timelineResult, locationNames, profileLabels] =
+    await Promise.all([
+      supabase
+        .from('jobs')
+        .select('id')
+        .eq('organization_id', input.tenantId)
+        .eq('incident_id', input.incidentId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('incident_timeline_events')
+        .select('*')
+        .eq('organization_id', input.tenantId)
+        .eq('incident_id', input.incidentId)
+        .order('created_at', { ascending: false }),
+      loadLocationNameMap(supabase, [incident.location_id]),
+      loadProfileLabelMap(
+        supabase,
+        incident.assignee_user_id
+          ? [incident.owner_user_id, incident.assignee_user_id]
+          : [incident.owner_user_id],
+      ),
+    ]);
+
+  if (linkedJobsResult.error) {
+    throw new Error(linkedJobsResult.error.message);
+  }
+
+  if (timelineResult.error) {
+    throw new Error(timelineResult.error.message);
+  }
+
+  return mapIncidentDetail(
+    incident,
+    linkedJobsResult.data,
+    timelineResult.data,
+    locationNames,
+    profileLabels,
+  );
+}
+
+export async function updateIncidentStatusInDb(
+  supabase: SupabaseClient<Database>,
+  input: UpdateIncidentStatusInput,
+): Promise<(IncidentMutationRecord & { changed: boolean }) | null> {
+  const current = await getScopedIncidentForMutation(supabase, input);
+
+  if (!current) {
+    return null;
+  }
+
+  if (current.status === input.status) {
+    return { ...current, changed: false as const };
+  }
+
+  let query = supabase
+    .from('incidents')
+    .update({ status: input.status })
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.incidentId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query
+    .select('id, title, status, assignee_user_id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    changed: true as const,
+  };
+}
+
+export async function assignIncidentInDb(
+  supabase: SupabaseClient<Database>,
+  input: AssignIncidentInput,
+): Promise<(IncidentMutationRecord & { changed: boolean }) | null> {
+  const current = await getScopedIncidentForMutation(supabase, input);
+
+  if (!current) {
+    return null;
+  }
+
+  if (current.assignee_user_id === input.assigneeUserId) {
+    return { ...current, changed: false as const };
+  }
+
+  let query = supabase
+    .from('incidents')
+    .update({ assignee_user_id: input.assigneeUserId })
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.incidentId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query
+    .select('id, title, status, assignee_user_id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    changed: true as const,
+  };
+}
+
+async function getScopedIncidentForMutation(
+  supabase: SupabaseClient<Database>,
+  input: ScopedIncidentInput,
+): Promise<IncidentMutationRecord | null> {
+  let query = supabase
+    .from('incidents')
+    .select('id, title, status, assignee_user_id')
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.incidentId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+function mapIncidentListItem(
+  row: IncidentRow,
+  locationNames: Map<string, string>,
+  profileLabels: Map<string, string>,
+): IncidentListItem {
+  return {
+    id: row.id,
+    reference: row.reference,
+    title: row.title,
+    branchId: row.location_id,
+    branchName: locationNames.get(row.location_id) ?? 'Unknown branch',
+    siteName: row.site_name,
+    severity: row.severity,
+    status: row.status,
+    slaRisk: row.sla_risk,
+    openedAtLabel: formatDateTimeLabel(row.opened_at),
+    ownerName: profileLabels.get(row.owner_user_id) ?? 'Unknown owner',
+    assigneeName: row.assignee_user_id
+      ? (profileLabels.get(row.assignee_user_id) ?? null)
+      : null,
+  };
+}
+
+function mapIncidentDetail(
+  row: IncidentRow,
+  linkedJobs: JobRow[],
+  timeline: IncidentTimelineRecord[],
+  locationNames: Map<string, string>,
+  profileLabels: Map<string, string>,
+): IncidentDetail {
+  return {
+    id: row.id,
+    reference: row.reference,
+    title: row.title,
+    summary: row.summary,
+    branchId: row.location_id,
+    branchName: locationNames.get(row.location_id) ?? 'Unknown branch',
+    siteName: row.site_name,
+    customerName: row.customer_name,
+    severity: row.severity,
+    status: row.status,
+    slaRisk: row.sla_risk,
+    openedAtLabel: formatDateTimeLabel(row.opened_at),
+    ownerName: profileLabels.get(row.owner_user_id) ?? 'Unknown owner',
+    assigneeName: row.assignee_user_id
+      ? (profileLabels.get(row.assignee_user_id) ?? null)
+      : null,
+    currentAssigneeUserId: row.assignee_user_id,
+    impactSummary: row.impact_summary,
+    nextAction: row.next_action,
+    linkedJobIds: linkedJobs.map((job) => job.id),
+    timeline: timeline.map(mapIncidentTimelineEntry),
+  };
+}
+
+function mapIncidentTimelineEntry(row: IncidentTimelineRecord): IncidentTimelineEntry {
+  return {
+    id: row.id,
+    type: row.event_type,
+    title: row.title,
+    description: row.description,
+    actorName: row.actor_name,
+    timestampLabel: formatDateTimeLabel(row.created_at),
+  };
+}
+
+function sanitizeSearchQuery(query: string) {
+  return query.replace(/[,%()]/g, ' ').trim();
+}
