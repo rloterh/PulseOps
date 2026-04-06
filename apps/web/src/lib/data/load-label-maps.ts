@@ -49,3 +49,47 @@ export async function loadProfileLabelMap(
     ]),
   );
 }
+
+export async function loadIncidentReferenceMap(
+  supabase: SupabaseClient<Database>,
+  incidentIds: string[],
+) {
+  const uniqueIncidentIds = Array.from(new Set(incidentIds));
+
+  if (uniqueIncidentIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await supabase
+    .from('incidents')
+    .select('id, reference')
+    .in('id', uniqueIncidentIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(data.map((incident) => [incident.id, incident.reference]));
+}
+
+export async function loadJobReferenceMap(
+  supabase: SupabaseClient<Database>,
+  jobIds: string[],
+) {
+  const uniqueJobIds = Array.from(new Set(jobIds));
+
+  if (uniqueJobIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('id, reference')
+    .in('id', uniqueJobIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(data.map((job) => [job.id, job.reference]));
+}

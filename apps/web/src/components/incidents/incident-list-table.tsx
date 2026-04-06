@@ -26,7 +26,7 @@ export function IncidentListTable({ items }: { items: IncidentListItem[] }) {
                   <Link href={`/incidents/${item.id}` as Route} className="block">
                     <p className="font-medium text-white">{item.title}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
-                      {item.reference} · {item.siteName}
+                      {item.reference} / {item.siteName}
                     </p>
                   </Link>
                 </td>
@@ -66,7 +66,7 @@ export function IncidentListTable({ items }: { items: IncidentListItem[] }) {
               <div>
                 <p className="font-medium text-white">{item.title}</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
-                  {item.reference} · {item.siteName}
+                  {item.reference} / {item.siteName}
                 </p>
               </div>
               <IncidentSeverityBadge severity={item.severity} />
@@ -78,7 +78,7 @@ export function IncidentListTable({ items }: { items: IncidentListItem[] }) {
               </span>
             </div>
             <p className="mt-4 text-sm text-white/52">
-              Owner: {item.ownerName} · {item.assigneeName ?? 'Unassigned'}
+              Owner: {item.ownerName} / {item.assigneeName ?? 'Unassigned'}
             </p>
             <p className="mt-2 text-xs text-white/42">{item.openedAtLabel}</p>
           </Link>

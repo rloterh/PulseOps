@@ -1,4 +1,5 @@
 import type { JobTimelineEntry } from '@/features/jobs/types/job.types';
+import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 
 export function JobTimeline({ items }: { items: JobTimelineEntry[] }) {
   return (
@@ -10,23 +11,29 @@ export function JobTimeline({ items }: { items: JobTimelineEntry[] }) {
         </p>
       </div>
       <div className="space-y-4">
-        {items.map((item) => (
-          <article
-            key={item.id}
-            className="rounded-[1.35rem] border border-white/8 bg-black/18 p-4"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-medium text-white">{item.title}</p>
-              <span className="text-xs uppercase tracking-[0.16em] text-white/38">
-                {item.timestampLabel}
-              </span>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-white/56">{item.description}</p>
-            <p className="mt-3 text-xs uppercase tracking-[0.16em] text-white/40">
-              {item.actorName} · {item.type.replaceAll('_', ' ')}
-            </p>
-          </article>
-        ))}
+        {items.length > 0 ? (
+          items.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-[1.35rem] border border-white/8 bg-black/18 p-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-medium text-white">{item.title}</p>
+                <span className="text-xs uppercase tracking-[0.16em] text-white/38">
+                  {item.timestampLabel}
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/56">{item.description}</p>
+              <p className="mt-3 text-xs uppercase tracking-[0.16em] text-white/40">
+                {item.actorName} / {formatTokenLabel(item.type)}
+              </p>
+            </article>
+          ))
+        ) : (
+          <div className="rounded-[1.35rem] border border-dashed border-white/10 bg-black/12 p-5 text-sm leading-6 text-white/52">
+            No timeline events have been recorded for this job yet.
+          </div>
+        )}
       </div>
     </section>
   );

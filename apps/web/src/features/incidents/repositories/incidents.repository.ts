@@ -10,7 +10,7 @@ import type {
 } from '@/features/incidents/types/incident.types';
 
 type IncidentRow = Database['public']['Tables']['incidents']['Row'];
-type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id'>;
+type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id' | 'reference'>;
 type IncidentTimelineRecord = Database['public']['Tables']['incident_timeline_events']['Row'];
 type IncidentMutationRecord = Pick<
   IncidentRow,
@@ -127,7 +127,7 @@ export async function getIncidentDetailFromDb(
     await Promise.all([
       supabase
         .from('jobs')
-        .select('id')
+        .select('id, reference')
         .eq('organization_id', input.tenantId)
         .eq('incident_id', input.incidentId)
         .order('created_at', { ascending: false }),
@@ -312,7 +312,10 @@ function mapIncidentDetail(
     currentAssigneeUserId: row.assignee_user_id,
     impactSummary: row.impact_summary,
     nextAction: row.next_action,
-    linkedJobIds: linkedJobs.map((job) => job.id),
+    linkedJobs: linkedJobs.map((job) => ({
+      id: job.id,
+      reference: job.reference,
+    })),
     timeline: timeline.map(mapIncidentTimelineEntry),
   };
 }

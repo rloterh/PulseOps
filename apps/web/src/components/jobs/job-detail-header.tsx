@@ -1,6 +1,7 @@
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { JobDetail } from '@/features/jobs/types/job.types';
+import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 import { JobPriorityBadge } from './job-priority-badge';
 import { JobStatusBadge } from './job-status-badge';
 
@@ -33,17 +34,17 @@ export function JobDetailHeader({ job }: { job: JobDetail }) {
           <DetailRow label="Site" value={job.siteName} />
           <DetailRow label="Customer" value={job.customerName} />
           <DetailRow label="Assignee" value={job.assigneeName ?? 'Unassigned'} />
-          <DetailRow label="Type" value={job.type} />
+          <DetailRow label="Type" value={formatTokenLabel(job.type)} />
           <DetailRow label="Due" value={job.dueAtLabel} />
           <div>
             <dt className="text-white/42">Linked incident</dt>
             <dd className="mt-2">
-              {job.linkedIncidentId ? (
+              {job.linkedIncident ? (
                 <Link
-                  href={`/incidents/${job.linkedIncidentId}` as Route}
+                  href={`/incidents/${job.linkedIncident.id}` as Route}
                   className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-white/72 transition hover:bg-white/10 hover:text-white"
                 >
-                  {job.linkedIncidentId}
+                  {job.linkedIncident.reference}
                 </Link>
               ) : (
                 <span className="text-white/56">No linked incident</span>

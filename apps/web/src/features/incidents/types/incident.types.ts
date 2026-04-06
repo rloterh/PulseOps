@@ -38,6 +38,11 @@ export interface IncidentTimelineEntry {
   actorName: string;
 }
 
+export interface IncidentLinkedJob {
+  id: string;
+  reference: string;
+}
+
 export interface IncidentDetail {
   id: string;
   reference: string;
@@ -56,6 +61,6 @@ export interface IncidentDetail {
   currentAssigneeUserId: string | null;
   impactSummary: string;
   nextAction: string;
-  linkedJobIds: string[];
+  linkedJobs: IncidentLinkedJob[];
   timeline: IncidentTimelineEntry[];
 }

@@ -41,6 +41,11 @@ export interface JobTimelineEntry {
   actorName: string;
 }
 
+export interface JobLinkedIncident {
+  id: string;
+  reference: string;
+}
+
 export interface JobDetail {
   id: string;
   reference: string;
@@ -56,7 +61,7 @@ export interface JobDetail {
   dueAtLabel: string;
   assigneeName: string | null;
   currentAssigneeUserId: string | null;
-  linkedIncidentId: string | null;
+  linkedIncident: JobLinkedIncident | null;
   checklistSummary: string;
   resolutionSummary: string | null;
   timeline: JobTimelineEntry[];

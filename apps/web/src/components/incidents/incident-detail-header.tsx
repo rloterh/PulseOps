@@ -38,14 +38,14 @@ export function IncidentDetailHeader({ incident }: { incident: IncidentDetail })
           <div>
             <dt className="text-white/42">Linked jobs</dt>
             <dd className="mt-2 flex flex-wrap gap-2">
-              {incident.linkedJobIds.length > 0 ? (
-                incident.linkedJobIds.map((jobId) => (
+              {incident.linkedJobs.length > 0 ? (
+                incident.linkedJobs.map((job) => (
                   <Link
-                    key={jobId}
-                    href={`/jobs/${jobId}` as Route}
+                    key={job.id}
+                    href={`/jobs/${job.id}` as Route}
                     className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-white/72 transition hover:bg-white/10 hover:text-white"
                   >
-                    {jobId}
+                    {job.reference}
                   </Link>
                 ))
               ) : (

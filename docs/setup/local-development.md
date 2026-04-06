@@ -44,4 +44,6 @@ Sprint 3 builds on that foundation with the first real operational modules, so i
 - sign in and sign out
 - onboarding redirect behavior
 - dashboard, branch navigation, incidents, and jobs
+- incident and job detail screens, including linked records
+- status and assignee updates for incidents and jobs
 - command palette with `Ctrl+K`

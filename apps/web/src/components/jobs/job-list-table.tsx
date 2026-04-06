@@ -1,6 +1,7 @@
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { JobListItem } from '@/features/jobs/types/job.types';
+import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 import { JobPriorityBadge } from './job-priority-badge';
 import { JobStatusBadge } from './job-status-badge';
 
@@ -26,7 +27,7 @@ export function JobListTable({ items }: { items: JobListItem[] }) {
                   <Link href={`/jobs/${item.id}` as Route} className="block">
                     <p className="font-medium text-white">{item.title}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
-                      {item.reference} · {item.siteName}
+                      {item.reference} / {item.siteName}
                     </p>
                   </Link>
                 </td>
@@ -38,7 +39,7 @@ export function JobListTable({ items }: { items: JobListItem[] }) {
                   <div className="flex flex-col gap-2">
                     <JobStatusBadge status={item.status} />
                     <span className="text-xs uppercase tracking-[0.16em] text-white/40">
-                      {item.type}
+                      {formatTokenLabel(item.type)}
                     </span>
                   </div>
                 </td>
@@ -63,7 +64,7 @@ export function JobListTable({ items }: { items: JobListItem[] }) {
               <div>
                 <p className="font-medium text-white">{item.title}</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
-                  {item.reference} · {item.siteName}
+                  {item.reference} / {item.siteName}
                 </p>
               </div>
               <JobPriorityBadge priority={item.priority} />
@@ -75,7 +76,7 @@ export function JobListTable({ items }: { items: JobListItem[] }) {
               </span>
             </div>
             <p className="mt-4 text-sm text-white/52">
-              {item.assigneeName ?? 'Unassigned'} · {item.type}
+              {item.assigneeName ?? 'Unassigned'} / {formatTokenLabel(item.type)}
             </p>
             <p className="mt-2 text-xs text-white/42">{item.dueAtLabel}</p>
           </Link>

@@ -15,7 +15,7 @@ export function IncidentAssigneeForm({
       action={assignIncidentAction}
       className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5"
     >
-      <h2 className="text-lg font-semibold tracking-tight text-white">Assign owner</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-white">Assign assignee</h2>
       <input type="hidden" name="incidentId" value={incidentId} />
       <div className="mt-4 space-y-3">
         <select

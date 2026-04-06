@@ -1,7 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@pulseops/supabase/types';
 import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
-import { loadLocationNameMap, loadProfileLabelMap } from '@/lib/data/load-label-maps';
+import {
+  loadIncidentReferenceMap,
+  loadLocationNameMap,
+  loadProfileLabelMap,
+} from '@/lib/data/load-label-maps';
 import type {
   JobDetail,
   JobListFilters,
@@ -114,7 +118,7 @@ export async function getJobDetailFromDb(
     return null;
   }
 
-  const [timelineResult, locationNames, profileLabels] = await Promise.all([
+  const [timelineResult, locationNames, profileLabels, incidentReferences] = await Promise.all([
     supabase
       .from('job_timeline_events')
       .select('*')
@@ -126,13 +130,20 @@ export async function getJobDetailFromDb(
       supabase,
       job.assignee_user_id ? [job.assignee_user_id] : [],
     ),
+    loadIncidentReferenceMap(supabase, job.incident_id ? [job.incident_id] : []),
   ]);
 
   if (timelineResult.error) {
     throw new Error(timelineResult.error.message);
   }
 
-  return mapJobDetail(job, timelineResult.data, locationNames, profileLabels);
+  return mapJobDetail(
+    job,
+    timelineResult.data,
+    locationNames,
+    profileLabels,
+    incidentReferences,
+  );
 }
 
 export async function updateJobStatusInDb(
@@ -262,6 +273,7 @@ function mapJobDetail(
   timeline: JobTimelineRecord[],
   locationNames: Map<string, string>,
   profileLabels: Map<string, string>,
+  incidentReferences: Map<string, string>,
 ): JobDetail {
   return {
     id: row.id,
@@ -280,7 +292,12 @@ function mapJobDetail(
       ? (profileLabels.get(row.assignee_user_id) ?? null)
       : null,
     currentAssigneeUserId: row.assignee_user_id,
-    linkedIncidentId: row.incident_id,
+    linkedIncident: row.incident_id
+      ? {
+          id: row.incident_id,
+          reference: incidentReferences.get(row.incident_id) ?? 'Linked incident',
+        }
+      : null,
     checklistSummary: row.checklist_summary,
     resolutionSummary: row.resolution_summary,
     timeline: timeline.map(mapJobTimelineEntry),

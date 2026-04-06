@@ -1,12 +1,12 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/auth-tenancy` branch now carries Sprint 3 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, and the first real operational modules for incidents and jobs.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/incidents-jobs-ops` branch now carries Sprint 3 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, and the first real operational modules for incidents and jobs.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
 ## Branch Status
 
-Current branch: `feature/auth-tenancy`
+Current branch: `feature/incidents-jobs-ops`
 
 What this branch delivers:
 
@@ -94,6 +94,8 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
   - `/onboarding`
   - `/dashboard`
   - `/branches`
+  - `/incidents`
+  - `/jobs`
   - `/team`
   - `/inbox`
   - `/settings`
@@ -101,8 +103,6 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
   - `/pricing`
   - `/docs`
   - `/contact`
-  - `/jobs`
-  - `/incidents`
   - `/analytics`
   - `/billing`
   - `/customers`
