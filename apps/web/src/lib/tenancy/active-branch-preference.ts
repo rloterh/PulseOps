@@ -1,5 +1,5 @@
 export const ACTIVE_BRANCH_COOKIE_NAME = 'pulseops-active-branch';
-const ACTIVE_BRANCH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+export const ACTIVE_BRANCH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 export function persistActiveBranchPreference(branchId: string) {
   document.cookie = [

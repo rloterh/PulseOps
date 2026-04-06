@@ -46,6 +46,10 @@ export interface JobLinkedIncident {
   reference: string;
 }
 
+export interface CreateJobActionState {
+  error?: string;
+}
+
 export interface JobDetail {
   id: string;
   reference: string;

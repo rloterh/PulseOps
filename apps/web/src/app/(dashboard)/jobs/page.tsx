@@ -1,8 +1,11 @@
+import type { Route } from 'next';
+import Link from 'next/link';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListPageHeader } from '@/components/shared/list-page-header';
 import { StatPill } from '@/components/shared/stat-pill';
 import { JobFilters } from '@/components/jobs/job-filters';
 import { JobListTable } from '@/components/jobs/job-list-table';
+import { canCreateJobs } from '@/features/jobs/lib/jobs-permissions';
 import { getJobsList } from '@/features/jobs/queries/get-jobs-list';
 import { parseJobListFilters } from '@/features/jobs/queries/parse-job-list-filters';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -19,6 +22,12 @@ export default async function JobsPage({
     branchId: context.branchId,
     filters,
   });
+  const canCreate = canCreateJobs(context.membershipRole);
+  const hasActiveFilters =
+    Boolean(filters.q) ||
+    filters.priority !== 'all' ||
+    filters.status !== 'all' ||
+    filters.type !== 'all';
   const inFlightCount = jobs.filter((job) =>
     ['new', 'scheduled', 'in_progress', 'blocked'].includes(job.status),
   ).length;
@@ -38,6 +47,14 @@ export default async function JobsPage({
               label={`${String(linkedIncidentCount)} linked to incidents`}
               tone={linkedIncidentCount > 0 ? 'success' : 'default'}
             />
+            {canCreate ? (
+              <Link
+                href="/jobs/new"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90"
+              >
+                New job
+              </Link>
+            ) : null}
           </>
         }
       />
@@ -46,12 +63,24 @@ export default async function JobsPage({
 
       {jobs.length > 0 ? (
         <JobListTable items={jobs} />
-      ) : (
+      ) : hasActiveFilters ? (
         <EmptyState
           title="No jobs match this view"
           description="Try widening the filters or switching branch context if you want to see work queued for another operating location."
           actionHref="/jobs"
           actionLabel="Clear filters"
+        />
+      ) : canCreate ? (
+        <EmptyState
+          title="No jobs match this view"
+          description="Try widening the filters or switching branch context if you want to see work queued for another operating location."
+          actionHref={'/jobs/new' as Route}
+          actionLabel="Create a job"
+        />
+      ) : (
+        <EmptyState
+          title="No jobs match this view"
+          description="Try widening the filters or switching branch context if you want to see work queued for another operating location."
         />
       )}
     </main>
