@@ -37,8 +37,8 @@ export function getNotificationFeed({
     },
     {
       id: 'notif_system_1',
-      title: 'Branch summary refreshed',
-      body: 'The Sprint 2 dashboard shell finished preparing the latest summary.',
+      title: 'Ops foundation refreshed',
+      body: 'The Sprint 3 incidents and jobs foundation refreshed the latest operational summary.',
       createdAtLabel: 'Today',
       kind: 'system',
       unread: false,

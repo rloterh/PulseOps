@@ -18,14 +18,20 @@ export interface DashboardJobItem {
   title: string;
   dueLabel: string;
   assigneeLabel: string;
-  status: 'scheduled' | 'in_progress' | 'blocked';
+  status:
+    | 'new'
+    | 'scheduled'
+    | 'in_progress'
+    | 'blocked'
+    | 'completed'
+    | 'cancelled';
 }
 
 export interface DashboardIncidentItem {
   id: string;
   title: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
-  status: 'open' | 'investigating' | 'resolved';
+  status: 'open' | 'investigating' | 'monitoring' | 'resolved' | 'closed';
   openedLabel: string;
 }
 

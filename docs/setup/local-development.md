@@ -10,11 +10,11 @@
 1. Run `corepack pnpm install`.
 2. Copy `.env.example` to `.env.local`.
 3. Start local Supabase with `corepack pnpm exec supabase start`.
-4. Apply the current Sprint 1 schema with `corepack pnpm exec supabase db reset`.
+4. Apply the current schema with `corepack pnpm exec supabase db reset`.
 5. Add the local Supabase values to `.env.local`.
 6. Start the app with `corepack pnpm dev`.
 
-The `db reset` step applies both the base Sprint 1 schema and the follow-up hardening migration, including the retry-safe workspace bootstrap RPC.
+The `db reset` step applies the tenancy foundation plus the Sprint 3 operational schema for incidents, jobs, and timeline events.
 
 ## Verification
 
@@ -39,9 +39,9 @@ Sprint 1 auth, onboarding, and protected dashboard flows require these values:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-Sprint 2 builds on that foundation with a richer protected shell, so it is worth validating these browser flows locally after setup:
+Sprint 3 builds on that foundation with the first real operational modules, so it is worth validating these browser flows locally after setup:
 
 - sign in and sign out
 - onboarding redirect behavior
-- dashboard, team, inbox, and branch navigation
+- dashboard, branch navigation, incidents, and jobs
 - command palette with `Ctrl+K`

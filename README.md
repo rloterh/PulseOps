@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/auth-tenancy` branch now carries Sprint 2A work on top of the Sprint 1 foundation: authentication, workspace onboarding, database tenancy, and a premium protected app shell.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/auth-tenancy` branch now carries Sprint 3 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, and the first real operational modules for incidents and jobs.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
@@ -19,13 +19,14 @@ What this branch delivers:
 - sign-up, sign-in, callback, verify, sign-out, and first-workspace onboarding flows
 - a responsive protected shell with sidebar, topbar, mobile drawer, branch switcher, notifications shell, and command palette
 - a richer dashboard scaffold with typed KPI and widget contracts
+- real incidents and jobs list/detail surfaces with branch-aware reads, filters, timelines, and status or assignee mutation flows
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, and verification tooling
 - marketing and dashboard routes aligned to the PulseOps domain model
 
 What this branch does not claim yet:
 
-- implemented jobs, incidents, analytics, billing, or customer workflows
+- analytics, billing, or customer workflows beyond scaffolded surfaces
 - the final long-term tenant and branch schema for the whole product
 - invitation flows, fine-grained permissions, or customer portal auth
 - Stripe integration
@@ -215,8 +216,12 @@ Current schema scope:
 - `organizations`
 - `organization_members`
 - `locations`
+- `incidents`
+- `incident_timeline_events`
+- `jobs`
+- `job_timeline_events`
 
-This is the Sprint 1 tenancy root, not the final full PulseOps domain model.
+This is the first real operational schema slice, not yet the full long-term PulseOps domain model.
 
 ## Quality Bar On This Branch
 
@@ -233,7 +238,7 @@ This branch is meant to demonstrate that the project foundation is:
 
 - evolve tenancy into the broader PulseOps tenant and branch model
 - add invitations and richer role or permission handling
-- begin real jobs and incidents schema work
+- deepen the jobs and incidents modules with creation flows, richer permissions, and more complete lifecycle handling
 - deepen the dashboard with live operations metrics
 - connect billing and subscription control paths
 
