@@ -18,6 +18,8 @@ export const protectedRoutePrefixes = [
   '/jobs',
   '/branches',
   '/incidents',
+  '/team',
+  '/inbox',
   '/analytics',
   '/billing',
   '/customers',
