@@ -1,7 +1,10 @@
+import { RecordCollaborationPanel } from '@/components/collaboration/record-collaboration-panel';
+import { WatchRecordControls } from '@/components/collaboration/watch-record-controls';
 import { TaskAssigneeForm } from '@/components/tasks/task-assignee-form';
 import { TaskDetailHeader } from '@/components/tasks/task-detail-header';
 import { TaskStatusForm } from '@/components/tasks/task-status-form';
 import { TaskTimeline } from '@/components/tasks/task-timeline';
+import { getRecordCollaboration } from '@/features/collaboration/queries/get-record-collaboration';
 import { getTaskById } from '@/features/tasks/queries/get-task-by-id';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
@@ -18,7 +21,16 @@ export default async function TaskDetailPage({
     branchId: context.branchId,
     taskId,
   });
-  const assignees = await getMemberOptions(context.tenantId, task.branchId);
+  const [assignees, collaboration] = await Promise.all([
+    getMemberOptions(context.tenantId, task.branchId),
+    getRecordCollaboration({
+      tenantId: context.tenantId,
+      entityType: 'task',
+      entityId: taskId,
+      viewerId: context.viewerId,
+      viewerRole: context.membershipRole,
+    }),
+  ]);
 
   return (
     <main className="space-y-6">
@@ -27,6 +39,18 @@ export default async function TaskDetailPage({
       <section className="grid gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">
           <TaskTimeline items={task.timeline} />
+          {collaboration ? (
+            <div className="mt-6">
+              <RecordCollaborationPanel
+                entityType="task"
+                entityId={task.id}
+                returnPath={`/tasks/${task.id}`}
+                comments={collaboration.comments}
+                mentionSuggestions={assignees}
+                viewerRole={context.membershipRole}
+              />
+            </div>
+          ) : null}
         </div>
 
         <aside className="space-y-4 xl:col-span-4">
@@ -36,6 +60,14 @@ export default async function TaskDetailPage({
             currentAssigneeUserId={task.currentAssigneeUserId}
             assignees={assignees}
           />
+          {collaboration ? (
+            <WatchRecordControls
+              entityType="task"
+              entityId={task.id}
+              returnPath={`/tasks/${task.id}`}
+              watchState={collaboration.watchState}
+            />
+          ) : null}
           <section className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5">
             <h2 className="text-lg font-semibold tracking-tight text-white">Execution</h2>
             <dl className="mt-4 grid gap-3 text-sm">
