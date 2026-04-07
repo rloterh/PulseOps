@@ -66,12 +66,16 @@ export interface Database {
       };
       incidents: {
         Row: {
+          acknowledged_at: string | null;
           assignee_user_id: string | null;
+          closed_at: string | null;
           created_at: string;
           customer_name: string;
+          escalation_level: number;
           first_response_at: string | null;
           id: string;
           impact_summary: string;
+          last_activity_at: string;
           location_id: string;
           next_action: string;
           opened_at: string;
@@ -88,12 +92,16 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          acknowledged_at?: string | null;
           assignee_user_id?: string | null;
+          closed_at?: string | null;
           created_at?: string;
           customer_name: string;
+          escalation_level?: number;
           first_response_at?: string | null;
           id?: string;
           impact_summary?: string;
+          last_activity_at?: string;
           location_id: string;
           next_action?: string;
           opened_at?: string;
@@ -110,12 +118,16 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          acknowledged_at?: string | null;
           assignee_user_id?: string | null;
+          closed_at?: string | null;
           created_at?: string;
           customer_name?: string;
+          escalation_level?: number;
           first_response_at?: string | null;
           id?: string;
           impact_summary?: string;
+          last_activity_at?: string;
           location_id?: string;
           next_action?: string;
           opened_at?: string;
@@ -153,6 +165,106 @@ export interface Database {
           {
             foreignKeyName: 'incidents_owner_user_id_fkey';
             columns: ['owner_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      incident_escalations: {
+        Row: {
+          acknowledged_at: string | null;
+          acknowledged_by_user_id: string | null;
+          completed_at: string | null;
+          created_at: string;
+          escalation_level: number;
+          id: string;
+          incident_id: string;
+          location_id: string;
+          metadata: Json;
+          organization_id: string;
+          reason: string | null;
+          status: Database['public']['Enums']['escalation_status'];
+          target_queue: string | null;
+          target_role: Database['public']['Enums']['organization_role'] | null;
+          target_user_id: string | null;
+          triggered_at: string;
+          triggered_by_user_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          acknowledged_at?: string | null;
+          acknowledged_by_user_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          escalation_level: number;
+          id?: string;
+          incident_id: string;
+          location_id: string;
+          metadata?: Json;
+          organization_id: string;
+          reason?: string | null;
+          status?: Database['public']['Enums']['escalation_status'];
+          target_queue?: string | null;
+          target_role?: Database['public']['Enums']['organization_role'] | null;
+          target_user_id?: string | null;
+          triggered_at?: string;
+          triggered_by_user_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          acknowledged_at?: string | null;
+          acknowledged_by_user_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          escalation_level?: number;
+          id?: string;
+          incident_id?: string;
+          location_id?: string;
+          metadata?: Json;
+          organization_id?: string;
+          reason?: string | null;
+          status?: Database['public']['Enums']['escalation_status'];
+          target_queue?: string | null;
+          target_role?: Database['public']['Enums']['organization_role'] | null;
+          target_user_id?: string | null;
+          triggered_at?: string;
+          triggered_by_user_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'incident_escalations_acknowledged_by_user_id_fkey';
+            columns: ['acknowledged_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incident_escalations_incident_id_fkey';
+            columns: ['incident_id'];
+            referencedRelation: 'incidents';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incident_escalations_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incident_escalations_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incident_escalations_target_user_id_fkey';
+            columns: ['target_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'incident_escalations_triggered_by_user_id_fkey';
+            columns: ['triggered_by_user_id'];
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
@@ -450,6 +562,79 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: 'billing_subscriptions_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      audit_logs: {
+        Row: {
+          action: string;
+          actor_type: Database['public']['Enums']['audit_actor_type'];
+          actor_user_id: string | null;
+          created_at: string;
+          entity_id: string | null;
+          entity_label: string | null;
+          entity_type: string;
+          id: string;
+          ip_address: string | null;
+          location_id: string | null;
+          metadata: Json;
+          organization_id: string;
+          request_id: string | null;
+          scope: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_type?: Database['public']['Enums']['audit_actor_type'];
+          actor_user_id?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          entity_type: string;
+          id?: string;
+          ip_address?: string | null;
+          location_id?: string | null;
+          metadata?: Json;
+          organization_id: string;
+          request_id?: string | null;
+          scope?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_type?: Database['public']['Enums']['audit_actor_type'];
+          actor_user_id?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          entity_type?: string;
+          id?: string;
+          ip_address?: string | null;
+          location_id?: string | null;
+          metadata?: Json;
+          organization_id?: string;
+          request_id?: string | null;
+          scope?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'audit_logs_actor_user_id_fkey';
+            columns: ['actor_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'audit_logs_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'audit_logs_organization_id_fkey';
             columns: ['organization_id'];
             referencedRelation: 'organizations';
             referencedColumns: ['id'];
@@ -1525,6 +1710,13 @@ export interface Database {
         | 'status_change'
         | 'note'
         | 'resolution';
+      escalation_status:
+        | 'pending'
+        | 'sent'
+        | 'acknowledged'
+        | 'completed'
+        | 'cancelled';
+      audit_actor_type: 'user' | 'system' | 'service';
       job_priority: 'urgent' | 'high' | 'medium' | 'low';
       job_status:
         | 'new'
