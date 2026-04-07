@@ -3,6 +3,7 @@ import 'server-only';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Database } from '@pulseops/supabase/types';
 import type {
+  AnalyticsBranchOption,
   AnalyticsBreakdownRow,
   AnalyticsDateRange,
   AnalyticsFilters,
@@ -10,6 +11,7 @@ import type {
   AnalyticsOverviewData,
   AnalyticsTrendPoint,
 } from '@/features/analytics/types/analytics.types';
+import { buildAnalyticsAiInsights } from '@/features/analytics/lib/build-analytics-ai-insights';
 import {
   formatMetricDelta,
   formatMetricMinutes,
@@ -19,7 +21,15 @@ import {
 
 type JobRow = Pick<
   Database['public']['Tables']['jobs']['Row'],
-  'id' | 'created_at' | 'resolved_at' | 'status' | 'priority' | 'location_id'
+  | 'id'
+  | 'created_at'
+  | 'resolved_at'
+  | 'status'
+  | 'priority'
+  | 'location_id'
+  | 'title'
+  | 'reference'
+  | 'due_at'
 >;
 
 type IncidentRow = Pick<
@@ -33,6 +43,8 @@ type SlaRow = Pick<
   | 'entity_type'
   | 'created_at'
   | 'location_id'
+  | 'entity_id'
+  | 'escalation_state'
   | 'first_response_target_minutes'
   | 'resolution_target_minutes'
   | 'first_responded_at'
@@ -41,6 +53,7 @@ type SlaRow = Pick<
   | 'resolution_due_at'
   | 'first_response_breached_at'
   | 'resolution_breached_at'
+  | 'risk_level'
 >;
 
 interface Input {
@@ -49,6 +62,7 @@ interface Input {
   filters: AnalyticsFilters;
   range: AnalyticsDateRange;
   branchName: string | null;
+  branches: AnalyticsBranchOption[];
 }
 
 export async function getAnalyticsOverview({
@@ -57,6 +71,7 @@ export async function getAnalyticsOverview({
   filters,
   range,
   branchName,
+  branches,
 }: Input): Promise<AnalyticsOverviewData> {
   const supabase = await createSupabaseServerClient();
   const currentPeriod = await loadOverviewPeriod(supabase, {
@@ -101,6 +116,46 @@ export async function getAnalyticsOverview({
         'jobs in the selected window',
       ),
     },
+    ai: buildAnalyticsAiInsights({
+      branches: branchId
+        ? branches.filter((branch) => branch.id === branchId)
+        : branches,
+      jobsCreatedCount: currentPeriod.jobsCreated.length,
+      jobsResolvedCount: currentPeriod.jobsResolved.length,
+      backlogCount: currentPeriod.backlogCount,
+      incidentsOpened: currentPeriod.incidentsOpened.map((incident) => ({
+        id: incident.id,
+        locationId: incident.location_id,
+      })),
+      activeJobs: currentPeriod.activeJobs.map((job) => ({
+        id: job.id,
+        reference: job.reference,
+        title: job.title,
+        status: job.status,
+        priority: job.priority,
+        dueAt: job.due_at,
+        locationId: job.location_id,
+      })),
+      slaSnapshots: currentPeriod.slaRows
+        .filter(
+          (
+            snapshot,
+          ): snapshot is SlaRow & {
+            entity_type: 'job' | 'incident';
+          } => snapshot.entity_type === 'job' || snapshot.entity_type === 'incident',
+        )
+        .map((snapshot) => ({
+          entityId: snapshot.entity_id,
+          entityType: snapshot.entity_type,
+          locationId: snapshot.location_id,
+          riskLevel: snapshot.risk_level,
+          escalationState: snapshot.escalation_state,
+          firstResponseDueAt: snapshot.first_response_due_at,
+          resolutionDueAt: snapshot.resolution_due_at,
+          firstResponseBreachedAt: snapshot.first_response_breached_at,
+          resolutionBreachedAt: snapshot.resolution_breached_at,
+        })),
+    }),
   };
 }
 
@@ -119,12 +174,14 @@ async function loadOverviewPeriod(
     incidentsOpenedResult,
     slaResult,
     backlogCountResult,
+    activeJobsResult,
   ] = await Promise.all([
     queryJobsCreated(supabase, input),
     queryJobsResolved(supabase, input),
     queryIncidentsOpened(supabase, input),
     querySlaSnapshots(supabase, input),
     queryOpenBacklogCount(supabase, input),
+    queryActiveJobs(supabase, input),
   ]);
 
   return {
@@ -133,6 +190,7 @@ async function loadOverviewPeriod(
     incidentsOpened: incidentsOpenedResult,
     slaRows: slaResult,
     backlogCount: backlogCountResult,
+    activeJobs: activeJobsResult,
   };
 }
 
@@ -147,7 +205,7 @@ async function queryJobsCreated(
 ) {
   let query = supabase
     .from('jobs')
-    .select('id, created_at, resolved_at, status, priority, location_id')
+    .select('id, created_at, resolved_at, status, priority, location_id, title, reference, due_at')
     .eq('organization_id', input.tenantId)
     .gte('created_at', input.from)
     .lte('created_at', input.to);
@@ -176,7 +234,7 @@ async function queryJobsResolved(
 ) {
   let query = supabase
     .from('jobs')
-    .select('id, created_at, resolved_at, status, priority, location_id')
+    .select('id, created_at, resolved_at, status, priority, location_id, title, reference, due_at')
     .eq('organization_id', input.tenantId)
     .not('resolved_at', 'is', null)
     .gte('resolved_at', input.from)
@@ -236,7 +294,7 @@ async function querySlaSnapshots(
   let query = supabase
     .from('work_item_slas')
     .select(
-      'id, entity_type, created_at, location_id, first_response_target_minutes, resolution_target_minutes, first_responded_at, resolved_at, first_response_due_at, resolution_due_at, first_response_breached_at, resolution_breached_at',
+      'id, entity_id, entity_type, created_at, location_id, escalation_state, first_response_target_minutes, resolution_target_minutes, first_responded_at, resolved_at, first_response_due_at, resolution_due_at, first_response_breached_at, resolution_breached_at, risk_level',
     )
     .eq('organization_id', input.tenantId)
     .in('entity_type', ['job', 'incident'])
@@ -282,6 +340,32 @@ async function queryOpenBacklogCount(
   }
 
   return count ?? 0;
+}
+
+async function queryActiveJobs(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  input: {
+    tenantId: string;
+    branchId: string | null;
+  },
+) {
+  let query = supabase
+    .from('jobs')
+    .select('id, created_at, resolved_at, status, priority, location_id, title, reference, due_at')
+    .eq('organization_id', input.tenantId)
+    .in('status', ['new', 'scheduled', 'in_progress', 'blocked']);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data satisfies JobRow[];
 }
 
 function buildOverviewKpis(

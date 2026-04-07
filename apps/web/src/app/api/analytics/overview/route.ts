@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     },
     range,
     branchName: selectedBranch?.name ?? context.branchName,
+    branches: locations,
   });
 
   return NextResponse.json(payload);

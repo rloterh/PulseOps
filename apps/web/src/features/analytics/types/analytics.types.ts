@@ -40,6 +40,45 @@ export interface AnalyticsBreakdownRow {
   helperText: string;
 }
 
+export interface AnalyticsExecutiveSummary {
+  headline: string;
+  narrative: string;
+  confidenceLabel: string;
+  highlights: string[];
+  nextSteps: string[];
+}
+
+export interface AnalyticsBranchSummaryCard {
+  branchId: string;
+  branchName: string;
+  backlogCount: number;
+  overdueCount: number;
+  incidentCount: number;
+  breachCount: number;
+  recommendation: string;
+  statusTone: 'stable' | 'watch' | 'critical';
+}
+
+export interface AnalyticsLateJobRiskSignal {
+  jobId: string;
+  reference: string;
+  title: string;
+  branchName: string;
+  statusLabel: string;
+  priorityLabel: string;
+  dueAtLabel: string;
+  score: number;
+  statusTone: 'watch' | 'critical';
+  reasons: string[];
+  recommendation: string;
+}
+
+export interface AnalyticsAiInsights {
+  executiveSummary: AnalyticsExecutiveSummary;
+  branchSummaryCards: AnalyticsBranchSummaryCard[];
+  lateJobRiskSignals: AnalyticsLateJobRiskSignal[];
+}
+
 export interface AnalyticsOverviewData {
   filters: AnalyticsFilters;
   rangeLabel: string;
@@ -51,4 +90,5 @@ export interface AnalyticsOverviewData {
     jobsByStatus: AnalyticsBreakdownRow[];
     jobsByPriority: AnalyticsBreakdownRow[];
   };
+  ai: AnalyticsAiInsights;
 }
