@@ -304,6 +304,146 @@ export interface Database {
           },
         ];
       };
+      billing_customers: {
+        Row: {
+          created_at: string;
+          id: string;
+          organization_id: string;
+          stripe_customer_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          stripe_customer_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          stripe_customer_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'billing_customers_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      billing_events: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          livemode: boolean;
+          payload: Json;
+          processed_at: string | null;
+          stripe_event_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          livemode?: boolean;
+          payload: Json;
+          processed_at?: string | null;
+          stripe_event_id: string;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          livemode?: boolean;
+          payload?: Json;
+          processed_at?: string | null;
+          stripe_event_id?: string;
+        };
+        Relationships: [];
+      };
+      billing_subscriptions: {
+        Row: {
+          amount_unit: number | null;
+          cancel_at_period_end: boolean;
+          canceled_at: string | null;
+          created_at: string;
+          currency: string | null;
+          current_period_end: string | null;
+          current_period_start: string | null;
+          ended_at: string | null;
+          id: string;
+          interval: string | null;
+          organization_id: string;
+          plan: Database['public']['Enums']['plan_code'];
+          raw: Json;
+          status: Database['public']['Enums']['subscription_status'] | null;
+          stripe_customer_id: string;
+          stripe_price_id: string | null;
+          stripe_product_id: string | null;
+          stripe_subscription_id: string | null;
+          trial_end: string | null;
+          trial_start: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          amount_unit?: number | null;
+          cancel_at_period_end?: boolean;
+          canceled_at?: string | null;
+          created_at?: string;
+          currency?: string | null;
+          current_period_end?: string | null;
+          current_period_start?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          interval?: string | null;
+          organization_id: string;
+          plan?: Database['public']['Enums']['plan_code'];
+          raw?: Json;
+          status?: Database['public']['Enums']['subscription_status'] | null;
+          stripe_customer_id: string;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_start?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          amount_unit?: number | null;
+          cancel_at_period_end?: boolean;
+          canceled_at?: string | null;
+          created_at?: string;
+          currency?: string | null;
+          current_period_end?: string | null;
+          current_period_start?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          interval?: string | null;
+          organization_id?: string;
+          plan?: Database['public']['Enums']['plan_code'];
+          raw?: Json;
+          status?: Database['public']['Enums']['subscription_status'] | null;
+          stripe_customer_id?: string;
+          stripe_price_id?: string | null;
+          stripe_product_id?: string | null;
+          stripe_subscription_id?: string | null;
+          trial_end?: string | null;
+          trial_start?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'billing_subscriptions_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       record_comment_mentions: {
         Row: {
           comment_id: string;
@@ -908,6 +1048,49 @@ export interface Database {
           },
         ];
       };
+      organization_entitlements: {
+        Row: {
+          can_use_advanced_filters: boolean;
+          can_use_analytics: boolean;
+          can_use_priority_support: boolean;
+          created_at: string;
+          max_operators: number;
+          max_saved_views: number;
+          organization_id: string;
+          plan: Database['public']['Enums']['plan_code'];
+          updated_at: string;
+        };
+        Insert: {
+          can_use_advanced_filters?: boolean;
+          can_use_analytics?: boolean;
+          can_use_priority_support?: boolean;
+          created_at?: string;
+          max_operators?: number;
+          max_saved_views?: number;
+          organization_id: string;
+          plan?: Database['public']['Enums']['plan_code'];
+          updated_at?: string;
+        };
+        Update: {
+          can_use_advanced_filters?: boolean;
+          can_use_analytics?: boolean;
+          can_use_priority_support?: boolean;
+          created_at?: string;
+          max_operators?: number;
+          max_saved_views?: number;
+          organization_id?: string;
+          plan?: Database['public']['Enums']['plan_code'];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organization_entitlements_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       organizations: {
         Row: {
           created_at: string;
@@ -1100,6 +1283,16 @@ export interface Database {
         | 'completed';
       job_type: 'reactive' | 'preventive' | 'inspection' | 'vendor';
       organization_role: 'owner' | 'admin' | 'manager' | 'agent';
+      plan_code: 'free' | 'pro' | 'business';
+      subscription_status:
+        | 'trialing'
+        | 'active'
+        | 'past_due'
+        | 'canceled'
+        | 'unpaid'
+        | 'incomplete'
+        | 'incomplete_expired'
+        | 'paused';
       task_status: 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
       task_timeline_event_type:
         | 'created'
