@@ -24,6 +24,7 @@ This branch currently includes:
 - Sprint 9B inspectable AI explanation sheets with supporting facts for branch and late-job signals
 - Sprint 9C executive-summary explainability and direct action links into branch and job views
 - Sprint 9D AI run storage, feedback capture, metadata-aware explanation UI, and `/api/ai/*` analytics routes
+- Sprint 9E branch-comparison AI synthesis with persisted comparison runs and branch-level recommendation UI
 
 What this branch specifically adds beyond `dev`:
 
@@ -54,6 +55,7 @@ What this branch specifically adds beyond `dev`:
 - persisted `ai_runs` and `ai_feedback` records so AI output is traceable, cacheable, and rateable
 - `/api/ai/analytics/overview` and `/api/ai/feedback` routes so the AI layer has a real server contract
 - generation metadata surfaced in the analytics UI, including provider, model, cache state, and operator feedback state
+- `/analytics/branches` now has its own AI synthesis layer instead of leaving branch comparison as a purely deterministic table view
 
 What this branch does not claim yet:
 
@@ -144,6 +146,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch and late-job signals now expose inspectable explanation sheets with concrete supporting facts instead of only inline copy
 - the executive summary now exposes its own supporting facts and connects directly to downstream operational views
 - AI outputs now persist as traceable runs with feedback capture instead of only existing as server-rendered copy
+- branch comparison now generates its own AI summary, strongest-branch callout, highest-risk branch callout, and recommended next moves
 
 ## Tech Stack
 
@@ -289,6 +292,7 @@ This branch is meant to stay:
 
 - add richer AI explanation drill-downs and more nuanced executive narratives
 - expand late-job risk modelling beyond the first explainable heuristics layer
+- add job-specific focused AI explanation routes on top of the run/feedback backbone
 - decide whether a later Sprint 9 follow-up should keep the deterministic provider or add a live LLM provider on top of the new run/feedback backbone
 - keep analytics performance under review with local explain-plan checks against seeded Supabase data
 

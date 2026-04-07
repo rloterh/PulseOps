@@ -17,6 +17,28 @@ describe('buildBranchComparisonCsv', () => {
       rangeLabel: 'Apr 1 - Apr 30, 2026',
       compareLabel: 'Mar 2 - Mar 31, 2026',
       scopeLabel: 'All branch comparison',
+      ai: {
+        generation: {
+          runId: null,
+          providerLabel: 'pulseops-deterministic',
+          modelLabel: 'heuristic-branch-v1',
+          promptVersion: 'sprint9-branch-v1',
+          generatedAtValue: null,
+          generatedAtLabel: 'Not requested',
+          source: 'fresh',
+          fallbackReason: null,
+          feedbackRating: null,
+        },
+        summary: {
+          headline: 'North is leading branch throughput.',
+          narrative: 'North is outperforming the rest of the current comparison set.',
+          strongestBranchName: 'North',
+          mostAtRiskBranchName: null,
+          keyDrivers: [],
+          nextSteps: [],
+          supportingFacts: [],
+        },
+      },
       rankings: {
         resolvedVolume: [],
         firstResponseSla: [],

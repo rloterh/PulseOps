@@ -3,16 +3,10 @@ import { NextResponse } from 'next/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
-import {
-  buildBranchComparisonCsv,
-  buildSlaMetricsCsv,
-} from '@/features/analytics/lib/build-analytics-csv';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
 import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
-import { getAnalyticsSlaMetrics } from '@/features/analytics/queries/get-analytics-sla-metrics';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
-import { analyticsExportSchema } from '@/features/analytics/schemas/analytics-export.schema';
 
 export async function GET(request: NextRequest) {
   const context = await requireTenantMember();
@@ -22,16 +16,9 @@ export async function GET(request: NextRequest) {
   }
 
   const entitlements = await getOrganizationEntitlements(context.tenantId);
+
   if (!entitlements.canUseAnalytics) {
     return NextResponse.json({ error: 'Analytics not enabled' }, { status: 403 });
-  }
-
-  const parsedExport = analyticsExportSchema.safeParse({
-    dataset: request.nextUrl.searchParams.get('dataset'),
-  });
-
-  if (!parsedExport.success) {
-    return NextResponse.json({ error: 'Invalid export dataset' }, { status: 400 });
   }
 
   const { data: locations, error } = await context.supabase
@@ -54,35 +41,14 @@ export async function GET(request: NextRequest) {
     shellBranchId: context.branchId,
   });
   const range = resolveAnalyticsDateRange(effectiveFilters);
-
-  const csv =
-    parsedExport.data.dataset === 'branches'
-      ? buildBranchComparisonCsv(
-          await getAnalyticsBranchComparison({
-            tenantId: context.tenantId,
-            includeAi: false,
-            filters: effectiveFilters,
-            range,
-            branches: locations,
-          }),
-        )
-      : buildSlaMetricsCsv(
-          await getAnalyticsSlaMetrics({
-            tenantId: context.tenantId,
-            filters: effectiveFilters,
-            range,
-            branches: locations,
-          }),
-        );
-
-  const filename = `pulseops-${parsedExport.data.dataset}-${new Date().toISOString().slice(0, 10)}.csv`;
-
-  return new NextResponse(csv, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="${filename}"`,
-      'Cache-Control': 'no-store',
-    },
+  const payload = await getAnalyticsBranchComparison({
+    tenantId: context.tenantId,
+    viewerId: context.viewerId,
+    filters: effectiveFilters,
+    range,
+    branches: locations,
   });
+
+  return NextResponse.json(payload.ai);
 }
+

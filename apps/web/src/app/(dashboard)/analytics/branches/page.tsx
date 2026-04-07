@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AnalyticsBranchAiSummary } from '@/components/analytics/analytics-branch-ai-summary';
 import { AnalyticsBarList } from '@/components/analytics/analytics-bar-list';
 import { BranchComparisonTable } from '@/components/analytics/branch-comparison-table';
 import { AnalyticsFiltersBar } from '@/components/analytics/analytics-filters';
@@ -74,6 +75,7 @@ export default async function AnalyticsBranchComparisonPage({
 
   const data = await getAnalyticsBranchComparison({
     tenantId: context.tenantId,
+    viewerId: context.viewerId,
     filters,
     range,
     branches: locations,
@@ -100,6 +102,8 @@ export default async function AnalyticsBranchComparisonPage({
 
       {data.rows.length > 0 ? (
         <>
+          <AnalyticsBranchAiSummary ai={data.ai} />
+
           <section className="grid gap-6 xl:grid-cols-3">
             <AnalyticsBarList
               title="Resolved volume by branch"

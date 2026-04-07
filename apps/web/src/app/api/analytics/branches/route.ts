@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
   const range = resolveAnalyticsDateRange(effectiveFilters);
   const payload = await getAnalyticsBranchComparison({
     tenantId: context.tenantId,
+    viewerId: context.viewerId,
     filters: effectiveFilters,
     range,
     branches: locations,
