@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 
 export function AnalyticsPageShell({
   title,
@@ -7,6 +8,7 @@ export function AnalyticsPageShell({
   scopeLabel,
   rangeLabel,
   compareLabel,
+  activeView = 'overview',
   children,
 }: {
   title: string;
@@ -14,6 +16,7 @@ export function AnalyticsPageShell({
   scopeLabel: string;
   rangeLabel: string;
   compareLabel: string | null;
+  activeView?: 'overview' | 'branches' | 'sla';
   children: ReactNode;
 }) {
   return (
@@ -52,14 +55,25 @@ export function AnalyticsPageShell({
 
         <nav className="mt-6 flex flex-wrap gap-2">
           <Link
-            href="/analytics"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950"
+            href={'/analytics' as Route}
+            className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition ${
+              activeView === 'overview'
+                ? 'bg-white text-slate-950'
+                : 'border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+            }`}
           >
             Overview
           </Link>
-          <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/58">
-            Branch comparison in next slice
-          </span>
+          <Link
+            href={'/analytics/branches' as Route}
+            className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition ${
+              activeView === 'branches'
+                ? 'bg-white text-slate-950'
+                : 'border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+            }`}
+          >
+            Branch comparison
+          </Link>
           <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/58">
             SLA metrics in next slice
           </span>

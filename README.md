@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the first Sprint 8 analytics foundation and overview experience on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the active Sprint 8 analytics slices on top.
 
 ## Branch Status
 
@@ -17,6 +17,7 @@ This branch currently includes:
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
 - Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
+- Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
 
 What this branch specifically adds beyond `dev`:
 
@@ -27,10 +28,13 @@ What this branch specifically adds beyond `dev`:
 - `/api/analytics/overview` server response for the first analytics dataset
 - targeted analytics index tuning for jobs, incidents, and `work_item_slas`
 - shell navigation entry for Analytics so the new sprint surface is discoverable
+- `/analytics/branches` route for branch-level throughput and SLA comparison
+- `/api/analytics/branches` server response for branch comparison datasets
+- branch comparison rankings for resolved volume, first response SLA, and breach concentration
+- side-by-side branch table covering created work, resolved work, backlog, backlog delta, incidents, SLA rates, and breaches
 
 What this branch does not claim yet:
 
-- full branch comparison analytics UI
 - the dedicated SLA metrics page
 - CSV export-ready analytics tables
 - warehouse-style BI or forecasting features
@@ -88,6 +92,13 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch-aware analytics filtering is supported through the existing shell branch context plus explicit analytics filters
 - the first analytics API route and shared analytics helpers are in place for later Sprint 8 slices
 - analytics-focused indexes are applied for jobs, incidents, and SLA snapshot queries
+
+### Sprint 8 Branch Comparison
+
+- `/analytics/branches` compares branch-level throughput, incident pressure, and SLA performance
+- branch rankings surface resolved volume, first response SLA attainment, and breach concentration
+- the comparison table includes backlog delta versus the previous period when compare mode is enabled
+- the analytics shell now links directly between overview and branch comparison views
 
 ## Tech Stack
 
@@ -225,11 +236,10 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the next Sprint 8 slices on branch comparison, SLA reporting, export-ready tables, and analytics polish
+- ready for the remaining Sprint 8 slices on SLA reporting, export-ready tables, and analytics polish
 
 ## Next Likely Steps
 
-- add branch comparison analytics surfaces
 - add dedicated SLA metrics reporting
 - add export-ready analytics tables and CSV flows
 - polish analytics loading, empty, and error states further if live QA reveals rough edges
