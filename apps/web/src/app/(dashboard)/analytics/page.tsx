@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import { AnalyticsAiExecutiveSummary } from '@/components/analytics/ai-executive-summary';
 import { AnalyticsBarList } from '@/components/analytics/analytics-bar-list';
+import { AnalyticsBranchSummaryGrid } from '@/components/analytics/branch-summary-grid';
 import { AnalyticsFiltersBar } from '@/components/analytics/analytics-filters';
 import { AnalyticsKpiCard } from '@/components/analytics/kpi-card';
 import { AnalyticsPageShell } from '@/components/analytics/analytics-page-shell';
 import { EmptyAnalyticsState } from '@/components/analytics/empty-analytics-state';
+import { AnalyticsLateJobRiskPanel } from '@/components/analytics/late-job-risk-panel';
 import { TrendLineChart } from '@/components/analytics/trend-line-chart';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
@@ -79,13 +82,14 @@ export default async function AnalyticsPage({
     filters,
     range,
     branchName: selectedBranch?.name ?? context.branchName,
+    branches: locations,
   });
   const hasData = overview.kpis.some((kpi) => kpi.value !== '0');
 
   return (
     <AnalyticsPageShell
       title="Operations overview"
-      subtitle="Track volume, response health, and incident pressure without leaving the protected PulseOps shell."
+      subtitle="Track volume, response health, incident pressure, and the first AI-generated operational signals without leaving the protected PulseOps shell."
       scopeLabel={overview.scopeLabel}
       rangeLabel={overview.rangeLabel}
       compareLabel={overview.compareLabel}
@@ -98,6 +102,10 @@ export default async function AnalyticsPage({
 
       {hasData ? (
         <>
+          <AnalyticsAiExecutiveSummary summary={overview.ai.executiveSummary} />
+
+          <AnalyticsBranchSummaryGrid cards={overview.ai.branchSummaryCards} />
+
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {overview.kpis.map((kpi) => (
               <AnalyticsKpiCard key={kpi.label} kpi={kpi} />
@@ -122,6 +130,8 @@ export default async function AnalyticsPage({
             description="Operational demand mix across the current reporting window."
             rows={overview.charts.jobsByPriority}
           />
+
+          <AnalyticsLateJobRiskPanel signals={overview.ai.lateJobRiskSignals} />
         </>
       ) : (
         <EmptyAnalyticsState />

@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the first Sprint 8 analytics foundation and overview experience on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the Sprint 8 analytics foundation plus the first Sprint 9 AI insight surfaces on top.
 
 ## Branch Status
 
@@ -17,6 +17,7 @@ This branch currently includes:
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
 - Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
+- Sprint 9A AI executive summary, branch summary cards, and late-job risk signals
 
 What this branch specifically adds beyond `dev`:
 
@@ -27,12 +28,16 @@ What this branch specifically adds beyond `dev`:
 - `/api/analytics/overview` server response for the first analytics dataset
 - targeted analytics index tuning for jobs, incidents, and `work_item_slas`
 - shell navigation entry for Analytics so the new sprint surface is discoverable
+- executive-summary guidance generated server-side from the analytics dataset
+- branch summary cards that explain where backlog, incidents, and SLA pressure are concentrating
+- late-job risk panels that explain why specific jobs are likely to slip and what to do next
 
 What this branch does not claim yet:
 
 - full branch comparison analytics UI
 - the dedicated SLA metrics page
 - CSV export-ready analytics tables
+- richer AI explanation drill-ins and cross-branch narratives
 - warehouse-style BI or forecasting features
 - custom dashboard builders or later-sprint reporting features
 
@@ -88,6 +93,13 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch-aware analytics filtering is supported through the existing shell branch context plus explicit analytics filters
 - the first analytics API route and shared analytics helpers are in place for later Sprint 8 slices
 - analytics-focused indexes are applied for jobs, incidents, and SLA snapshot queries
+
+### Sprint 9 AI Layer Foundations
+
+- executive-summary guidance is generated from live analytics signals with explicit confidence and next-step copy
+- branch summary cards surface localized backlog pressure, overdue concentration, incident activity, and breach counts
+- late-job risk signals combine due-date pressure, priority, blocker state, and SLA risk into explainable job rankings
+- `/analytics` now includes AI-style explanation UI without relying on disconnected placeholder prompts
 
 ## Tech Stack
 
@@ -226,12 +238,14 @@ This branch is meant to stay:
 - documented
 - production-minded in validation and authorization
 - ready for the next Sprint 8 slices on branch comparison, SLA reporting, export-ready tables, and analytics polish
+- ready for the next Sprint 9 slices on richer AI explanations and branch-to-branch narrative insights
 
 ## Next Likely Steps
 
 - add branch comparison analytics surfaces
 - add dedicated SLA metrics reporting
 - add export-ready analytics tables and CSV flows
+- add richer branch-to-branch AI narratives and executive summary drill-downs
 - polish analytics loading, empty, and error states further if live QA reveals rough edges
 - run explain-plan review on analytics queries against local seeded Supabase data
 
