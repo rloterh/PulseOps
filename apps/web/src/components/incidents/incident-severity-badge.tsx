@@ -1,5 +1,6 @@
 import { cn } from '@pulseops/utils';
 import type { IncidentSeverity } from '@/features/incidents/types/incident.types';
+import { getIncidentSeverityPresentation } from '@/features/incidents/lib/get-incident-severity-presentation';
 
 const SEVERITY_CLASSES: Record<IncidentSeverity, string> = {
   critical: 'border-rose-300/24 bg-rose-300/14 text-rose-50',
@@ -9,14 +10,17 @@ const SEVERITY_CLASSES: Record<IncidentSeverity, string> = {
 };
 
 export function IncidentSeverityBadge({ severity }: { severity: IncidentSeverity }) {
+  const presentation = getIncidentSeverityPresentation(severity);
+
   return (
     <span
+      title={presentation.label}
       className={cn(
         'inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]',
         SEVERITY_CLASSES[severity],
       )}
     >
-      {severity}
+      {presentation.code}
     </span>
   );
 }

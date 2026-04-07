@@ -14,6 +14,7 @@ export const authRoutes = ['/sign-in', '/sign-up', '/verify', '/callback'] as co
 
 export const protectedRoutePrefixes = [
   '/onboarding',
+  '/admin',
   '/dashboard',
   '/jobs',
   '/tasks',

@@ -1,86 +1,75 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/sla-escalations-activity-audit` branch now includes the latest `dev` baseline through the completed Sprint 6 billing implementation, plus this branch’s unique SLA foundation for policies and per-record SLA snapshots. In practice, this branch carries the full operations, collaboration, notification, list-productivity, and billing stack from `dev`, then layers the first Sprint 7 groundwork for SLA automation, escalations, activity, and audit-oriented work on top.
-
-This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/sla-escalations-activity-audit` branch carries the full `dev` baseline through completed Sprint 6 billing, then layers the first Sprint 7 foundations for SLA-aware incident operations, escalation storage, and append-only admin audit visibility on top.
 
 ## Branch Status
 
 Current branch: `feature/sla-escalations-activity-audit`
 
-What this branch delivers:
+This branch currently includes:
 
-- a `pnpm` workspace and Turborepo foundation
-- a Next.js 16 App Router web app scaffold
-- shared TypeScript, ESLint, and Prettier config packages
-- typed environment validation with Zod
-- Supabase client boundaries for browser, server, admin, and edge session refresh
-- a real Supabase migration for profiles, organizations, memberships, and starter locations
-- sign-up, sign-in, callback, verify, sign-out, and first-workspace onboarding flows
-- a responsive protected shell with sidebar, topbar, mobile drawer, branch switcher, notifications shell, and command palette
-- a richer dashboard scaffold with typed KPI and widget contracts
-- real incidents and jobs list/detail surfaces with branch-aware reads, filters, timelines, and status or assignee mutation flows
-- a branch-aware assignee directory with location-scoped eligibility checks
-- production-grade create flows for incidents, jobs, and tasks with server-side validation, secure assignee enforcement, activity logging, and shell entry points
-- a first-class tasks module with task list, detail, timeline, and optional linking to incidents or jobs
-- record edit flows for incidents, jobs, and tasks with timeline-backed field history
-- hardened reassignment and status updates that follow the record branch instead of the current shell branch
-- collaboration panels on incident, job, and task detail screens
-- comments and internal notes with secure server-side validation and deletion rules
-- mentions-ready comment markup with org-safe member validation
-- watcher subscriptions with auto-subscribe behavior for creators, assignees, and comment participants
-- watcher-driven notifications for comments, mentions, assignments, status changes, and intake assignment events
-- a real notification panel with unread counts and mark-read controls
-- an inbox triage surface with unread, open, and archived views
-- debounced search and immediate filter URL sync on the jobs and incidents lists
-- sortable jobs and incidents table headers with route-safe query state
-- row-open list interactions with keyboard support and ctrl/cmd new-tab behavior
-- persistent list density, visible-column, and rows-per-view preferences for jobs and incidents
-- real per-user saved views for jobs and incidents, backed by the database
-- bulk status updates for selected jobs and incidents inside the live list surfaces
-- Playwright E2E scaffolding for jobs and incidents list productivity flows
-- SLA policy storage for organization-wide and branch-specific rules
-- per-record SLA snapshots for incidents, jobs, and tasks
-- a typed SLA repository layer and tested app-side status-category helper to support the upcoming evaluator and escalation work
-- centralized plan configuration and server-side entitlement mapping
-- Stripe server client wiring plus checkout-session, plan-change, cancel or resume, and billing-portal launch flows
-- billing customer, subscription, entitlement, and webhook-event persistence
-- webhook ingestion with idempotent event recording and subscription sync
-- real pricing and billing pages replacing the older placeholders
-- entitlement enforcement for analytics, saved views, and premium list filters
-- trial, cancellation, and past_due billing-state guidance inside the protected billing surface
-- a Tailwind v4 design-token baseline and minimal UI primitives
-- CI, Docker, docs, verification tooling, and initial E2E test harness
-- marketing and dashboard routes aligned to the PulseOps domain model
+- the Sprint 0 foundation workspace, web app scaffold, shared packages, CI baseline, and local development tooling
+- Sprint 1 auth, onboarding, organization tenancy, and branch-aware starter workspace bootstrap
+- Sprint 2 protected shell, dashboard, navigation, command palette, notifications shell, and branch context
+- Sprint 3 incidents, jobs, timelines, assignments, and typed operational repositories
+- Sprint 4 intake, edit flows, collaboration, watchers, notifications, and inbox triage
+- Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
+- Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
+- Sprint 7A groundwork for incident escalations, audit logging, admin activity review, and clearer incident severity language
+
+What this branch specifically adds beyond `dev`:
+
+- SLA policy storage and per-record SLA snapshots for incidents, jobs, and tasks
+- additive `first_response_at` and `resolved_at` timestamps on operational records
+- incident escalation storage with organization and branch scoping
+- append-only audit logs for sensitive operator and billing activity
+- protected `/admin/activity` review for privileged workspace operators
+- canonical incident severity presentation aligned to escalation-friendly `Sev 1` to `Sev 4` language
+- audit writes from incident create, assignment, and status mutation flows
 
 What this branch does not claim yet:
 
-- invoice center, usage metering, or seat-based billing
-- analytics or customer workflows beyond scaffolded surfaces
-- the final long-term tenant and branch schema for the whole product
-- invitation flows, fine-grained permissions, or customer portal auth
-- realtime updates or attachment uploads
-- AI features beyond structural preparation
-- the Sprint 6 evaluator, escalations engine, activity feed UI, or full audit-log surfaces
+- automated SLA evaluation and breach detection
+- escalation execution or responder-targeting workflows
+- full cross-record activity feed UX
+- complete audit-log coverage across every sensitive mutation
+- customer portal, invoice center, seat billing, or usage metering beyond the Sprint 6 billing scope already merged from `dev`
 
-## Why This Branch Exists
+## Product Surface
 
-PulseOps is intended to become a premium B2B SaaS platform, so this branch proves the first vertical slice on top of the earlier foundation:
+Key live surfaces on this branch:
 
-- real auth and callback handling
-- tenant bootstrap with RLS-backed organization membership
-- protected routing and onboarding redirects
-- org-scoped reads in the dashboard shell
-- a professional base for later SLA automation, activity, audit, customer, billing, and analytics work
+- marketing pages including `/`, `/pricing`, `/docs`, and `/contact`
+- auth routes including `/sign-in`, `/sign-up`, `/verify`, `/callback`, and `/onboarding`
+- protected operations surfaces including `/dashboard`, `/branches`, `/incidents`, `/jobs`, `/tasks`, `/team`, `/inbox`, `/analytics`, `/billing`, and `/settings`
+- privileged admin review at `/admin/activity`
 
-### Sprint 6 Billing Slice
+The route structure follows PulseOps-native concepts such as organizations, locations, incidents, jobs, and tasks. This branch does not introduce a parallel generic workspace or work-item model.
 
-- `billing_customers`, `billing_subscriptions`, `billing_events`, and `organization_entitlements`
-- public pricing surface with live checkout entry points
+## Branch Highlights
+
+### Operations And Collaboration
+
+- real incidents, jobs, and tasks with branch-aware reads, filters, detail views, and timelines
+- secure create, edit, assignment, and status flows with server-side validation
+- collaboration panels, internal notes, mentions-ready comment markup, watcher enrollment, and notification fan-out
+- inbox triage and notification panel backed by persistent notification data
+
+### Billing And Entitlements
+
+- public pricing page with live checkout entry points
 - protected billing page with plan, entitlement, trial, cancellation, and payment-state visibility
-- Stripe checkout, direct plan-change, cancel or resume, and billing-portal server actions
-- idempotent Stripe webhook ingestion and subscription mirroring
-- server-side plan-to-entitlement mapping with live enforcement on analytics, saved views, and advanced list filters
+- Stripe checkout, plan change, cancel or resume, and billing-portal launch flows
+- webhook ingestion with idempotent event recording and subscription sync
+- server-side entitlement enforcement for premium analytics, saved views, and advanced list filters
+
+### Sprint 7A Incident And Audit Foundation
+
+- `incident_escalations` table with escalation level, target metadata, acknowledgement fields, and response-state tracking
+- `audit_logs` table with append-only storage and privileged read access
+- additive incident fields for `acknowledged_at`, `closed_at`, `escalation_level`, and `last_activity_at`
+- tested SLA status-category helpers and typed SLA repository wrappers to support future evaluator work
+- initial admin activity page backed by typed audit queries and summary cards
 
 ## Tech Stack
 
@@ -92,6 +81,7 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - Turborepo
 - pnpm workspaces
 - Vitest and Testing Library
+- Playwright scaffolding
 - GitHub Actions
 - Docker
 
@@ -114,105 +104,36 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 `- docker/
 ```
 
-## What Is Implemented
+## Database Status
 
-### Workspace Foundation
+Current schema scope on this branch includes:
 
-- Root workspace scripts and lockfile management
-- Shared package boundaries for config, env parsing, Supabase, UI, and utilities
-- Consistent lint, typecheck, test, and build commands through `corepack pnpm check`
+- `profiles`
+- `organizations`
+- `organization_members`
+- `locations`
+- `location_member_access`
+- `incidents`
+- `incident_timeline_events`
+- `incident_escalations`
+- `jobs`
+- `job_timeline_events`
+- `tasks`
+- `task_timeline_events`
+- `record_comments`
+- `record_comment_mentions`
+- `record_watchers`
+- `record_notifications`
+- `organization_reference_counters`
+- `sla_policies`
+- `work_item_slas`
+- `billing_customers`
+- `billing_subscriptions`
+- `billing_events`
+- `organization_entitlements`
+- `audit_logs`
 
-### Web App Scaffold
-
-- App Router route groups for marketing, auth, and dashboard surfaces
-- Live routes for:
-  - `/`
-  - `/sign-in`
-  - `/sign-up`
-  - `/verify`
-  - `/callback`
-  - `/onboarding`
-  - `/dashboard`
-  - `/branches`
-  - `/incidents`
-  - `/incidents/new`
-  - `/jobs`
-  - `/jobs/new`
-  - `/tasks`
-  - `/tasks/new`
-  - `/team`
-  - `/inbox`
-  - `/settings`
-- Placeholder routes preserved for:
-  - `/pricing`
-  - `/docs`
-  - `/contact`
-  - `/analytics`
-  - `/billing`
-  - `/customers`
-  - `/portal`
-- Global layout, loading state, error boundary, not-found screen, and health endpoint
-
-### Shared Infrastructure
-
-- Zod-validated env access in `packages/env`
-- Supabase client factories in `packages/supabase`
-- Proxy-based session refresh and route protection
-- Shell UI state managed in a focused client-side Zustand store
-- Security headers baseline
-- Lightweight logging helper
-
-### Database And Tenancy
-
-- Initial migration in `supabase/migrations/20260406_000001_sprint_1_auth_orgs.sql`
-- Follow-up hardening migration in `supabase/migrations/20260406_000002_sprint_1_followups.sql`
-- Profile bootstrap trigger from `auth.users`
-- `organizations`, `organization_members`, and `locations` tables
-- Starter RLS policies for self-profile access, org membership reads, workspace creation, and location access
-- Retry-safe `bootstrap_organization` RPC to keep workspace onboarding atomic
-- Seed data that creates a demo workspace and starter locations when a profile exists
-- Location-scoped member access and directory search for safe assignee lookup
-- Server-side reference generation for incidents, jobs, and tasks
-- Task tables and timeline storage for the first lightweight follow-up workflow
-
-### Sprint 4 Operations Delivery
-
-- Real directory-backed assignee search for branch-aware intake flows
-- New incident flow with severity, SLA-risk, timeline logging, and guarded assignment
-- New job flow with server-generated references and intake timeline activity
-- New task flow with optional linking to incidents or jobs in the same branch
-- Edit screens for incidents, jobs, and tasks with branch-safe validation
-- Status and assignee updates for all three operational record types
-- Timeline entries that summarize before/after changes for status, ownership, and record edits
-- Dashboard and module entry points for both create and edit flows
-- Collaboration panels for incidents, jobs, and tasks
-- Record comments and internal notes with soft-delete support
-- Mention extraction and persistence for future notification fan-out
-- Watch and mute controls with automatic watcher enrollment for participants
-- Watcher-driven notification generation backed by a real notifications table
-- Inbox triage actions for mark read, archive, restore, and bulk acknowledgement
-
-### Sprint 2 Shell
-
-- Premium dark app shell with responsive desktop and mobile navigation
-- Branch switcher shell backed by current organization locations
-- Notification panel and keyboard-triggered command palette
-- Dashboard widgets fed by typed summary and notification contracts
-
-### Delivery Baseline
-
-- GitHub Actions CI workflow
-- Dockerfile and local compose baseline
-- ADR, architecture, setup, deployment, API, product, and security docs
-
-### Sprint 6A SLA Foundation
-
-- SLA policy tables with organization-wide and location-specific scope
-- per-record SLA snapshots for incidents, jobs, and tasks
-- additive `first_response_at` and `resolved_at` timestamps on operational records
-- branch-aware policy resolution and snapshot upsert RPCs
-- typed SLA enums, records, and repository wrappers for future evaluator work
-- a tested app-side status-category helper that mirrors the new SQL status normalization rules
+This is now a meaningful operational SaaS schema, though it is still not the full long-term PulseOps domain model.
 
 ## Running This Branch
 
@@ -246,13 +167,10 @@ corepack pnpm exec supabase db reset
 corepack pnpm check
 ```
 
-## Package Manager
+### Optional billing and E2E validation
 
-This repo is intentionally pinned to `pnpm`.
-
-- Use `corepack pnpm install`
-- Do not use `npm install`
-- If `npm` was run in this repo already, remove `node_modules` and reinstall with `corepack pnpm install`
+- configure Stripe environment variables before exercising checkout, portal, and webhook flows
+- provide Playwright E2E credentials before running the authenticated browser suite
 
 ## Environment Setup
 
@@ -262,7 +180,7 @@ Copy the example file:
 cp .env.example .env.local
 ```
 
-Recommended `.env.local` starting point:
+Core local variables:
 
 ```env
 NODE_ENV=development
@@ -274,55 +192,29 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Important behavior on this branch:
 
-- the marketing and route shell can still boot locally without Supabase env values
-- when those values are missing, proxy-based session refresh is skipped in local development
-- auth, onboarding, and protected dashboard flows require valid Supabase configuration
-- production still requires valid env configuration
-
-## Database Status
-
-This branch now includes the first real schema migration and seed flow under [`supabase/`](./supabase). The database is still early, but it is no longer only scaffolding.
-
-Current schema scope:
-
-- `profiles`
-- `organizations`
-- `organization_members`
-- `locations`
-- `incidents`
-- `incident_timeline_events`
-- `jobs`
-- `job_timeline_events`
-- `tasks`
-- `task_timeline_events`
-- `location_member_access`
-- `organization_reference_counters`
-- `record_comments`
-- `record_comment_mentions`
-- `record_watchers`
-- `record_notifications`
-
-This is the first real operational schema slice, not yet the full long-term PulseOps domain model.
+- the public shell can still boot locally without Supabase env values
+- auth, onboarding, dashboard, billing, and admin activity flows require valid Supabase configuration
+- Stripe flows require the billing-specific env values documented in [`docs/setup/local-development.md`](./docs/setup/local-development.md)
 
 ## Quality Bar On This Branch
 
-This branch is meant to demonstrate that the project foundation is:
+This branch is meant to stay:
 
 - typed
 - linted
 - tested
 - buildable
 - documented
-- ready for feature sprints
-- polished enough for faster day-to-day triage in the live operations lists
+- production-minded in validation and authorization
+- ready for the next Sprint 7 slices on evaluator logic, escalations, and activity surfaces
 
 ## Next Likely Steps
 
-- evolve tenancy into the broader PulseOps tenant and branch model
-- add invitations and richer role or permission handling
-- expand authenticated E2E coverage from list productivity flows into creation, editing, collaboration, and inbox behavior
-- deepen the dashboard with live operations metrics
-- connect billing and subscription control paths
+- automate SLA evaluation and breach-risk calculation
+- add escalation execution and acknowledgement workflows
+- expand audit coverage across more sensitive server actions
+- add richer activity-feed surfaces on top of the new audit foundation
+- harden admin review flows with deeper test coverage
 
 ## Supporting Docs
 

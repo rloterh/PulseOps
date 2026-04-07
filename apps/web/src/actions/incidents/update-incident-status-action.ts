@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getCollaborationTargetFromDb } from '@/features/collaboration/repositories/collaboration.repository';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { updateIncidentStatusInDb } from '@/features/incidents/repositories/incidents.repository';
 import { updateIncidentStatusSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
@@ -53,6 +54,21 @@ export async function updateIncidentStatusAction(formData: FormData) {
       description: `Status: ${formatTokenLabel(updated.previousStatus)} -> ${formatTokenLabel(parsed.data.status)}.`,
       actorUserId: context.viewerId,
       actorName: context.viewerName,
+    });
+
+    await insertAuditLogInDb(supabase, {
+      tenantId: context.tenantId,
+      locationId: updated.location_id,
+      actorUserId: context.viewerId,
+      action: 'incident.status_changed',
+      entityType: 'incident',
+      entityId: parsed.data.incidentId,
+      entityLabel: updated.title,
+      scope: 'incident',
+      metadata: {
+        fromStatus: updated.previousStatus,
+        toStatus: parsed.data.status,
+      },
     });
 
     if (target) {

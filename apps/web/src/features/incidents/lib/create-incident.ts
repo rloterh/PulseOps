@@ -3,6 +3,7 @@ import 'server-only';
 import type { Database } from '@pulseops/supabase/types';
 import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { getAssignableUserById } from '@/features/directory/queries/get-assignable-user-by-id';
 import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
@@ -114,6 +115,23 @@ export async function createIncident(
       : `${incident.reference} was reported for ${location.name}.`,
     actorUserId: context.viewerId,
     actorName: context.viewerName,
+  });
+
+  await insertAuditLogInDb(supabase, {
+    tenantId: context.tenantId,
+    locationId: incident.location_id,
+    actorUserId: context.viewerId,
+    action: 'incident.created',
+    entityType: 'incident',
+    entityId: incident.id,
+    entityLabel: incident.title,
+    scope: 'incident',
+    metadata: {
+      reference: incident.reference,
+      severity: input.severity,
+      hasAssignee: Boolean(assignee),
+      slaRisk: input.slaRisk,
+    },
   });
 
   if (assignee) {

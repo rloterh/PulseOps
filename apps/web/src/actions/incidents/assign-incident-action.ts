@@ -7,6 +7,7 @@ import {
   ensureRecordWatchersInDb,
   getCollaborationTargetFromDb,
 } from '@/features/collaboration/repositories/collaboration.repository';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import {
   assignIncidentInDb,
   getIncidentMutationTargetFromDb,
@@ -101,6 +102,23 @@ export async function assignIncidentAction(formData: FormData) {
       description: `Assignee: ${previousLabel} -> ${nextLabel}.`,
       actorUserId: context.viewerId,
       actorName: context.viewerName,
+    });
+
+    await insertAuditLogInDb(supabase, {
+      tenantId: context.tenantId,
+      locationId: updated.location_id,
+      actorUserId: context.viewerId,
+      action: 'incident.assignee_changed',
+      entityType: 'incident',
+      entityId: parsed.data.incidentId,
+      entityLabel: updated.title,
+      scope: 'incident',
+      metadata: {
+        fromAssignee: previousLabel,
+        toAssignee: nextLabel,
+        fromAssigneeUserId: updated.previousAssigneeUserId,
+        toAssigneeUserId: updated.assignee_user_id,
+      },
     });
 
     if (target) {
