@@ -20,19 +20,19 @@ This branch currently includes:
 - Sprint 9 AI executive summaries, late-job risk signals, branch synthesis, explanation UI, run persistence, and feedback capture
 - Sprint 10 public landing, pricing, contact, blog, help center, docs, SEO support pages, and screenshot gallery foundations
 - Sprint 11 hardening foundation for shared safe errors, rate limiting, resilience states, and app-shell accessibility primitives
-- Sprint 12 portfolio packaging foundation for demo docs, architecture diagrams, screenshots planning, walkthrough script, and case study assets
+- Sprint 12 portfolio packaging foundation for demo docs, architecture diagrams, resettable demo seeding, screenshots planning, walkthrough script, and case study assets
 
 What this branch specifically adds beyond the completed Sprint 11 baseline:
 
 - source-controlled architecture, data-flow, and deployment Mermaid diagrams
 - a portfolio architecture companion write-up for reviewer-friendly system explanation
 - demo personas and a reviewer demo guide for role-based walkthroughs
+- resettable local demo seed scripts for the Northstar Facility Services reviewer tenant
 - screenshot shotlist, walkthrough video script, and case study markdown
 - a versioned screenshots folder placeholder under the web public assets
 
 What this branch does not claim yet:
 
-- deterministic demo seed scripts and seeded demo accounts
 - captured screenshot image files or a recorded walkthrough video
 
 ## Product Surface
@@ -138,6 +138,8 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 
 - architecture diagrams live in source-controlled Mermaid files under `docs/architecture`
 - demo personas and reviewer walkthrough guidance are documented under `docs/product` and `docs/portfolio`
+- `corepack pnpm seed:demo` creates a resettable Northstar Facility Services tenant with role-based users, branches, jobs, incidents, tasks, SLA snapshots, billing state, audit logs, notifications, saved views, and AI run examples
+- `corepack pnpm seed:demo:reset` removes only the seeded demo tenant and demo accounts
 - screenshot planning, walkthrough narration, and case study materials are ready for portfolio reuse
 - `apps/web/public/screenshots` is reserved for final captured screenshots once demo seed data is complete
 
@@ -234,6 +236,14 @@ corepack pnpm exec supabase start
 corepack pnpm exec supabase db reset
 ```
 
+### Seed demo data
+
+```bash
+corepack pnpm seed:demo
+```
+
+The demo seed uses `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and optional `PULSEOPS_DEMO_PASSWORD`. Run `corepack pnpm seed:demo:reset` if you only want to remove the seeded demo tenant and demo users.
+
 ### Verify the branch
 
 ```bash
@@ -261,6 +271,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+PULSEOPS_DEMO_PASSWORD=DemoPass123!
 ```
 
 Important behavior on this branch:
@@ -279,12 +290,10 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for continued Sprint 12 portfolio packaging on top of the completed Sprint 11 baseline
+- ready for Sprint 12 portfolio review and screenshot capture on top of the completed Sprint 11 baseline
 
 ## Next Likely Steps
 
-- add resettable demo seed scripts and local demo data
-- update setup docs with the final demo seed flow once scripts are in place
 - capture screenshots and record the walkthrough from seeded data
 
 ## Supporting Docs
@@ -298,6 +307,10 @@ This branch is meant to stay:
 - [Screenshot Shotlist](./docs/portfolio/screenshot-shotlist.md)
 - [Walkthrough Script](./docs/portfolio/walkthrough-script.md)
 - [Case Study](./docs/portfolio/case-study.md)
+- [Reviewer Brief](./docs/portfolio/reviewer-brief.md)
+- [Sprint 12 Release Notes](./docs/portfolio/release-notes.md)
+- [Sprint 12 Final Acceptance Checklist](./docs/portfolio/final-acceptance-checklist.md)
+- [Publishing Checklist](./docs/portfolio/publishing-checklist.md)
 - [Sprint 11 Security Review](./docs/security-review.md)
 - [Sprint 11 Hardening Checklist](./docs/hardening-checklist.md)
 - [Sprint 11 Rate Limit Matrix](./docs/rate-limit-matrix.md)

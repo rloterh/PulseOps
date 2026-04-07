@@ -16,6 +16,19 @@
 
 The `db reset` step applies the current local schema through the current branch baseline, including tenancy, operational records, collaboration, notifications, billing, audit logging, analytics, and the Sprint 9 AI run plus feedback tables.
 
+## Demo Seed Flow
+
+Sprint 12 adds a resettable local demo tenant for portfolio review.
+
+1. Start Supabase with `corepack pnpm exec supabase start`.
+2. Apply the schema with `corepack pnpm exec supabase db reset`.
+3. Ensure `.env.local` includes `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+4. Run `corepack pnpm seed:demo`.
+
+The seed creates Northstar Facility Services with role-based demo users, four branches, jobs, incidents, tasks, timelines, notifications, billing state, SLA snapshots, saved views, audit logs, and AI run examples. Use `corepack pnpm seed:demo:reset` to remove the seeded tenant and demo users without resetting the full database.
+
+The default demo password is `DemoPass123!`. Override it with `PULSEOPS_DEMO_PASSWORD` in `.env.local` for local reviewer environments.
+
 ## Verification
 
 Run `corepack pnpm check` to execute linting, type-checking, tests, and builds across the workspace.
@@ -71,6 +84,7 @@ Sprint 9 adds these optional values when you want to experiment with future exte
 - `AI_PROVIDER`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+- `PULSEOPS_DEMO_PASSWORD`
 
 If those AI variables are missing, PulseOps stays on the deterministic analytics AI layer and still records `ai_runs` plus operator feedback without crashing.
 

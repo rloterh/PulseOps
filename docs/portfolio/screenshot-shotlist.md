@@ -2,6 +2,8 @@
 
 Capture screenshots against seeded local demo data. Use a clean browser window, hide local secrets, and keep desktop captures around 1440 px wide unless a mobile shot is requested.
 
+Seed the demo tenant first with `corepack pnpm seed:demo`, then start the app with `corepack pnpm dev`.
+
 ## 01 - Landing Page
 
 - Account: none
@@ -71,3 +73,18 @@ Capture screenshots against seeded local demo data. Use a clean browser window, 
 - Route: `/dashboard`
 - Purpose: show responsive polish
 - Notes: use a mobile viewport and avoid developer overlays
+
+## File Naming
+
+Save final captured screenshots under `apps/web/public/screenshots` with stable names:
+
+- `01-landing-page.png`
+- `02-dashboard-overview.png`
+- `03-branch-comparison.png`
+- `04-job-list-filters.png`
+- `05-job-detail.png`
+- `06-incident-center.png`
+- `07-audit-logs.png`
+- `08-billing-state.png`
+- `09-ai-summary.png`
+- `10-mobile-dashboard.png`

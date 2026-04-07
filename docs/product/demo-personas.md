@@ -4,6 +4,8 @@ These demo personas are for local and reviewer environments only. They should no
 
 Shared local demo password: `DemoPass123!`
 
+Create or refresh these users with `corepack pnpm seed:demo` after local Supabase is running and `.env.local` includes `NEXT_PUBLIC_SUPABASE_URL` plus `SUPABASE_SERVICE_ROLE_KEY`.
+
 ## Owner
 
 - Email: `owner@pulseops-demo.com`

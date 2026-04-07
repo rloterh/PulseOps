@@ -1,0 +1,8 @@
+-- Sprint 12 demo data is seeded through the Supabase Admin API so demo auth
+-- users can be created safely and consistently.
+--
+-- Run from the repository root after local Supabase is running:
+--   corepack pnpm seed:demo
+--
+-- Remove only the demo tenant and demo users with:
+--   corepack pnpm seed:demo:reset

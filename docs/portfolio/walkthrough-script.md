@@ -2,6 +2,18 @@
 
 Target length: 4 to 7 minutes.
 
+## Timestamp Template
+
+- 00:00 - Intro and product framing
+- 00:30 - Problem and audience
+- 01:00 - Dashboard and branch context
+- 01:45 - Job operations workflow
+- 02:45 - Incident management and SLA escalation
+- 03:45 - Analytics and AI explanation
+- 04:45 - Billing and entitlements
+- 05:30 - Audit, security, and hardening
+- 06:15 - Closing and portfolio positioning
+
 ## 1. Intro
 
 - Route: `/`
@@ -62,3 +74,7 @@ Target length: 4 to 7 minutes.
 - Route: `/docs`
 - Account: none
 - Say: "PulseOps demonstrates product strategy, multi-tenant architecture, operational data modeling, billing integration, explainable AI, and production-minded hardening in one cohesive portfolio project."
+
+## Caption-Ready Short Narration
+
+PulseOps is an AI-powered operations command center for multi-location service businesses. It centralizes jobs, incidents, branch analytics, SLA visibility, auditability, billing state, and explainable executive summaries in one SaaS-style platform. The demo uses seeded Northstar Facility Services data so reviewers can see realistic branch workflows, escalation pressure, payment state, and AI-assisted risk framing without needing production data.

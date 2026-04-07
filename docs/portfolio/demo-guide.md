@@ -24,8 +24,12 @@ The canonical demo accounts are documented in [Demo Personas](../product/demo-pe
 2. Copy `.env.example` to `.env.local`.
 3. Start Supabase with `corepack pnpm exec supabase start`.
 4. Reset the local database with `corepack pnpm exec supabase db reset`.
-5. Run the demo seed flow once it is available.
+5. Run the demo seed flow with `corepack pnpm seed:demo`.
 6. Start the app with `corepack pnpm dev`.
+
+The seed flow creates the Northstar Facility Services demo tenant, demo auth users, branch access, operational records, timelines, notifications, audit logs, billing state, SLA snapshots, saved views, and AI run examples. Use `corepack pnpm seed:demo:reset` when you want to remove only the seeded demo tenant and demo accounts.
+
+The default local password is `DemoPass123!`. Override it with `PULSEOPS_DEMO_PASSWORD` in `.env.local` if you need a different reviewer password.
 
 ## External Service Fallbacks
 
