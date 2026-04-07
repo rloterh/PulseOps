@@ -1,12 +1,12 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/ops-list-polish` branch now carries Sprint 5A4 work on top of the earlier foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, real operational modules for incidents, jobs, and tasks, directory-backed creation flows, edit and reassignment workflows, collaboration on operational records, a real watcher-driven notification feed plus inbox triage surface, and now higher-productivity operational list workflows with saved views, bulk-status actions, lightweight user-side view preferences, and Playwright E2E scaffolding for the core list flows.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/billing-stripe-subscriptions` branch carries the first real Sprint 6 billing slice on top of the earlier operations foundation: authentication, workspace onboarding, database tenancy, a premium protected shell, operational modules for incidents, jobs, and tasks, collaboration and notifications, list productivity upgrades, and now Stripe-backed billing foundations with checkout, portal launch, webhook ingestion, subscription mirroring, and entitlement mapping.
 
 This branch is still intentionally early-stage. It demonstrates the working auth and tenancy baseline without pretending the full operations platform is already built.
 
 ## Branch Status
 
-Current branch: `feature/ops-list-polish`
+Current branch: `feature/billing-stripe-subscriptions`
 
 What this branch delivers:
 
@@ -39,16 +39,21 @@ What this branch delivers:
 - real per-user saved views for jobs and incidents, backed by the database
 - bulk status updates for selected jobs and incidents inside the live list surfaces
 - Playwright E2E scaffolding for jobs and incidents list productivity flows
+- centralized plan configuration and server-side entitlement mapping
+- Stripe server client wiring plus checkout-session and billing-portal launch flows
+- billing customer, subscription, entitlement, and webhook-event persistence
+- webhook ingestion with idempotent event recording and subscription sync
+- real pricing and billing pages replacing the older placeholders
 - a Tailwind v4 design-token baseline and minimal UI primitives
 - CI, Docker, docs, verification tooling, and initial E2E test harness
 - marketing and dashboard routes aligned to the PulseOps domain model
 
 What this branch does not claim yet:
 
-- analytics, billing, or customer workflows beyond scaffolded surfaces
+- invoice center, usage metering, or seat-based billing
+- analytics or customer workflows beyond scaffolded surfaces
 - the final long-term tenant and branch schema for the whole product
 - invitation flows, fine-grained permissions, or customer portal auth
-- Stripe integration
 - realtime updates or attachment uploads
 - AI features beyond structural preparation
 
@@ -61,6 +66,15 @@ PulseOps is intended to become a premium B2B SaaS platform, so this branch prove
 - protected routing and onboarding redirects
 - org-scoped reads in the dashboard shell
 - a professional base for later collaboration, customer, billing, and analytics work
+
+### Sprint 6 Billing Slice
+
+- `billing_customers`, `billing_subscriptions`, `billing_events`, and `organization_entitlements`
+- public pricing surface with live checkout entry points
+- protected billing page with plan, entitlement, and subscription-state visibility
+- Stripe checkout and billing-portal server actions
+- idempotent Stripe webhook ingestion and subscription mirroring
+- server-side plan-to-entitlement mapping for later enforcement
 
 ## Tech Stack
 
