@@ -9,6 +9,7 @@ import { ensureRecordWatchersInDb } from '@/features/collaboration/repositories/
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import type { CreateIncidentInput } from '@/features/incidents/schemas/create-incident.schema';
+import { syncIncidentSlaStateFromRow } from './sync-incident-sla';
 import { canCreateIncidents } from './incident-permissions';
 
 interface CreateIncidentContext {
@@ -97,12 +98,16 @@ export async function createIncident(
       next_action: input.nextAction,
       ...(input.reportedAt ? { opened_at: input.reportedAt } : {}),
     })
-    .select('id, title, reference, location_id')
+    .select(
+      'id, organization_id, location_id, title, reference, opened_at, first_response_at, resolved_at, severity, status, sla_risk',
+    )
     .single();
 
   if (insertError) {
     throw new Error(insertError.message);
   }
+
+  await syncIncidentSlaStateFromRow(supabase, incident);
 
   await insertTimelineEvent(supabase, {
     kind: 'incident',

@@ -10,6 +10,7 @@ import {
   createIncidentEscalationInDb,
   formatIncidentEscalationTargetLabel,
 } from '@/features/incidents/repositories/incident-escalations.repository';
+import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla';
 import { getIncidentMutationTargetFromDb } from '@/features/incidents/repositories/incidents.repository';
 import { createIncidentEscalationSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
@@ -81,6 +82,11 @@ export async function createIncidentEscalationAction(formData: FormData) {
     return;
   }
 
+  const syncedSnapshot = await syncIncidentSlaState(supabase, {
+    tenantId: context.tenantId,
+    incidentId: parsed.data.incidentId,
+  });
+
   const targetLabel = formatIncidentEscalationTargetLabel(
     created.escalation,
     buildProfileLabelMap(members),
@@ -120,6 +126,8 @@ export async function createIncidentEscalationAction(formData: FormData) {
       targetRole: normalizedTargetRole,
       targetQueue: parsed.data.targetQueue || null,
       reason: parsed.data.reason || null,
+      slaRisk: syncedSnapshot?.risk_level ?? null,
+      escalationState: syncedSnapshot?.escalation_state ?? null,
     },
   });
 

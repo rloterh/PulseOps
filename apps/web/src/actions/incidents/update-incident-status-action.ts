@@ -9,6 +9,7 @@ import { completeOpenIncidentEscalationsInDb } from '@/features/incidents/reposi
 import { updateIncidentStatusInDb } from '@/features/incidents/repositories/incidents.repository';
 import { updateIncidentStatusSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
+import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
@@ -44,6 +45,10 @@ export async function updateIncidentStatusAction(formData: FormData) {
             incidentId: parsed.data.incidentId,
           })
         : 0;
+    const syncedSnapshot = await syncIncidentSlaState(supabase, {
+      tenantId: context.tenantId,
+      incidentId: parsed.data.incidentId,
+    });
     const target = await getCollaborationTargetFromDb(supabase, {
       tenantId: context.tenantId,
       entityType: 'incident',
@@ -77,6 +82,8 @@ export async function updateIncidentStatusAction(formData: FormData) {
         fromStatus: updated.previousStatus,
         toStatus: parsed.data.status,
         completedEscalationCount,
+        slaRisk: syncedSnapshot?.risk_level ?? null,
+        escalationState: syncedSnapshot?.escalation_state ?? null,
       },
     });
 

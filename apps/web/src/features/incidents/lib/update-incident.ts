@@ -1,11 +1,13 @@
 import 'server-only';
 
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import type { Database } from '@pulseops/supabase/types';
 import { describeFieldChanges } from '@/lib/records/describe-field-changes';
 import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { syncIncidentSlaState } from './sync-incident-sla';
 
 interface UpdateIncidentContext {
   viewerId: string;
@@ -123,6 +125,11 @@ export async function updateIncident(
     throw new Error(updateError.message);
   }
 
+  const syncedSnapshot = await syncIncidentSlaState(supabase, {
+    tenantId: context.tenantId,
+    incidentId: input.incidentId,
+  });
+
   await insertTimelineEvent(supabase, {
     kind: 'incident',
     tenantId: context.tenantId,
@@ -132,6 +139,21 @@ export async function updateIncident(
     description: changeDescription,
     actorUserId: context.viewerId,
     actorName: context.viewerName,
+  });
+
+  await insertAuditLogInDb(supabase, {
+    tenantId: context.tenantId,
+    actorUserId: context.viewerId,
+    action: 'incident.updated',
+    entityType: 'incident',
+    entityId: input.incidentId,
+    entityLabel: input.title,
+    scope: 'incident',
+    metadata: {
+      severity: input.severity,
+      slaRisk: syncedSnapshot?.risk_level ?? null,
+      statusCategory: syncedSnapshot?.status_category ?? null,
+    },
   });
 
   return {
