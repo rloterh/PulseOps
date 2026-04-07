@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { getSiteUrl } from '@/lib/site/get-site-url';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: 'PulseOps',
     template: '%s | PulseOps',

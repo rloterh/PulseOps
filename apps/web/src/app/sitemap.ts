@@ -5,10 +5,10 @@ import {
   getHelpArticles,
   getSeoPagesByFamily,
 } from '@/lib/content/marketing-content';
-
-const baseUrl = 'https://pulseops.app';
+import { getSiteUrl } from '@/lib/site/get-site-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = getSiteUrl();
   const staticRoutes = [
     '',
     '/pricing',
