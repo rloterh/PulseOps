@@ -268,6 +268,7 @@ function buildEvaluationRow(input: {
     branchName: input.branchName,
     priorityLabel: input.priorityLabel,
     severityLabel: input.severityLabel,
+    createdAtValue: input.snapshot.created_at,
     createdAtLabel: formatDateTimeLabel(input.snapshot.created_at),
     firstResponseMinutes,
     resolutionMinutes,

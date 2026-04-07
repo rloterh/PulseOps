@@ -40,6 +40,8 @@ What this branch specifically adds beyond `dev`:
 - branch, priority, and severity breakdown tables with record-level evaluation review
 - authenticated `/api/analytics/export` route for stable branch-comparison and SLA CSV downloads
 - export links wired directly into the branch-comparison and SLA table surfaces
+- analytics pages, API routes, and CSV exports now resolve branch scope consistently from the same shell or explicit filter context
+- SLA CSV exports now use raw stable timestamps for `created_at` instead of UI-formatted display labels
 
 What this branch does not claim yet:
 

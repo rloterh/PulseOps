@@ -110,6 +110,7 @@ export interface AnalyticsSlaTableRow {
   branchName: string;
   priorityLabel: string | null;
   severityLabel: string | null;
+  createdAtValue: string;
   createdAtLabel: string;
   firstResponseMinutes: number | null;
   resolutionMinutes: number | null;
