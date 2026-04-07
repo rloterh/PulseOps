@@ -32,6 +32,12 @@ export const APP_NAV_ITEMS: AppNavItem[] = [
     match: 'startsWith',
   },
   {
+    label: 'Analytics',
+    href: '/analytics',
+    icon: 'analytics',
+    match: 'startsWith',
+  },
+  {
     label: 'Customers',
     href: '/customers',
     icon: 'customers',
