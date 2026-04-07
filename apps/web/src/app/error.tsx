@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Button } from '@pulseops/ui';
+import { ErrorState } from '@/components/system/error-state';
 
-export default function GlobalError({
+export default function AppError({
   error,
   reset,
 }: {
@@ -15,24 +15,13 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en">
-      <body>
-        <main className="flex min-h-screen items-center justify-center px-6">
-          <div className="max-w-md space-y-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-warning)]">
-              Application Error
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Something went wrong.
-            </h1>
-            <p className="text-sm leading-6 text-[var(--color-fg-muted)]">
-              The global boundary is in place so feature work can add recoverable
-              UI states without rebuilding the shell later.
-            </p>
-            <Button onClick={reset}>Try again</Button>
-          </div>
-        </main>
-      </body>
-    </html>
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-6 py-12">
+      <ErrorState
+        title="PulseOps hit an unexpected app error."
+        description="The current route crashed before it could finish rendering. You can retry safely or return home."
+        onAction={reset}
+        actionHref="/"
+      />
+    </main>
   );
 }

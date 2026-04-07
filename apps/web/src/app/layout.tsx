@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { FocusBoundary } from '@/components/system/focus-boundary';
+import { LiveAnnouncer } from '@/components/system/live-announcer';
+import { SkipLink } from '@/components/system/skip-link';
 import { getSiteUrl } from '@/lib/site/get-site-url';
 
 export const metadata: Metadata = {
@@ -16,7 +19,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        <LiveAnnouncer />
+        <FocusBoundary>{children}</FocusBoundary>
+      </body>
     </html>
   );
 }

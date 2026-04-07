@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/cms-marketing-platform` branch carries the full `dev` baseline through completed Sprint 9 AI work, then layers the active Sprint 10 marketing and CMS implementation on top.
+PulseOps is an operations command center for multi-location service businesses. The current `dev` branch carries the completed baseline through Sprint 10 and now starts Sprint 11 hardening on top of that production-shaped product surface.
 
 ## Branch Status
 
-Current branch: `feature/cms-marketing-platform`
+Current branch: `dev`
 
 This branch currently includes:
 
@@ -19,21 +19,21 @@ This branch currently includes:
 - Sprint 8 analytics overview, branch comparison, SLA metrics, and export-ready analytics reporting
 - Sprint 9 AI executive summaries, late-job risk signals, branch synthesis, explanation UI, run persistence, and feedback capture
 - Sprint 10 public landing, pricing, contact, blog, help center, docs, SEO support pages, and screenshot gallery foundations
+- Sprint 11 hardening foundation for shared safe errors, rate limiting, resilience states, and app-shell accessibility primitives
 
-What this branch specifically adds beyond `dev`:
+What this branch specifically adds beyond the completed Sprint 10 baseline:
 
-- a proper public marketing header and footer instead of the older placeholder shell
-- a polished landing page that explains PulseOps as an AI-powered operations command center instead of a stale Sprint 1 splash page
-- a real public pricing surface aligned to the live Stripe billing plans and entitlement model
-- a non-placeholder public contact page for rollout, sales, and support conversations
-- typed content-in-repo marketing collections for blog, help center, docs, SEO pages, and screenshot scenes
-- static public article/detail routes for `/blog/[slug]`, `/help/[slug]`, `/docs/[[...slug]]`, `/compare/[slug]`, `/solutions/[slug]`, and `/templates/[slug]`
-- a public screenshot gallery for case-study-ready product scenes and portfolio storytelling
+- centralized safe-error helpers for APIs and future server actions
+- request fingerprinting plus shared rate-limit utilities
+- stronger default security headers and reduced-motion/focus-visible globals
+- shared loading, empty, and error-state primitives for the app shell
+- root skip-link, live-announcer placeholders, and focus boundary support
+- first hardening pass on analytics export and AI routes with safe error responses and route-level rate limiting
 
 What this branch does not claim yet:
 
-- a full external headless CMS admin
-- marketing automation vendor integrations or localization systems beyond Sprint 10 scope
+- the full Sprint 11 hardening sweep across every incident, admin, billing, upload, and CMS mutation path
+- final upload hardening adoption, bundle review, or the complete accessibility pass
 
 ## Product Surface
 
@@ -119,6 +119,14 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - the executive summary now exposes its own supporting facts and connects directly to downstream operational views
 - AI outputs now persist as traceable runs with feedback capture instead of only existing as server-rendered copy
 - branch comparison now generates its own AI summary, strongest-branch callout, highest-risk branch callout, and recommended next moves
+
+### Sprint 11 Hardening Foundations
+
+- root `loading`, `error`, `global-error`, and `not-found` states now use shared resilience primitives
+- the app shell now exposes a skip link, focus boundary, and live-announcer regions for better keyboard support
+- analytics export and AI routes now use safe error responses, structured logging, and route-level rate limiting
+- stronger default cross-origin and permissions headers are applied through `next.config.ts`
+- early hardening docs are in place for checklist, rate-limit matrix, and upload policy guidance
 
 ## Tech Stack
 
@@ -258,15 +266,14 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for Sprint 9 continuation on top of the completed Sprint 8 analytics baseline
+- ready for continued Sprint 11 hardening on top of the completed Sprint 10 platform baseline
 
 ## Next Likely Steps
 
-- add richer AI explanation drill-downs and more nuanced executive narratives
-- expand late-job risk modelling beyond the first explainable heuristics layer
-- add job-specific focused AI explanation routes on top of the run/feedback backbone
-- decide whether a later Sprint 9 follow-up should keep the deterministic provider or add a live LLM provider on top of the new run/feedback backbone
-- keep analytics performance under review with local explain-plan checks against seeded Supabase data
+- extend the hardening pass across uploads, incident/admin/billing writes, and remaining abuse-prone endpoints
+- add the shared accessibility form, icon-button, and table-empty primitives from the Sprint 11 plan
+- run the broader performance and bundle review pass for heavy analytics, AI, and admin surfaces
+- lock in the final Sprint 11 test matrix and manual QA checklist
 
 ## Supporting Docs
 
