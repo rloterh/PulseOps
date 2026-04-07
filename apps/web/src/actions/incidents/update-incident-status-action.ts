@@ -13,6 +13,7 @@ import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 export async function updateIncidentStatusAction(formData: FormData) {
   const parsed = updateIncidentStatusSchema.safeParse({
@@ -25,6 +26,18 @@ export async function updateIncidentStatusAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:status',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const updated = await updateIncidentStatusInDb(supabase, {
     tenantId: context.tenantId,

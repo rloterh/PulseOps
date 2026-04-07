@@ -431,6 +431,13 @@ function getBillingFlashMessage(status?: string):
         description:
           'Stripe environment variables are missing in this environment, so checkout and portal actions are unavailable.',
       };
+    case 'rate-limited':
+      return {
+        tone: 'warning',
+        title: 'Billing action paused',
+        description:
+          'Too many billing actions were requested in a short window. Wait a moment, then try again from the billing page.',
+      };
     case 'no-customer':
       return {
         tone: 'warning',

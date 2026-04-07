@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { updateIncidentSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { updateIncident } from '@/features/incidents/lib/update-incident';
 import type { CreateIncidentActionState } from '@/features/incidents/types/incident.types';
@@ -32,6 +33,20 @@ export async function updateIncidentAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:edit',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many incident edits. Please wait a moment and try again.',
+    };
+  }
+
   const result = await updateIncident(parsed.data, context);
 
   if (!result.ok) {

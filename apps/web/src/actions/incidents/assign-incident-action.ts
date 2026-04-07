@@ -18,6 +18,7 @@ import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.r
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
 import { isMemberSelectionAllowed } from '@/lib/organizations/member-selection';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 function getMemberLabel(
   members: Awaited<ReturnType<typeof getMemberOptions>>,
@@ -44,6 +45,18 @@ export async function assignIncidentAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:assignment',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const current = await getIncidentMutationTargetFromDb(supabase, {
     tenantId: context.tenantId,

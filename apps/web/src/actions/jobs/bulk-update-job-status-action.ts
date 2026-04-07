@@ -15,6 +15,7 @@ import { createBulkActionFeedback } from '@/features/operations-list/lib/bulk-ac
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 export interface BulkJobStatusActionState {
   error?: string;
@@ -46,6 +47,19 @@ export async function bulkUpdateJobStatusAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'job:bulk-status',
+      actorId: context.viewerId,
+      limit: 20,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many bulk job updates. Please wait a moment and try again.',
+    };
+  }
 
   if (!canCreateJobs(context.membershipRole)) {
     return {

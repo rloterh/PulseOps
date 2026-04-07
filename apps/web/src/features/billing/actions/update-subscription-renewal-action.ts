@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { canManageBilling } from '@/lib/billing/billing-access';
 import { syncBillingFromStripeSubscription } from '@/lib/billing/sync-billing-state';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { getStripe } from '@/lib/stripe/server';
 import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { getBillingSubscriptionFromDb } from '@/features/billing/repositories/billing.repository';
@@ -26,6 +27,17 @@ export async function updateSubscriptionRenewalAction(formData: FormData) {
 
   if (!canManageBilling(context.membershipRole)) {
     redirect('/billing?status=forbidden' as unknown as Route);
+  }
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'billing:subscription-renewal',
+      actorId: context.viewerId,
+      limit: 12,
+      windowMs: 15 * 60 * 1000,
+    })
+  ) {
+    redirect('/billing?status=rate-limited' as unknown as Route);
   }
 
   if (!parsed.success) {

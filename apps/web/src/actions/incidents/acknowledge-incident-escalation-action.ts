@@ -18,6 +18,7 @@ import { createRecordNotifications } from '@/features/notifications/repositories
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 function buildProfileLabelMap(
   members: Awaited<ReturnType<typeof getMemberOptions>>,
@@ -36,6 +37,18 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:escalation-ack',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const [incident, currentEscalation] = await Promise.all([
     getIncidentMutationTargetFromDb(supabase, {

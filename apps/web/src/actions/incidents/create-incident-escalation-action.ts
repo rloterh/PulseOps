@@ -18,6 +18,7 @@ import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.r
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
 import { isMemberSelectionAllowed } from '@/lib/organizations/member-selection';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 function buildProfileLabelMap(
   members: Awaited<ReturnType<typeof getMemberOptions>>,
@@ -40,6 +41,17 @@ export async function createIncidentEscalationAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:escalation',
+      actorId: context.viewerId,
+      limit: 30,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
 
   if (!canManageIncidentEscalations(context.membershipRole)) {
     return;

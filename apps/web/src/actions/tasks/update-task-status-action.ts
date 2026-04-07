@@ -10,6 +10,7 @@ import { createRecordNotifications } from '@/features/notifications/repositories
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 export async function updateTaskStatusAction(formData: FormData) {
   const parsed = updateTaskStatusSchema.safeParse({
@@ -22,6 +23,18 @@ export async function updateTaskStatusAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'task:status',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const updated = await updateTaskStatusInDb(supabase, {
     tenantId: context.tenantId,

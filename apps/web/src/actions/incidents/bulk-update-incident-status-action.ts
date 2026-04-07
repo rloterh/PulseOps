@@ -15,6 +15,7 @@ import { createBulkActionFeedback } from '@/features/operations-list/lib/bulk-ac
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 export interface BulkIncidentStatusActionState {
   error?: string;
@@ -46,6 +47,19 @@ export async function bulkUpdateIncidentStatusAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'incident:bulk-status',
+      actorId: context.viewerId,
+      limit: 20,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many bulk incident updates. Please wait a moment and try again.',
+    };
+  }
 
   if (!canCreateIncidents(context.membershipRole)) {
     return {

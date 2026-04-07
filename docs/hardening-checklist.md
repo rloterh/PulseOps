@@ -4,6 +4,9 @@
 
 - Safe server-side errors are used for abuse-prone analytics and AI routes.
 - Sensitive analytics and AI APIs are rate-limited by actor and request fingerprint.
+- Billing checkout, portal, and subscription renewal server actions are rate-limited.
+- Incident create, edit, status, assignment, escalation, and bulk status actions are rate-limited.
+- Job and task assignment/status actions now share the same action-level abuse protection.
 - Stronger cross-origin and permissions headers are applied at the app edge.
 
 ## Resilience
@@ -19,6 +22,6 @@
 
 ## Remaining Sprint 11 sweeps
 
-- Extend rate limiting and safe errors to uploads, billing, incident writes, and admin mutations.
+- Extend rate limiting and safe errors to uploads, admin mutations, and any remaining form-heavy public surfaces.
 - Add shared form, icon-button, table-empty, and performance utilities.
 - Run the broader accessibility and bundle review pass.

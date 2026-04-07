@@ -102,13 +102,15 @@ export default async function PricingPage({
                 ? 'Checkout was canceled before a subscription was created.'
                 : status === 'checkout-error'
                   ? 'Stripe could not create a checkout session.'
-                  : status === 'invalid-plan'
-                    ? 'The selected plan was not valid.'
-                    : status === 'plan-updated'
-                      ? 'Your plan was updated successfully.'
-                      : status === 'no-change'
-                        ? 'That plan is already active for the current organization.'
-                        : 'Billing returned a status update.'}
+                    : status === 'invalid-plan'
+                      ? 'The selected plan was not valid.'
+                      : status === 'plan-updated'
+                        ? 'Your plan was updated successfully.'
+                        : status === 'no-change'
+                          ? 'That plan is already active for the current organization.'
+                          : status === 'rate-limited'
+                            ? 'Too many billing actions were requested. Wait a moment and try again.'
+                            : 'Billing returned a status update.'}
           </div>
         ) : null}
       </section>
