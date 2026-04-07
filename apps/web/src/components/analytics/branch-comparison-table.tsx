@@ -1,3 +1,4 @@
+import { DataTableEmptyRow } from '@/components/system/data-table-empty-row';
 import type { AnalyticsBranchComparisonRow } from '@/features/analytics/types/analytics.types';
 import {
   formatMetricMinutes,
@@ -48,26 +49,34 @@ export function BranchComparisonTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.branchId} className="border-t border-white/6">
-                <td className="px-5 py-4 font-medium text-white">{row.branchName}</td>
-                <td className="px-5 py-4">{formatMetricNumber(row.jobsCreated)}</td>
-                <td className="px-5 py-4">{formatMetricNumber(row.jobsResolved)}</td>
-                <td className="px-5 py-4">{formatMetricNumber(row.openBacklog)}</td>
-                <td className="px-5 py-4">
-                  <BacklogDelta delta={row.backlogDelta} />
-                </td>
-                <td className="px-5 py-4">{formatMetricNumber(row.incidentCount)}</td>
-                <td className="px-5 py-4">
-                  {formatMetricMinutes(row.medianResolutionMinutes)}
-                </td>
-                <td className="px-5 py-4">
-                  {formatMetricPercent(row.firstResponseSlaRate)}
-                </td>
-                <td className="px-5 py-4">{formatMetricPercent(row.resolutionSlaRate)}</td>
-                <td className="px-5 py-4">{formatMetricNumber(row.breachCount)}</td>
-              </tr>
-            ))}
+            {rows.length > 0 ? (
+              rows.map((row) => (
+                <tr key={row.branchId} className="border-t border-white/6">
+                  <td className="px-5 py-4 font-medium text-white">{row.branchName}</td>
+                  <td className="px-5 py-4">{formatMetricNumber(row.jobsCreated)}</td>
+                  <td className="px-5 py-4">{formatMetricNumber(row.jobsResolved)}</td>
+                  <td className="px-5 py-4">{formatMetricNumber(row.openBacklog)}</td>
+                  <td className="px-5 py-4">
+                    <BacklogDelta delta={row.backlogDelta} />
+                  </td>
+                  <td className="px-5 py-4">{formatMetricNumber(row.incidentCount)}</td>
+                  <td className="px-5 py-4">
+                    {formatMetricMinutes(row.medianResolutionMinutes)}
+                  </td>
+                  <td className="px-5 py-4">
+                    {formatMetricPercent(row.firstResponseSlaRate)}
+                  </td>
+                  <td className="px-5 py-4">{formatMetricPercent(row.resolutionSlaRate)}</td>
+                  <td className="px-5 py-4">{formatMetricNumber(row.breachCount)}</td>
+                </tr>
+              ))
+            ) : (
+              <DataTableEmptyRow
+                colSpan={10}
+                title="No branch analytics rows"
+                description="Try widening the reporting window or selecting all branches."
+              />
+            )}
           </tbody>
         </table>
       </div>

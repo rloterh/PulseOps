@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `dev` branch carries the completed baseline through Sprint 10 and now starts Sprint 11 hardening on top of that production-shaped product surface.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/production-hardening` branch carries the completed baseline through Sprint 10 and continues Sprint 11 hardening on top of that production-shaped product surface.
 
 ## Branch Status
 
-Current branch: `dev`
+Current branch: `feature/production-hardening`
 
 This branch currently includes:
 
@@ -28,12 +28,14 @@ What this branch specifically adds beyond the completed Sprint 10 baseline:
 - stronger default security headers and reduced-motion/focus-visible globals
 - shared loading, empty, and error-state primitives for the app shell
 - root skip-link, live-announcer placeholders, and focus boundary support
-- first hardening pass on analytics export and AI routes with safe error responses and route-level rate limiting
+- analytics export, analytics JSON, and AI routes use safe error responses, structured logging, and route-level rate limiting
+- auth, billing, operations, collaboration, saved-view, and notification mutations use shared action-level rate limiting
+- accessibility primitives and performance review helpers are in place for the remaining manual hardening sweep
 
 What this branch does not claim yet:
 
-- the full Sprint 11 hardening sweep across every incident, admin, billing, upload, and CMS mutation path
-- final upload hardening adoption, bundle review, or the complete accessibility pass
+- final browser-level accessibility and performance QA across the most interaction-heavy surfaces
+- upload hardening adoption on a production upload endpoint, because no real upload endpoint exists yet
 
 ## Product Surface
 
@@ -128,7 +130,9 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - billing checkout, billing portal, subscription renewal, and operations write actions now use shared server-action rate limiting
 - auth, collaboration, saved-view, notification, and analytics JSON routes now have the same abuse-prevention posture
 - stronger default cross-origin and permissions headers are applied through `next.config.ts`
-- early hardening docs are in place for checklist, rate-limit matrix, and upload policy guidance
+- early hardening docs are in place for checklist, security review, rate-limit matrix, and upload policy guidance
+- shared accessibility primitives now cover icon buttons, form fields, and semantic table-empty rows
+- lightweight performance helpers and review docs are in place for bundle and lazy-loading decisions
 
 ## Tech Stack
 
@@ -272,9 +276,9 @@ This branch is meant to stay:
 
 ## Next Likely Steps
 
-- extend the hardening pass across uploads, admin mutations, and any remaining form-heavy public surfaces
-- add the shared accessibility form, icon-button, and table-empty primitives from the Sprint 11 plan
-- run the broader performance and bundle review pass for heavy analytics, AI, and admin surfaces
+- apply upload hardening when a production upload endpoint is introduced
+- continue sweeping form-heavy and icon-only controls to adopt the new accessibility primitives where needed
+- run the broader browser-level performance and bundle review pass for heavy analytics, AI, and admin surfaces
 - lock in the final Sprint 11 test matrix and manual QA checklist
 
 ## Supporting Docs
@@ -282,6 +286,12 @@ This branch is meant to stay:
 - [Architecture](./docs/architecture/README.md)
 - [API](./docs/api/README.md)
 - [Security](./docs/security/README.md)
+- [Sprint 11 Security Review](./docs/security-review.md)
+- [Sprint 11 Hardening Checklist](./docs/hardening-checklist.md)
+- [Sprint 11 Rate Limit Matrix](./docs/rate-limit-matrix.md)
+- [Sprint 11 Upload Policy](./docs/upload-policy.md)
+- [Sprint 11 Accessibility QA](./docs/accessibility-qa.md)
+- [Sprint 11 Performance Review](./docs/performance-review.md)
 - [Setup](./docs/setup/local-development.md)
 - [Deployment](./docs/deployment/README.md)
 - [ADR 0001](./docs/adr/0001-sprint-0-foundation.md)

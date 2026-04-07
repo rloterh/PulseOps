@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@pulseops/utils';
+import { IconButton } from '@/components/system/icon-button';
 import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
 import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
 import { openNotificationAction } from '@/features/notifications/actions/open-notification-action';
@@ -58,13 +59,18 @@ export function NotificationPanel({
         }}
         className="fixed inset-0 z-40 bg-[#020617]/42 backdrop-blur-[1px]"
       />
-      <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[25rem] flex-col border-l border-white/10 bg-[#07111d]/96 px-5 py-5 text-white shadow-[0_30px_90px_rgba(2,6,23,0.58)]">
+      <aside
+        aria-labelledby="notifications-panel-title"
+        aria-modal="true"
+        role="dialog"
+        className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[25rem] flex-col border-l border-white/10 bg-[#07111d]/96 px-5 py-5 text-white shadow-[0_30px_90px_rgba(2,6,23,0.58)]"
+      >
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-white/42">
               Notifications
             </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            <h2 id="notifications-panel-title" className="mt-2 text-xl font-semibold tracking-tight">
               Operational feed
             </h2>
           </div>
@@ -80,13 +86,13 @@ export function NotificationPanel({
                 </button>
               </form>
             ) : null}
-            <button
-              type="button"
+            <IconButton
+              label="Close notifications"
               onClick={closeNotifications}
               className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white/80 transition hover:bg-white/10 hover:text-white"
             >
               <AppIcon name="close" />
-            </button>
+            </IconButton>
           </div>
         </div>
 
@@ -125,7 +131,7 @@ export function NotificationPanel({
                     </p>
                   </div>
                   {item.unread ? (
-                    <span className="mt-1 inline-flex size-2 rounded-full bg-emerald-300" />
+                    <span aria-hidden="true" className="mt-1 inline-flex size-2 rounded-full bg-emerald-300" />
                   ) : null}
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.18em] text-white/38">

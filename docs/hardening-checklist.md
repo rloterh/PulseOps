@@ -11,20 +11,30 @@
 - Collaboration comments, watcher controls, saved views, and notification mutations are rate-limited.
 - All analytics JSON, CSV, and AI API routes now return safe errors instead of raw database messages.
 - Stronger cross-origin and permissions headers are applied at the app edge.
+- Sprint 11 security review notes are captured in `docs/security-review.md`.
 
 ## Resilience
 
 - Root `loading`, `error`, `global-error`, and `not-found` states use shared system components.
 - Analytics loading and error states use shared skeleton and error primitives.
 - The root layout includes a skip link, live announcer placeholders, and a focus boundary.
+- Shared `IconButton`, `FormField`, and `DataTableEmptyRow` primitives are available for adoption in follow-up UI sweeps.
+- Analytics and task tables have semantic empty rows instead of empty `<tbody>` output.
+
+## Performance
+
+- Lightweight performance mark helpers and lazy-hydration decision helpers are available for future heavy UI reviews.
+- Accessibility and performance QA docs now capture the manual review path for final Sprint 11 sign-off.
 
 ## Verification
 
 - Security utility coverage exists for rate limiting, upload policy, and request fingerprinting.
+- Shared accessibility primitives are documented for manual QA; component-level Vitest coverage needs React transform support before it can be added cleanly.
+- Performance utility coverage exists for lazy-hydration decisions and metric naming.
 - `corepack pnpm check` should stay green after each Sprint 11 slice.
 
 ## Remaining Sprint 11 sweeps
 
-- Extend upload policy adoption, admin mutations, and remaining form-heavy public surfaces.
-- Add shared form, icon-button, table-empty, and performance utilities.
-- Run the broader accessibility and bundle review pass.
+- Extend upload policy adoption once a production upload endpoint exists.
+- Continue sweeping form-heavy and icon-only controls to adopt the new accessibility primitives where they improve semantics.
+- Run the broader accessibility and bundle review pass against a browser build.

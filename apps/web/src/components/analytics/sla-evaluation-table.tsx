@@ -1,3 +1,4 @@
+import { DataTableEmptyRow } from '@/components/system/data-table-empty-row';
 import type { AnalyticsSlaTableRow } from '@/features/analytics/types/analytics.types';
 import { formatMetricMinutes } from '@/features/analytics/lib/metric-formatters';
 
@@ -42,31 +43,39 @@ export function AnalyticsSlaEvaluationTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.itemId} className="border-t border-white/6 align-top">
-                <td className="px-5 py-4">
-                  <div className="font-medium text-white">{row.itemReference}</div>
-                  <div className="mt-1 text-xs leading-5 text-white/48">{row.itemTitle}</div>
-                </td>
-                <td className="px-5 py-4 capitalize">{row.itemType}</td>
-                <td className="px-5 py-4">{row.branchName}</td>
-                <td className="px-5 py-4">{row.priorityLabel ?? 'N/A'}</td>
-                <td className="px-5 py-4">{row.severityLabel ?? 'N/A'}</td>
-                <td className="px-5 py-4">{row.createdAtLabel}</td>
-                <td className="px-5 py-4">
-                  <MetricStatus
-                    value={formatMetricMinutes(row.firstResponseMinutes)}
-                    onTime={row.firstResponseOnTime}
-                  />
-                </td>
-                <td className="px-5 py-4">
-                  <MetricStatus
-                    value={formatMetricMinutes(row.resolutionMinutes)}
-                    onTime={row.resolutionOnTime}
-                  />
-                </td>
-              </tr>
-            ))}
+            {rows.length > 0 ? (
+              rows.map((row) => (
+                <tr key={row.itemId} className="border-t border-white/6 align-top">
+                  <td className="px-5 py-4">
+                    <div className="font-medium text-white">{row.itemReference}</div>
+                    <div className="mt-1 text-xs leading-5 text-white/48">{row.itemTitle}</div>
+                  </td>
+                  <td className="px-5 py-4 capitalize">{row.itemType}</td>
+                  <td className="px-5 py-4">{row.branchName}</td>
+                  <td className="px-5 py-4">{row.priorityLabel ?? 'N/A'}</td>
+                  <td className="px-5 py-4">{row.severityLabel ?? 'N/A'}</td>
+                  <td className="px-5 py-4">{row.createdAtLabel}</td>
+                  <td className="px-5 py-4">
+                    <MetricStatus
+                      value={formatMetricMinutes(row.firstResponseMinutes)}
+                      onTime={row.firstResponseOnTime}
+                    />
+                  </td>
+                  <td className="px-5 py-4">
+                    <MetricStatus
+                      value={formatMetricMinutes(row.resolutionMinutes)}
+                      onTime={row.resolutionOnTime}
+                    />
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <DataTableEmptyRow
+                colSpan={8}
+                title="No SLA evaluation rows"
+                description="No matching jobs or incidents were evaluated in this reporting window."
+              />
+            )}
           </tbody>
         </table>
       </div>

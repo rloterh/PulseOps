@@ -6,12 +6,16 @@ export function AdminActivityDrawer({
   log: AuditLogListItem | null;
 }) {
   return (
-    <aside className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5">
+    <aside
+      aria-labelledby="admin-activity-drawer-title"
+      className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5"
+      role="region"
+    >
       <div className="border-b border-white/8 pb-4">
         <p className="text-xs uppercase tracking-[0.22em] text-emerald-300/72">
           Activity details
         </p>
-        <h2 className="mt-3 text-lg font-semibold tracking-tight text-white">
+        <h2 id="admin-activity-drawer-title" className="mt-3 text-lg font-semibold tracking-tight text-white">
           {log?.actionLabel ?? 'Select an activity row'}
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/52">

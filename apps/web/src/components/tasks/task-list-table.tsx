@@ -1,6 +1,7 @@
 import type { Route } from 'next';
 import Link from 'next/link';
 import { JobPriorityBadge } from '@/components/jobs/job-priority-badge';
+import { DataTableEmptyRow } from '@/components/system/data-table-empty-row';
 import type { TaskListItem } from '@/features/tasks/types/task.types';
 import { TaskStatusBadge } from './task-status-badge';
 
@@ -20,30 +21,38 @@ export function TaskListTable({ items }: { items: TaskListItem[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/6 text-sm">
-            {items.map((item) => (
-              <tr key={item.id} className="transition hover:bg-white/[0.03]">
-                <td className="px-5 py-4 align-top">
-                  <Link href={`/tasks/${item.id}` as Route} className="block">
-                    <p className="font-medium text-white">{item.title}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
-                      {item.reference}
-                      {item.linkedRecordLabel ? ` / ${item.linkedRecordLabel}` : ''}
-                    </p>
-                  </Link>
-                </td>
-                <td className="px-5 py-4 align-top text-white/68">{item.branchName}</td>
-                <td className="px-5 py-4 align-top">
-                  <JobPriorityBadge priority={item.priority} />
-                </td>
-                <td className="px-5 py-4 align-top">
-                  <TaskStatusBadge status={item.status} />
-                </td>
-                <td className="px-5 py-4 align-top text-white/68">
-                  {item.assigneeName ?? 'Unassigned'}
-                </td>
-                <td className="px-5 py-4 align-top text-white/68">{item.dueAtLabel}</td>
-              </tr>
-            ))}
+            {items.length > 0 ? (
+              items.map((item) => (
+                <tr key={item.id} className="transition hover:bg-white/[0.03]">
+                  <td className="px-5 py-4 align-top">
+                    <Link href={`/tasks/${item.id}` as Route} className="block">
+                      <p className="font-medium text-white">{item.title}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
+                        {item.reference}
+                        {item.linkedRecordLabel ? ` / ${item.linkedRecordLabel}` : ''}
+                      </p>
+                    </Link>
+                  </td>
+                  <td className="px-5 py-4 align-top text-white/68">{item.branchName}</td>
+                  <td className="px-5 py-4 align-top">
+                    <JobPriorityBadge priority={item.priority} />
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                    <TaskStatusBadge status={item.status} />
+                  </td>
+                  <td className="px-5 py-4 align-top text-white/68">
+                    {item.assigneeName ?? 'Unassigned'}
+                  </td>
+                  <td className="px-5 py-4 align-top text-white/68">{item.dueAtLabel}</td>
+                </tr>
+              ))
+            ) : (
+              <DataTableEmptyRow
+                colSpan={6}
+                title="No tasks found"
+                description="Create a task or adjust the current branch and status filters."
+              />
+            )}
           </tbody>
         </table>
       </div>

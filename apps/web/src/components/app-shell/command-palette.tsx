@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { useRouter } from 'next/navigation';
+import { IconButton } from '@/components/system/icon-button';
 import { APP_NAV_ITEMS } from '@/features/shell/constants/navigation';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppIcon } from './app-icon';
@@ -66,11 +67,20 @@ export function CommandPalette() {
         }}
         className="fixed inset-0 z-40 bg-[#020617]/48 backdrop-blur-[2px]"
       />
-      <div className="fixed inset-x-4 top-8 z-50 mx-auto max-w-2xl overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#07111d]/96 text-white shadow-[0_40px_100px_rgba(2,6,23,0.58)]">
+      <div
+        aria-labelledby="command-palette-title"
+        aria-modal="true"
+        role="dialog"
+        className="fixed inset-x-4 top-8 z-50 mx-auto max-w-2xl overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#07111d]/96 text-white shadow-[0_40px_100px_rgba(2,6,23,0.58)]"
+      >
         <div className="flex items-center gap-3 border-b border-white/8 px-4 py-4">
           <AppIcon name="search" className="text-white/44" />
+          <h2 id="command-palette-title" className="sr-only">
+            Command palette
+          </h2>
           <input
             ref={inputRef}
+            aria-label="Search dashboard navigation"
             type="text"
             value={query}
             onChange={(event) => {
@@ -79,13 +89,13 @@ export function CommandPalette() {
             placeholder="Search dashboard, jobs, incidents, customers..."
             className="w-full bg-transparent text-sm outline-none placeholder:text-white/34"
           />
-          <button
-            type="button"
+          <IconButton
+            label="Close command palette"
             onClick={closeCommandPalette}
             className="rounded-full border border-white/10 px-2 py-1 text-[11px] uppercase tracking-[0.16em] text-white/52 transition hover:bg-white/8 hover:text-white"
           >
             Esc
-          </button>
+          </IconButton>
         </div>
 
         <div className="max-h-[24rem] overflow-y-auto p-3">
