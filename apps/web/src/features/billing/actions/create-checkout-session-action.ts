@@ -8,9 +8,11 @@ import { z } from 'zod';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { canManageBilling } from '@/lib/billing/billing-access';
 import { getStripePriceIdForPlan } from '@/lib/billing/stripe-prices';
+import { syncBillingFromStripeSubscription } from '@/lib/billing/sync-billing-state';
 import { getStripe } from '@/lib/stripe/server';
 import {
   getBillingCustomerFromDb,
+  getBillingSubscriptionFromDb,
   upsertBillingCustomerInDb,
 } from '@/features/billing/repositories/billing.repository';
 
@@ -42,9 +44,13 @@ export async function createCheckoutSessionAction(formData: FormData) {
 
   const admin = createSupabaseAdminClient();
   const stripe = getStripe();
-  const existingCustomer = await getBillingCustomerFromDb(admin, context.tenantId);
+  const [existingCustomer, existingSubscription] = await Promise.all([
+    getBillingCustomerFromDb(admin, context.tenantId),
+    getBillingSubscriptionFromDb(admin, context.tenantId),
+  ]);
 
-  let stripeCustomerId = existingCustomer?.stripe_customer_id ?? null;
+  let stripeCustomerId =
+    existingCustomer?.stripe_customer_id ?? existingSubscription?.stripe_customer_id ?? null;
 
   if (!stripeCustomerId) {
     const customer = await stripe.customers.create({
@@ -61,6 +67,54 @@ export async function createCheckoutSessionAction(formData: FormData) {
       organizationId: context.tenantId,
       stripeCustomerId,
     });
+  }
+
+  if (
+    existingSubscription?.stripe_subscription_id &&
+    existingSubscription.plan === parsed.data.plan &&
+    !existingSubscription.cancel_at_period_end
+  ) {
+    redirect('/billing?status=no-change' as unknown as Route);
+  }
+
+  if (
+    existingSubscription?.stripe_subscription_id &&
+    existingSubscription.status !== 'canceled'
+  ) {
+    if (!stripeCustomerId) {
+      redirect('/billing?status=no-customer' as unknown as Route);
+    }
+
+    const currentSubscription = await stripe.subscriptions.retrieve(
+      existingSubscription.stripe_subscription_id,
+    );
+    const currentItem = currentSubscription.items.data[0];
+
+    if (!currentItem) {
+      redirect('/billing?status=invalid-action' as unknown as Route);
+    }
+
+    const updatedSubscription = await stripe.subscriptions.update(
+      existingSubscription.stripe_subscription_id,
+      {
+        cancel_at_period_end: false,
+        items: [
+          {
+            id: currentItem.id,
+            price: priceId,
+          },
+        ],
+        proration_behavior: 'create_prorations',
+      },
+    );
+
+    await syncBillingFromStripeSubscription({
+      organizationId: context.tenantId,
+      stripeCustomerId,
+      subscription: updatedSubscription,
+    });
+
+    redirect('/billing?status=plan-updated' as unknown as Route);
   }
 
   const session = await stripe.checkout.sessions.create({
