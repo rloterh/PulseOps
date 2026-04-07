@@ -52,3 +52,30 @@ export interface AnalyticsOverviewData {
     jobsByPriority: AnalyticsBreakdownRow[];
   };
 }
+
+export interface AnalyticsBranchComparisonRow {
+  branchId: string;
+  branchName: string;
+  jobsCreated: number;
+  jobsResolved: number;
+  openBacklog: number;
+  backlogDelta: number | null;
+  incidentCount: number;
+  medianResolutionMinutes: number | null;
+  firstResponseSlaRate: number | null;
+  resolutionSlaRate: number | null;
+  breachCount: number;
+}
+
+export interface AnalyticsBranchComparisonData {
+  filters: AnalyticsFilters;
+  rangeLabel: string;
+  compareLabel: string | null;
+  scopeLabel: string;
+  rows: AnalyticsBranchComparisonRow[];
+  rankings: {
+    resolvedVolume: AnalyticsBreakdownRow[];
+    firstResponseSla: AnalyticsBreakdownRow[];
+    breachCount: AnalyticsBreakdownRow[];
+  };
+}
