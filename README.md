@@ -29,6 +29,7 @@ What this branch specifically adds beyond `dev`:
 - manual incident escalation and acknowledgement actions with timeline, notification, and audit coverage
 - filterable admin activity review plus billing control-path audit logging for sensitive commercial actions
 - live incident SLA snapshot sync, breach-risk evaluation, and incident-side SLA visibility
+- interactive admin activity review with row-level metadata inspection and pagination-safe query state
 
 What this branch does not claim yet:
 
@@ -73,6 +74,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - additive incident fields for `acknowledged_at`, `closed_at`, `escalation_level`, and `last_activity_at`
 - tested SLA status-category helpers and typed SLA repository wrappers to support future evaluator work
 - initial admin activity page backed by typed audit queries and summary cards
+- interactive admin activity table with metadata drawer, pagination links, and audit-view logging
 - manual escalation and acknowledgement actions embedded into the incident detail flow
 - escalation-aware timeline entries, record notifications, and audit log writes
 - server-side admin activity filters for actor, branch, scope, and target entity review

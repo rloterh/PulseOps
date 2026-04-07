@@ -1,6 +1,7 @@
 import { AdminActivityFilters } from '@/components/audit/admin-activity-filters';
 import { AdminActivitySummaryCards } from '@/components/audit/admin-activity-summary-cards';
 import { AdminActivityTable } from '@/components/audit/admin-activity-table';
+import { buildAdminActivityQuery } from '@/features/audit/lib/build-admin-activity-query';
 import { getAdminActivity } from '@/features/audit/queries/get-admin-activity';
 
 export default async function AdminActivityPage({
@@ -9,8 +10,10 @@ export default async function AdminActivityPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const { logs, summary, tenantName, filters, filterOptions } =
+  const { logs, summary, tenantName, filters, filterOptions, pagination } =
     await getAdminActivity(resolvedSearchParams);
+  const previousQuery = buildAdminActivityQuery(filters, pagination.page - 1);
+  const nextQuery = buildAdminActivityQuery(filters, pagination.page + 1);
 
   return (
     <main className="space-y-6">
@@ -22,15 +25,20 @@ export default async function AdminActivityPage({
           Review sensitive operational history across {tenantName}.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-white/56 sm:text-base">
-          Sprint 7 starts by adding append-only audit visibility for privileged operators.
-          This view is intentionally lean today, but it already creates a trustworthy
-          foundation for incident, escalation, and admin accountability.
+          Inspect incident, escalation, billing, and operator activity with filterable
+          pagination, metadata drill-down, and append-only evidence you can trust during
+          operational review.
         </p>
       </section>
 
       <AdminActivityFilters filters={filters} options={filterOptions} />
       <AdminActivitySummaryCards summary={summary} />
-      <AdminActivityTable logs={logs} />
+      <AdminActivityTable
+        logs={logs}
+        pagination={pagination}
+        previousHref={previousQuery ? `/admin/activity?${previousQuery}` : '/admin/activity'}
+        nextHref={nextQuery ? `/admin/activity?${nextQuery}` : '/admin/activity'}
+      />
     </main>
   );
 }
