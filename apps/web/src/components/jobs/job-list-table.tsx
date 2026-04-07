@@ -296,30 +296,24 @@ export function JobListTable({
 
       <div className="grid gap-3 p-4 lg:hidden">
         {visibleItems.map((item) => (
-          <Link
+          <article
             key={item.id}
-            href={`/jobs/${item.id}` as Route}
             className={`rounded-[1.4rem] border border-white/8 bg-black/18 transition hover:bg-black/26 ${cardPaddingClass}`}
           >
             <div className="flex items-start justify-between gap-3">
-              <div>
+              <Link href={`/jobs/${item.id}` as Route} className="min-w-0 flex-1">
                 <p className="font-medium text-white">{item.title}</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
                   {item.reference} / {item.siteName}
                 </p>
-              </div>
+              </Link>
               <div className="flex items-start gap-3">
                 {canManage ? (
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(item.id)}
-                    onChange={(event) => {
-                      event.preventDefault();
+                    onChange={() => {
                       toggleSelection(item.id);
-                    }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
                     }}
                     aria-label={`Select ${item.title}`}
                     className="mt-1 h-4 w-4 accent-white"
@@ -329,26 +323,37 @@ export function JobListTable({
               </div>
             </div>
             {(showStatus || showBranch) ? (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`/jobs/${item.id}` as Route}
+                className="mt-4 flex flex-wrap gap-2"
+              >
                 {showStatus ? <JobStatusBadge status={item.status} /> : null}
                 {showBranch ? (
                   <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.16em] text-white/60">
                     {item.branchName}
                   </span>
                 ) : null}
-              </div>
+              </Link>
             ) : null}
             {(showAssignee || showStatus) ? (
-              <p className="mt-4 text-sm text-white/52">
+              <Link
+                href={`/jobs/${item.id}` as Route}
+                className="mt-4 block text-sm text-white/52"
+              >
                 {showAssignee ? (item.assigneeName ?? 'Unassigned') : formatTokenLabel(item.type)}
                 {showAssignee && showStatus ? ' / ' : null}
                 {showStatus ? formatTokenLabel(item.type) : null}
-              </p>
+              </Link>
             ) : null}
             {showDue ? (
-              <p className="mt-2 text-xs text-white/42">{item.dueAtLabel}</p>
+              <Link
+                href={`/jobs/${item.id}` as Route}
+                className="mt-2 block text-xs text-white/42"
+              >
+                {item.dueAtLabel}
+              </Link>
             ) : null}
-          </Link>
+          </article>
         ))}
       </div>
     </section>
