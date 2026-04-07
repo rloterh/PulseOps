@@ -127,11 +127,27 @@ export interface AnalyticsBranchComparisonRow {
   breachCount: number;
 }
 
+export interface AnalyticsBranchComparisonSummary {
+  headline: string;
+  narrative: string;
+  strongestBranchName: string | null;
+  mostAtRiskBranchName: string | null;
+  keyDrivers: string[];
+  nextSteps: string[];
+  supportingFacts: AnalyticsSupportingFact[];
+}
+
+export interface AnalyticsBranchComparisonAiResult {
+  generation: AiGenerationMeta;
+  summary: AnalyticsBranchComparisonSummary;
+}
+
 export interface AnalyticsBranchComparisonData {
   filters: AnalyticsFilters;
   rangeLabel: string;
   compareLabel: string | null;
   scopeLabel: string;
+  ai: AnalyticsBranchComparisonAiResult;
   rows: AnalyticsBranchComparisonRow[];
   rankings: {
     resolvedVolume: AnalyticsBreakdownRow[];

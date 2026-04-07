@@ -2,6 +2,8 @@ import 'server-only';
 
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Database } from '@pulseops/supabase/types';
+import { generateAnalyticsBranchAiRun } from '@/features/ai/lib/generate-analytics-branch-ai-run';
+import { buildAnalyticsBranchAiSummary } from '@/features/analytics/lib/build-analytics-branch-ai-summary';
 import type {
   AnalyticsBranchComparisonData,
   AnalyticsBranchComparisonRow,
@@ -42,6 +44,8 @@ type SlaRow = Pick<
 
 interface Input {
   tenantId: string;
+  viewerId?: string;
+  includeAi?: boolean;
   filters: AnalyticsFilters;
   range: AnalyticsDateRange;
   branches: AnalyticsBranchOption[];
@@ -49,6 +53,8 @@ interface Input {
 
 export async function getAnalyticsBranchComparison({
   tenantId,
+  viewerId,
+  includeAi = true,
   filters,
   range,
   branches,
@@ -77,15 +83,53 @@ export async function getAnalyticsBranchComparison({
     currentPeriod,
     previousPeriod,
   });
+  const rangeLabel = formatRangeLabel(range.from, range.to);
+  const compareLabel =
+    range.compareFrom && range.compareTo
+      ? formatRangeLabel(range.compareFrom, range.compareTo)
+      : null;
+  const scopeLabel = filters.branchId ? 'Selected branch comparison' : 'All branch comparison';
+  const baseSummary = buildAnalyticsBranchAiSummary(rows);
+  const ai =
+    includeAi && viewerId
+      ? await generateAnalyticsBranchAiRun(supabase, {
+          organizationId: tenantId,
+          locationId: filters.branchId,
+          viewerId,
+          filters: {
+            preset: filters.preset,
+            from: filters.from,
+            to: filters.to,
+            branchId: filters.branchId,
+            compare: filters.compare,
+          },
+          scopeLabel,
+          rangeLabel,
+          compareLabel,
+          rows,
+          summary: baseSummary,
+        })
+      : {
+          generation: {
+            runId: null,
+            providerLabel: 'pulseops-deterministic',
+            modelLabel: 'heuristic-branch-v1',
+            promptVersion: 'sprint9-branch-v1',
+            generatedAtValue: null,
+            generatedAtLabel: 'Not requested',
+            source: 'fresh' as const,
+            fallbackReason: 'AI synthesis was skipped for this server flow.',
+            feedbackRating: null,
+          },
+          summary: baseSummary,
+        };
 
   return {
     filters,
-    rangeLabel: formatRangeLabel(range.from, range.to),
-    compareLabel:
-      range.compareFrom && range.compareTo
-        ? formatRangeLabel(range.compareFrom, range.compareTo)
-        : null,
-    scopeLabel: filters.branchId ? 'Selected branch comparison' : 'All branch comparison',
+    rangeLabel,
+    compareLabel,
+    scopeLabel,
+    ai,
     rows,
     rankings: {
       resolvedVolume: [...rows]
