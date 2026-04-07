@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getMemberOptions } from '@/lib/organizations/get-member-options';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { canUseInternalNotes } from '@/features/collaboration/lib/collaboration-permissions';
@@ -49,6 +50,19 @@ export async function createRecordCommentAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'collaboration:comment',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many collaboration updates. Please wait a moment and try again.',
+    };
+  }
 
   if (
     parsed.data.kind === 'internal_note' &&

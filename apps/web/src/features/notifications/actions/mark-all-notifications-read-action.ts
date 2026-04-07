@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { getSafeNotificationReturnPath } from '@/features/notifications/lib/get-safe-notification-return-path';
 import { markAllNotificationsReadInDb } from '@/features/notifications/repositories/notifications.repository';
 
@@ -22,6 +23,18 @@ export async function markAllNotificationsReadAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'notification:mutation',
+      actorId: context.viewerId,
+      limit: 120,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
 
   await markAllNotificationsReadInDb(supabase, {

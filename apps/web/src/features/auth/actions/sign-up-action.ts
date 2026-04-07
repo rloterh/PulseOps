@@ -5,6 +5,7 @@ import { getServerEnv } from '@pulseops/env/server';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { redirect } from 'next/navigation';
 import { getPostAuthRedirectPath } from '@/lib/auth/get-post-auth-redirect-path';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import type { AuthActionState } from '../types';
 import { signUpSchema } from '../schemas/sign-up-schema';
 
@@ -28,6 +29,19 @@ export async function signUpAction(
     return {
       error:
         'Supabase auth is not configured yet. Add your local environment values before creating an account.',
+    };
+  }
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'auth:sign-up',
+      actorId: parsed.data.email,
+      limit: 5,
+      windowMs: 30 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many sign-up attempts. Please wait a moment and try again.',
     };
   }
 

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { canDeleteRecordComment } from '@/features/collaboration/lib/collaboration-permissions';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
 import { softDeleteRecordCommentInDb } from '@/features/collaboration/repositories/collaboration.repository';
@@ -22,6 +23,18 @@ export async function deleteRecordCommentAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'collaboration:delete-comment',
+      actorId: context.viewerId,
+      limit: 30,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data: comment, error } = await supabase
     .from('record_comments')

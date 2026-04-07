@@ -2,6 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
+import { log } from '@/lib/observability/logger';
+import { buildRateLimitHeaders, enforceRateLimit } from '@/lib/security/rate-limit';
+import { getRequestFingerprint } from '@/lib/security/request-fingerprint';
+import { SafeError, createSafeErrorResponse } from '@/lib/security/safe-error';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
@@ -10,42 +14,81 @@ import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-fi
 
 export async function GET(request: NextRequest) {
   const context = await requireTenantMember();
+  const fingerprint = getRequestFingerprint(request.headers);
 
-  if (!canViewAnalytics(context.membershipRole)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  let rateLimitHeaders: Record<string, string> | undefined;
+
+  try {
+    const rateLimit = enforceRateLimit({
+      bucket: 'analytics:sla',
+      fingerprintKey: fingerprint.key,
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 15 * 60 * 1000,
+    });
+    rateLimitHeaders = buildRateLimitHeaders(rateLimit);
+
+    if (!canViewAnalytics(context.membershipRole)) {
+      throw new SafeError({
+        code: 'FORBIDDEN',
+        status: 403,
+        userMessage: 'You do not have permission to view SLA analytics.',
+      });
+    }
+
+    const entitlements = await getOrganizationEntitlements(context.tenantId);
+    if (!entitlements.canUseAnalytics) {
+      throw new SafeError({
+        code: 'ANALYTICS_DISABLED',
+        status: 403,
+        userMessage: 'Analytics is not enabled on the current plan.',
+      });
+    }
+
+    const { data: locations, error } = await context.supabase
+      .from('locations')
+      .select('id, name')
+      .eq('organization_id', context.tenantId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      throw new Error('Failed to load SLA analytics scope.');
+    }
+
+    const filters = parseAnalyticsFilters(
+      Object.fromEntries(request.nextUrl.searchParams.entries()),
+    );
+    const { filters: effectiveFilters } = resolveAnalyticsScope({
+      filters,
+      locations,
+      shellBranchId: context.branchId,
+    });
+    const range = resolveAnalyticsDateRange(effectiveFilters);
+    const payload = await getAnalyticsSlaMetrics({
+      tenantId: context.tenantId,
+      filters: effectiveFilters,
+      range,
+      branches: locations,
+    });
+
+    return NextResponse.json(payload, {
+      headers: rateLimitHeaders,
+    });
+  } catch (error) {
+    log(error instanceof SafeError ? 'warn' : 'error', {
+      message: 'Failed to load SLA analytics.',
+      context: {
+        tenantId: context.tenantId,
+        viewerId: context.viewerId,
+        branchId: context.branchId,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    });
+
+    return createSafeErrorResponse(
+      error,
+      rateLimitHeaders ? { headers: rateLimitHeaders } : {},
+    );
   }
-
-  const entitlements = await getOrganizationEntitlements(context.tenantId);
-  if (!entitlements.canUseAnalytics) {
-    return NextResponse.json({ error: 'Analytics not enabled' }, { status: 403 });
-  }
-
-  const { data: locations, error } = await context.supabase
-    .from('locations')
-    .select('id, name')
-    .eq('organization_id', context.tenantId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  const filters = parseAnalyticsFilters(
-    Object.fromEntries(request.nextUrl.searchParams.entries()),
-  );
-  const { filters: effectiveFilters } = resolveAnalyticsScope({
-    filters,
-    locations,
-    shellBranchId: context.branchId,
-  });
-  const range = resolveAnalyticsDateRange(effectiveFilters);
-  const payload = await getAnalyticsSlaMetrics({
-    tenantId: context.tenantId,
-    filters: effectiveFilters,
-    range,
-    branches: locations,
-  });
-
-  return NextResponse.json(payload);
 }

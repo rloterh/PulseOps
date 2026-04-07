@@ -126,6 +126,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - the app shell now exposes a skip link, focus boundary, and live-announcer regions for better keyboard support
 - analytics export and AI routes now use safe error responses, structured logging, and route-level rate limiting
 - billing checkout, billing portal, subscription renewal, and operations write actions now use shared server-action rate limiting
+- auth, collaboration, saved-view, notification, and analytics JSON routes now have the same abuse-prevention posture
 - stronger default cross-origin and permissions headers are applied through `next.config.ts`
 - early hardening docs are in place for checklist, rate-limit matrix, and upload policy guidance
 
@@ -271,7 +272,7 @@ This branch is meant to stay:
 
 ## Next Likely Steps
 
-- extend the hardening pass across uploads, admin mutations, public form surfaces, and remaining abuse-prone endpoints
+- extend the hardening pass across uploads, admin mutations, and any remaining form-heavy public surfaces
 - add the shared accessibility form, icon-button, and table-empty primitives from the Sprint 11 plan
 - run the broader performance and bundle review pass for heavy analytics, AI, and admin surfaces
 - lock in the final Sprint 11 test matrix and manual QA checklist

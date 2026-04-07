@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
 import {
   ensureRecordWatchersInDb,
@@ -23,6 +24,18 @@ export async function watchRecordAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'collaboration:watch',
+      actorId: context.viewerId,
+      limit: 80,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const target = await getCollaborationTargetFromDb(supabase, {
     tenantId: context.tenantId,

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
 import { setRecordWatcherMuteStateInDb } from '@/features/collaboration/repositories/collaboration.repository';
 
@@ -30,6 +31,18 @@ export async function toggleWatchMuteAction(formData: FormData) {
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'collaboration:watch',
+      actorId: context.viewerId,
+      limit: 80,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   await setRecordWatcherMuteStateInDb(supabase, {
     tenantId: context.tenantId,

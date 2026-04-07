@@ -2,6 +2,11 @@
 
 | Area | Bucket | Limit | Window | Notes |
 | --- | --- | --- | --- | --- |
+| Sign in | `auth:sign-in` | 8 | 15 minutes | Limits password attempts per email plus request fingerprint. |
+| Sign up | `auth:sign-up` | 5 | 30 minutes | Limits account creation attempts per email plus request fingerprint. |
+| Analytics overview API | `analytics:overview` | 60 | 15 minutes | Protects JSON overview reads. |
+| Analytics branch API | `analytics:branches` | 60 | 15 minutes | Protects branch comparison reads. |
+| Analytics SLA API | `analytics:sla` | 60 | 15 minutes | Protects SLA metrics reads. |
 | Analytics CSV export | `analytics:export` | 10 | 1 hour | Protects export abuse and repeated heavy queries. |
 | AI analytics overview | `ai:analytics-overview` | 20 | 15 minutes | Covers executive summaries and late-job signals. |
 | AI branch comparison | `ai:analytics-branches` | 20 | 15 minutes | Covers branch synthesis requests. |
@@ -21,5 +26,11 @@
 | Bulk job status | `job:bulk-status` | 20 | 10 minutes | Limits high-impact list actions. |
 | Task assignment | `task:assignment` | 60 | 10 minutes | Protects assignment churn and watcher fan-out. |
 | Task status update | `task:status` | 60 | 10 minutes | Protects timeline and notification churn. |
+| Collaboration comments | `collaboration:comment` | 60 | 10 minutes | Protects comment, note, mention, watcher, and notification fan-out. |
+| Record watcher updates | `collaboration:watch` | 80 | 10 minutes | Protects watch/unwatch/mute churn. |
+| Comment delete | `collaboration:delete-comment` | 30 | 10 minutes | Protects destructive comment operations. |
+| Saved view create | `list-view:create` | 40 | 15 minutes | Protects saved-view persistence and entitlement checks. |
+| Saved view delete | `list-view:delete` | 40 | 15 minutes | Protects saved-view mutation churn. |
+| Notification mutations | `notification:mutation` | 120 | 10 minutes | Protects read/archive/open notification bursts. |
 
 These values are the Sprint 11 starting posture. Re-tune them after real traffic and staging QA.

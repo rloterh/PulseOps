@@ -13,6 +13,7 @@ import {
 import type { SavedListViewActionState } from '@/features/list-views/types/list-view.types';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
 export async function createSavedListViewAction(
   _prevState: SavedListViewActionState,
@@ -42,6 +43,20 @@ export async function createSavedListViewAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'list-view:create',
+      actorId: context.viewerId,
+      limit: 40,
+      windowMs: 15 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many saved view changes. Please wait a moment and try again.',
+    };
+  }
+
   const supabase = await createSupabaseServerClient();
   const [entitlements, savedViewCount] = await Promise.all([
     getOrganizationEntitlements(context.tenantId),
