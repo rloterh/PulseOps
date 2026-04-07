@@ -43,5 +43,6 @@ export async function updateIncidentAction(
   revalidatePath('/dashboard');
   revalidatePath('/incidents');
   revalidatePath(`/incidents/${result.incidentId}`);
+  revalidatePath('/admin/activity');
   redirect(`/incidents/${result.incidentId}`);
 }

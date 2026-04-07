@@ -35,6 +35,9 @@ export function AdminActivityTable({
   }
 
   const selectedLog = logs.find((log) => log.id === selectedLogId) ?? logs[0] ?? null;
+  const selectLog = (logId: string) => {
+    setSelectedLogId(logId);
+  };
 
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -59,8 +62,17 @@ export function AdminActivityTable({
                     className={`cursor-pointer border-t border-white/6 align-top transition ${
                       selectedLog?.id === log.id ? 'bg-white/[0.05]' : 'hover:bg-white/[0.03]'
                     }`}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={selectedLog?.id === log.id}
                     onClick={() => {
-                      setSelectedLogId(log.id);
+                      selectLog(log.id);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        selectLog(log.id);
+                      }
                     }}
                   >
                     <td className="px-5 py-4">

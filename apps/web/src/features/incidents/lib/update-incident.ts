@@ -50,7 +50,7 @@ export async function updateIncident(
   const { data: current, error: currentError } = await supabase
     .from('incidents')
     .select(
-      'id, title, summary, customer_name, severity, opened_at, sla_risk, impact_summary, next_action',
+      'id, title, summary, customer_name, severity, opened_at, sla_risk, impact_summary, next_action, location_id',
     )
     .eq('organization_id', context.tenantId)
     .eq('id', input.incidentId)
@@ -143,6 +143,7 @@ export async function updateIncident(
 
   await insertAuditLogInDb(supabase, {
     tenantId: context.tenantId,
+    locationId: current.location_id,
     actorUserId: context.viewerId,
     action: 'incident.updated',
     entityType: 'incident',
