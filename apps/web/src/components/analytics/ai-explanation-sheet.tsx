@@ -13,6 +13,7 @@ export function AnalyticsAiExplanationSheet({
   triggerLabel,
   title,
   subtitle,
+  recommendationLabel,
   tone,
   summary,
   drivers,
@@ -22,11 +23,12 @@ export function AnalyticsAiExplanationSheet({
   triggerLabel?: string;
   title: string;
   subtitle: string;
+  recommendationLabel?: string;
   tone: keyof typeof TONE_STYLES;
   summary: string;
   drivers: string[];
   facts: AnalyticsSupportingFact[];
-  recommendation: string;
+  recommendation: string | string[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const titleId = useId();
@@ -126,9 +128,20 @@ export function AnalyticsAiExplanationSheet({
 
               <section className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">
-                  Recommended next move
+                  {recommendationLabel ?? 'Recommended next move'}
                 </p>
-                <p className="mt-3 text-sm leading-7 text-white/70">{recommendation}</p>
+                {Array.isArray(recommendation) ? (
+                  <ul className="mt-3 space-y-3 text-sm leading-7 text-white/70">
+                    {recommendation.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-1 h-2 w-2 rounded-full bg-emerald-300" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-sm leading-7 text-white/70">{recommendation}</p>
+                )}
               </section>
             </div>
           </div>

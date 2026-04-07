@@ -71,7 +71,7 @@ export function AnalyticsBranchSummaryGrid({
 
             <p className="mt-5 text-sm leading-6 text-white/68">{card.recommendation}</p>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap gap-3">
               <AnalyticsAiExplanationSheet
                 title={`${card.branchName} branch explanation`}
                 subtitle="Deterministic analytics and SLA signals behind this branch summary card."
@@ -81,6 +81,12 @@ export function AnalyticsBranchSummaryGrid({
                 facts={card.supportingFacts}
                 recommendation={card.recommendation}
               />
+              <a
+                href={card.href}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+              >
+                Open branch view
+              </a>
             </div>
           </article>
         ))}

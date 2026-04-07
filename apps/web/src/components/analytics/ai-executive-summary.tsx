@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
 import type { AnalyticsExecutiveSummary } from '@/features/analytics/types/analytics.types';
 
 export function AnalyticsAiExecutiveSummary({
@@ -22,6 +24,26 @@ export function AnalyticsAiExecutiveSummary({
         <div className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
           {summary.confidenceLabel}
         </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <AnalyticsAiExplanationSheet
+          triggerLabel="Inspect summary logic"
+          title="Executive summary explanation"
+          subtitle="Deterministic operational facts behind the current executive summary."
+          recommendationLabel="Recommended next moves"
+          tone="watch"
+          summary={summary.narrative}
+          drivers={summary.highlights}
+          facts={summary.supportingFacts}
+          recommendation={summary.nextSteps}
+        />
+        <Link
+          href="/analytics/branches"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+        >
+          Open branch comparison
+        </Link>
       </div>
 
       <div className="mt-6 grid gap-5 xl:grid-cols-2">

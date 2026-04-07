@@ -41,7 +41,7 @@ export function AnalyticsLateJobRiskPanel({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-white/42">
-                  {signal.reference} · {signal.branchName}
+                  {signal.reference} - {signal.branchName}
                 </p>
                 <h3 className="mt-2 text-lg font-semibold text-white">{signal.title}</h3>
               </div>
@@ -75,7 +75,7 @@ export function AnalyticsLateJobRiskPanel({
 
             <p className="mt-4 text-sm leading-6 text-white/68">{signal.summary}</p>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap gap-3">
               <AnalyticsAiExplanationSheet
                 title={`${signal.reference} lateness-risk explanation`}
                 subtitle="Deterministic job, due-date, and SLA signals behind this flagged risk."
@@ -85,6 +85,12 @@ export function AnalyticsLateJobRiskPanel({
                 facts={signal.supportingFacts}
                 recommendation={signal.recommendation}
               />
+              <a
+                href={signal.href}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+              >
+                Open job
+              </a>
             </div>
           </article>
         ))}
