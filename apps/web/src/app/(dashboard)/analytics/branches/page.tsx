@@ -5,6 +5,7 @@ import { AnalyticsFiltersBar } from '@/components/analytics/analytics-filters';
 import { AnalyticsPageShell } from '@/components/analytics/analytics-page-shell';
 import { EmptyAnalyticsState } from '@/components/analytics/empty-analytics-state';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
+import { buildAnalyticsExportHref } from '@/features/analytics/lib/build-analytics-export-href';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
@@ -71,6 +72,10 @@ export default async function AnalyticsBranchComparisonPage({
     range,
     branches: locations,
   });
+  const exportHref = buildAnalyticsExportHref({
+    dataset: 'branches',
+    filters,
+  });
 
   return (
     <AnalyticsPageShell
@@ -107,7 +112,7 @@ export default async function AnalyticsBranchComparisonPage({
             />
           </section>
 
-          <BranchComparisonTable rows={data.rows} />
+          <BranchComparisonTable rows={data.rows} exportHref={exportHref} />
         </>
       ) : (
         <EmptyAnalyticsState

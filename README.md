@@ -19,6 +19,7 @@ This branch currently includes:
 - Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
 - Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
 - Sprint 8C SLA metrics page, breakdowns, and evaluation API surfaces
+- Sprint 8D CSV export-ready analytics tables and authenticated export route
 
 What this branch specifically adds beyond `dev`:
 
@@ -37,10 +38,11 @@ What this branch specifically adds beyond `dev`:
 - `/api/analytics/sla` server response for SLA summary, breakdown, and evaluation datasets
 - SLA summary cards for first response and resolution attainment plus median and p95 timing
 - branch, priority, and severity breakdown tables with record-level evaluation review
+- authenticated `/api/analytics/export` route for stable branch-comparison and SLA CSV downloads
+- export links wired directly into the branch-comparison and SLA table surfaces
 
 What this branch does not claim yet:
 
-- CSV export-ready analytics tables
 - warehouse-style BI or forecasting features
 - custom dashboard builders or later-sprint reporting features
 
@@ -110,6 +112,13 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - SLA summary cards show first response rate, resolution rate, and median/p95 timings
 - breakdown tables cover branch, priority, and severity cohorts
 - record-level evaluation rows expose the exact items behind the aggregate SLA metrics
+
+### Sprint 8 Export-Ready Tables
+
+- branch comparison and SLA evaluation tables now expose stable CSV download flows
+- export URLs preserve the current analytics filters and stay server-generated
+- `/api/analytics/export` enforces the same analytics access and billing entitlement checks as the live pages
+- CSV serialization is centralized so exported contracts stay stable across future analytics slices
 
 ## Tech Stack
 
@@ -247,13 +256,13 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the remaining Sprint 8 slice on export-ready tables and final analytics polish
+- ready for final Sprint 8 QA and follow-up polish only
 
 ## Next Likely Steps
 
-- add export-ready analytics tables and CSV flows
 - polish analytics loading, empty, and error states further if live QA reveals rough edges
 - run explain-plan review on analytics queries against local seeded Supabase data
+- begin Sprint 9 AI layer only after Sprint 8 sign-off if you want to keep canonical order strict
 
 ## Supporting Docs
 

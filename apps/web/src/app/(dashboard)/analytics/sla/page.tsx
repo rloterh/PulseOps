@@ -7,6 +7,7 @@ import { AnalyticsSlaBreakdownTable } from '@/components/analytics/sla-breakdown
 import { AnalyticsSlaEvaluationTable } from '@/components/analytics/sla-evaluation-table';
 import { AnalyticsSlaSummaryCards } from '@/components/analytics/sla-summary-cards';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
+import { buildAnalyticsExportHref } from '@/features/analytics/lib/build-analytics-export-href';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { getAnalyticsSlaMetrics } from '@/features/analytics/queries/get-analytics-sla-metrics';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
@@ -73,6 +74,10 @@ export default async function AnalyticsSlaPage({
     range,
     branches: locations,
   });
+  const exportHref = buildAnalyticsExportHref({
+    dataset: 'sla',
+    filters,
+  });
 
   return (
     <AnalyticsPageShell
@@ -138,7 +143,7 @@ export default async function AnalyticsSlaPage({
             rows={data.breakdowns.bySeverity}
           />
 
-          <AnalyticsSlaEvaluationTable rows={data.table} />
+          <AnalyticsSlaEvaluationTable rows={data.table} exportHref={exportHref} />
         </>
       ) : (
         <EmptyAnalyticsState

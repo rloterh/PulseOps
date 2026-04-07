@@ -7,18 +7,28 @@ import {
 
 export function BranchComparisonTable({
   rows,
+  exportHref,
 }: {
   rows: AnalyticsBranchComparisonRow[];
+  exportHref: string;
 }) {
   return (
     <section className="overflow-hidden rounded-[1.5rem] border border-white/8 bg-white/[0.04]">
-      <div className="border-b border-white/8 px-5 py-4">
-        <h2 className="text-lg font-semibold tracking-tight text-white">
-          Branch performance
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-white/52">
-          Compare throughput, backlog, incidents, and SLA health side by side.
-        </p>
+      <div className="flex flex-col gap-4 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-white">
+            Branch performance
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-white/52">
+            Compare throughput, backlog, incidents, and SLA health side by side.
+          </p>
+        </div>
+        <a
+          href={exportHref}
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+        >
+          Export CSV
+        </a>
       </div>
 
       <div className="overflow-x-auto">

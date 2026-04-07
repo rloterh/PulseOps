@@ -3,19 +3,28 @@ import { formatMetricMinutes } from '@/features/analytics/lib/metric-formatters'
 
 export function AnalyticsSlaEvaluationTable({
   rows,
+  exportHref,
 }: {
   rows: AnalyticsSlaTableRow[];
+  exportHref: string;
 }) {
   return (
     <section className="overflow-hidden rounded-[1.5rem] border border-white/8 bg-white/[0.04]">
-      <div className="border-b border-white/8 px-5 py-4">
-        <h2 className="text-lg font-semibold tracking-tight text-white">
-          SLA evaluation table
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-white/52">
-          Record-level SLA outcomes for the selected window. Export-ready delivery will
-          land in the next Sprint 8 slice.
-        </p>
+      <div className="flex flex-col gap-4 border-b border-white/8 px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-white">
+            SLA evaluation table
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-white/52">
+            Record-level SLA outcomes for the selected window with a stable CSV contract.
+          </p>
+        </div>
+        <a
+          href={exportHref}
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+        >
+          Export CSV
+        </a>
       </div>
 
       <div className="overflow-x-auto">
