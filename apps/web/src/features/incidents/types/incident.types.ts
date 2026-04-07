@@ -66,6 +66,21 @@ export interface IncidentEscalationEntry {
   completedAtLabel: string | null;
 }
 
+export interface IncidentSlaSummary {
+  riskLevel: 'normal' | 'at_risk' | 'breached';
+  escalationState: 'none' | 'warning' | 'escalated';
+  statusCategory: 'active' | 'paused' | 'terminal';
+  policyName: string | null;
+  firstResponseDueAtLabel: string | null;
+  resolutionDueAtLabel: string | null;
+  firstRespondedAtLabel: string | null;
+  resolvedAtLabel: string | null;
+  firstResponseBreachedAtLabel: string | null;
+  resolutionBreachedAtLabel: string | null;
+  warningSentAtLabel: string | null;
+  escalationTriggeredAtLabel: string | null;
+}
+
 export interface IncidentLinkedJob {
   id: string;
   reference: string;
@@ -95,6 +110,7 @@ export interface IncidentDetail {
   nextAction: string;
   linkedJobs: IncidentLinkedJob[];
   escalations: IncidentEscalationEntry[];
+  sla: IncidentSlaSummary | null;
   timeline: IncidentTimelineEntry[];
 }
 

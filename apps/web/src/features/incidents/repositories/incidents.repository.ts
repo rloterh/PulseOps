@@ -10,6 +10,11 @@ import type {
   IncidentTimelineEntry,
 } from '@/features/incidents/types/incident.types';
 import { listIncidentEscalationsFromDb } from './incident-escalations.repository';
+import {
+  getSlaPolicyByIdFromDb,
+  getWorkItemSlaSnapshotFromDb,
+} from '@/features/sla/repositories/sla.repository';
+import { buildIncidentSlaSummary } from '@/features/incidents/lib/build-incident-sla-summary';
 
 type IncidentRow = Database['public']['Tables']['incidents']['Row'];
 type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id' | 'reference'>;
@@ -22,6 +27,11 @@ type IncidentMutationRecord = Pick<
   | 'status'
   | 'assignee_user_id'
   | 'location_id'
+  | 'organization_id'
+  | 'severity'
+  | 'first_response_at'
+  | 'opened_at'
+  | 'acknowledged_at'
   | 'resolved_at'
   | 'closed_at'
 >;
@@ -149,7 +159,14 @@ export async function getIncidentDetailFromDb(
     return null;
   }
 
-  const [linkedJobsResult, timelineResult, escalations, locationNames, profileLabels] =
+  const [
+    linkedJobsResult,
+    timelineResult,
+    escalations,
+    snapshot,
+    locationNames,
+    profileLabels,
+  ] =
     await Promise.all([
       supabase
         .from('jobs')
@@ -166,6 +183,11 @@ export async function getIncidentDetailFromDb(
       listIncidentEscalationsFromDb(supabase, {
         tenantId: input.tenantId,
         incidentId: input.incidentId,
+      }),
+      getWorkItemSlaSnapshotFromDb(supabase, {
+        tenantId: input.tenantId,
+        entityType: 'incident',
+        entityId: input.incidentId,
       }),
       loadLocationNameMap(supabase, [incident.location_id]),
       loadProfileLabelMap(
@@ -184,10 +206,16 @@ export async function getIncidentDetailFromDb(
     throw new Error(timelineResult.error.message);
   }
 
+  const policy = await getSlaPolicyByIdFromDb(supabase, {
+    tenantId: input.tenantId,
+    policyId: snapshot?.policy_id ?? null,
+  });
+
   return mapIncidentDetail(
     incident,
     linkedJobsResult.data,
     escalations,
+    buildIncidentSlaSummary({ snapshot, policy }),
     timelineResult.data,
     locationNames,
     profileLabels,
@@ -222,6 +250,16 @@ export async function updateIncidentStatusInDb(
     .from('incidents')
     .update({
       status: input.status,
+      first_response_at:
+        current.first_response_at ??
+        (current.status === 'open' && input.status !== 'open'
+          ? new Date().toISOString()
+          : null),
+      acknowledged_at:
+        current.acknowledged_at ??
+        (current.status === 'open' && input.status !== 'open'
+          ? new Date().toISOString()
+          : null),
       resolved_at:
         input.status === 'resolved' || input.status === 'closed'
           ? new Date().toISOString()
@@ -233,7 +271,9 @@ export async function updateIncidentStatusInDb(
     .eq('id', input.incidentId);
 
   const { data, error } = await query
-    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
+    .select(
+      'id, title, reference, status, assignee_user_id, location_id, organization_id, severity, opened_at, first_response_at, acknowledged_at, resolved_at, closed_at',
+    )
     .single();
 
   if (error) {
@@ -286,7 +326,9 @@ export async function assignIncidentInDb(
     .eq('id', input.incidentId);
 
   const { data, error } = await query
-    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
+    .select(
+      'id, title, reference, status, assignee_user_id, location_id, organization_id, severity, opened_at, first_response_at, acknowledged_at, resolved_at, closed_at',
+    )
     .single();
 
   if (error) {
@@ -306,7 +348,9 @@ async function getScopedIncidentForMutation(
 ): Promise<IncidentMutationRecord | null> {
   const { data, error } = await supabase
     .from('incidents')
-    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
+    .select(
+      'id, title, reference, status, assignee_user_id, location_id, organization_id, severity, opened_at, first_response_at, acknowledged_at, resolved_at, closed_at',
+    )
     .eq('organization_id', input.tenantId)
     .eq('id', input.incidentId)
     .maybeSingle();
@@ -345,6 +389,7 @@ function mapIncidentDetail(
   row: IncidentRow,
   linkedJobs: JobRow[],
   escalations: IncidentEscalationEntry[],
+  sla: IncidentDetail['sla'],
   timeline: IncidentTimelineRecord[],
   locationNames: Map<string, string>,
   profileLabels: Map<string, string>,
@@ -380,6 +425,7 @@ function mapIncidentDetail(
       reference: job.reference,
     })),
     escalations,
+    sla,
     timeline: timeline.map(mapIncidentTimelineEntry),
   };
 }

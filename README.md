@@ -15,7 +15,7 @@ This branch currently includes:
 - Sprint 4 intake, edit flows, collaboration, watchers, notifications, and inbox triage
 - Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
-- Sprint 7A, 7B, and 7C incident foundations for escalations, audit logging, admin activity review, and manual escalation handling
+- Sprint 7A, 7B, 7C, and the next evaluator slice for incident escalations, audit logging, admin activity review, and live SLA state
 
 What this branch specifically adds beyond `dev`:
 
@@ -28,6 +28,7 @@ What this branch specifically adds beyond `dev`:
 - audit writes from incident create, assignment, and status mutation flows
 - manual incident escalation and acknowledgement actions with timeline, notification, and audit coverage
 - filterable admin activity review plus billing control-path audit logging for sensitive commercial actions
+- live incident SLA snapshot sync, breach-risk evaluation, and incident-side SLA visibility
 
 What this branch does not claim yet:
 
@@ -76,6 +77,8 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - escalation-aware timeline entries, record notifications, and audit log writes
 - server-side admin activity filters for actor, branch, scope, and target entity review
 - billing checkout, portal, and cancellation-control actions now mirrored into the audit trail
+- incident detail now shows live SLA state, due windows, breach timing, and escalation health
+- incident create, edit, status, and escalation flows now recompute SLA snapshots instead of leaving the SLA tables passive
 
 ## Tech Stack
 
@@ -220,6 +223,7 @@ This branch is meant to stay:
 - add escalation execution automation and responder-targeting rules
 - expand audit coverage across more sensitive server actions
 - add richer activity-feed surfaces on top of the new audit foundation
+- decide whether incident-list SLA risk and admin export flows belong in Sprint 7 or the next sprint
 - harden admin review flows with deeper test coverage
 
 ## Supporting Docs

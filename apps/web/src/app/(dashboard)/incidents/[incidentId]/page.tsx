@@ -3,6 +3,7 @@ import { WatchRecordControls } from '@/components/collaboration/watch-record-con
 import { IncidentAssigneeForm } from '@/components/incidents/incident-assignee-form';
 import { IncidentDetailHeader } from '@/components/incidents/incident-detail-header';
 import { IncidentEscalationPanel } from '@/components/incidents/incident-escalation-panel';
+import { IncidentSlaPanel } from '@/components/incidents/incident-sla-panel';
 import { IncidentStatusForm } from '@/components/incidents/incident-status-form';
 import { IncidentTimeline } from '@/components/incidents/incident-timeline';
 import { getRecordCollaboration } from '@/features/collaboration/queries/get-record-collaboration';
@@ -70,6 +71,7 @@ export default async function IncidentDetailPage({
             viewerId={context.viewerId}
             viewerRole={context.membershipRole}
           />
+          <IncidentSlaPanel sla={incident.sla} />
           {collaboration ? (
             <WatchRecordControls
               entityType="incident"
