@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { updateTaskSchema } from '@/features/tasks/schemas/task-mutation.schemas';
 import { updateTask } from '@/features/tasks/lib/update-task';
 import type { CreateTaskActionState } from '@/features/tasks/types/task.types';
@@ -32,6 +33,20 @@ export async function updateTaskAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'task:edit',
+      actorId: context.viewerId,
+      limit: 80,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many task edits. Please wait a moment and try again.',
+    };
+  }
+
   const result = await updateTask(parsed.data, context);
 
   if (!result.ok) {

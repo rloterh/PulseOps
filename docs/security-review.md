@@ -3,7 +3,7 @@
 ## Current Coverage
 
 - API routes for analytics exports, analytics JSON, and AI feedback now return safe user-facing errors and log internal failures server-side.
-- Server actions for auth, billing, incident, job, task, collaboration, saved-view, and notification mutations use shared action-level rate limiting.
+- Server actions for auth, onboarding, billing, incident, job, task, collaboration, saved-view, and notification mutations use shared action-level rate limiting.
 - Security headers are centralized through the Next configuration and the shared header helper.
 - Upload validation exists as a reusable policy for future endpoints; no production upload route is currently present in the app.
 
@@ -17,6 +17,7 @@
 
 - Do not trust client-provided role, organization, branch, or entitlement state in new server actions.
 - Keep export, AI, billing, and notification routes on the safe-error and rate-limit path when adding endpoints.
+- Keep onboarding and workspace bootstrap errors generic unless they are safe, user-actionable validation messages such as duplicate slugs.
 - Apply the shared upload policy before introducing any file storage route.
 - Prefer route-specific schemas for filters, dates, ids, and enum values before calling repositories.
 

@@ -21,11 +21,16 @@
 | Incident escalation | `incident:escalation` | 30 | 10 minutes | Protects high-signal escalation notifications. |
 | Incident escalation acknowledge | `incident:escalation-ack` | 60 | 10 minutes | Protects acknowledgement churn. |
 | Bulk incident status | `incident:bulk-status` | 20 | 10 minutes | Limits high-impact list actions. |
+| Job create | `job:create` | 40 | 10 minutes | Prevents job intake spam from a single actor/fingerprint. |
+| Job edit | `job:edit` | 60 | 10 minutes | Allows normal job editing while limiting burst mutations. |
 | Job assignment | `job:assignment` | 60 | 10 minutes | Protects assignment churn and watcher fan-out. |
 | Job status update | `job:status` | 60 | 10 minutes | Protects timeline and notification churn. |
 | Bulk job status | `job:bulk-status` | 20 | 10 minutes | Limits high-impact list actions. |
+| Task create | `task:create` | 50 | 10 minutes | Prevents task intake spam from a single actor/fingerprint. |
+| Task edit | `task:edit` | 80 | 10 minutes | Allows normal task editing while limiting burst mutations. |
 | Task assignment | `task:assignment` | 60 | 10 minutes | Protects assignment churn and watcher fan-out. |
 | Task status update | `task:status` | 60 | 10 minutes | Protects timeline and notification churn. |
+| Workspace bootstrap | `organization:create` | 5 | 1 hour | Protects onboarding workspace creation and organization bootstrap. |
 | Collaboration comments | `collaboration:comment` | 60 | 10 minutes | Protects comment, note, mention, watcher, and notification fan-out. |
 | Record watcher updates | `collaboration:watch` | 80 | 10 minutes | Protects watch/unwatch/mute churn. |
 | Comment delete | `collaboration:delete-comment` | 30 | 10 minutes | Protects destructive comment operations. |

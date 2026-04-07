@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import {
   ACTIVE_BRANCH_COOKIE_MAX_AGE_SECONDS,
   ACTIVE_BRANCH_COOKIE_NAME,
@@ -38,6 +39,20 @@ export async function createTaskAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'task:create',
+      actorId: context.viewerId,
+      limit: 50,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many task submissions. Please wait a moment and try again.',
+    };
+  }
+
   const result = await createTask(parsed.data, context);
 
   if (!result.ok) {

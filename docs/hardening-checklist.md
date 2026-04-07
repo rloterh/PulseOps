@@ -6,7 +6,8 @@
 - Sensitive analytics and AI APIs are rate-limited by actor and request fingerprint.
 - Billing checkout, portal, and subscription renewal server actions are rate-limited.
 - Incident create, edit, status, assignment, escalation, and bulk status actions are rate-limited.
-- Job and task assignment/status actions now share the same action-level abuse protection.
+- Job and task create, edit, assignment, and status actions now share the same action-level abuse protection.
+- Workspace bootstrap is rate-limited and no longer surfaces raw database errors.
 - Auth sign-in and sign-up actions are rate-limited by submitted email plus request fingerprint.
 - Collaboration comments, watcher controls, saved views, and notification mutations are rate-limited.
 - All analytics JSON, CSV, and AI API routes now return safe errors instead of raw database messages.

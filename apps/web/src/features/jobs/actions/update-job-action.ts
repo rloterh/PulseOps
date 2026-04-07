@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { updateJobSchema } from '@/features/jobs/schemas/job-mutation.schemas';
 import { updateJob } from '@/features/jobs/lib/update-job';
 import type { CreateJobActionState } from '@/features/jobs/types/job.types';
@@ -32,6 +33,20 @@ export async function updateJobAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'job:edit',
+      actorId: context.viewerId,
+      limit: 60,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many job edits. Please wait a moment and try again.',
+    };
+  }
+
   const result = await updateJob(parsed.data, context);
 
   if (!result.ok) {

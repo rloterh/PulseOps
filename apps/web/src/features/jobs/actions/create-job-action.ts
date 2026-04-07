@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import {
   ACTIVE_BRANCH_COOKIE_MAX_AGE_SECONDS,
   ACTIVE_BRANCH_COOKIE_NAME,
@@ -37,6 +38,20 @@ export async function createJobAction(
   }
 
   const context = await requireTenantMember();
+
+  if (
+    await isServerActionRateLimited({
+      bucket: 'job:create',
+      actorId: context.viewerId,
+      limit: 40,
+      windowMs: 10 * 60 * 1000,
+    })
+  ) {
+    return {
+      error: 'Too many job submissions. Please wait a moment and try again.',
+    };
+  }
+
   const result = await createJob(parsed.data, context);
 
   if (!result.ok) {
