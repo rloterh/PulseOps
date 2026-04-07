@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/ai-layer` branch carries the full `dev` baseline through completed Sprint 8 analytics work, then layers the active Sprint 9A AI insight surfaces on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/cms-marketing-platform` branch carries the full `dev` baseline through completed Sprint 9 AI work, then layers the active Sprint 10 marketing and CMS foundations on top.
 
 ## Branch Status
 
-Current branch: `feature/ai-layer`
+Current branch: `feature/cms-marketing-platform`
 
 This branch currently includes:
 
@@ -16,52 +16,23 @@ This branch currently includes:
 - Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
-- Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
-- Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
-- Sprint 8C SLA metrics page, breakdowns, and evaluation API surfaces
-- Sprint 8D CSV export-ready analytics tables and authenticated export route
-- Sprint 9A AI executive summary, branch summary cards, and late-job risk signals
-- Sprint 9B inspectable AI explanation sheets with supporting facts for branch and late-job signals
-- Sprint 9C executive-summary explainability and direct action links into branch and job views
-- Sprint 9D AI run storage, feedback capture, metadata-aware explanation UI, and `/api/ai/*` analytics routes
-- Sprint 9E branch-comparison AI synthesis with persisted comparison runs and branch-level recommendation UI
+- Sprint 8 analytics overview, branch comparison, SLA metrics, and export-ready analytics reporting
+- Sprint 9 AI executive summaries, late-job risk signals, branch synthesis, explanation UI, run persistence, and feedback capture
+- Sprint 10A shared marketing foundation, refreshed landing page, pricing system refresh, public contact surface, and initial public route boundaries for blog, help, and screenshots
 
 What this branch specifically adds beyond `dev`:
 
-- shared analytics filters, date-range resolution, and permission helpers aligned to the current organization and branch model
-- an actual `/analytics` overview instead of the old billing-gated placeholder copy
-- overview KPI cards for job volume, backlog, incidents, median resolution time, and SLA attainment
-- lightweight overview trend and breakdown charts built directly into the app without introducing a separate chart stack
-- `/api/analytics/overview` server response for the first analytics dataset
-- targeted analytics index tuning for jobs, incidents, and `work_item_slas`
-- shell navigation entry for Analytics so the new sprint surface is discoverable
-- `/analytics/branches` route for branch-level throughput and SLA comparison
-- `/api/analytics/branches` server response for branch comparison datasets
-- branch comparison rankings for resolved volume, first response SLA, and breach concentration
-- side-by-side branch table covering created work, resolved work, backlog, backlog delta, incidents, SLA rates, and breaches
-- `/analytics/sla` route for service-target attainment, timing distribution, and breach review
-- `/api/analytics/sla` server response for SLA summary, breakdown, and evaluation datasets
-- SLA summary cards for first response and resolution attainment plus median and p95 timing
-- branch, priority, and severity breakdown tables with record-level evaluation review
-- authenticated `/api/analytics/export` route for stable branch-comparison and SLA CSV downloads
-- export links wired directly into the branch-comparison and SLA table surfaces
-- analytics pages, API routes, and CSV exports now resolve branch scope consistently from the same shell or explicit filter context
-- SLA CSV exports now use raw stable timestamps for `created_at` instead of UI-formatted display labels
-- executive-summary guidance generated server-side from the analytics dataset
-- branch summary cards that explain where backlog, incidents, and SLA pressure are concentrating
-- late-job risk panels that explain why specific jobs are likely to slip and what to do next
-- reusable AI explanation sheets so operators can inspect supporting facts behind branch and job-level AI guidance
-- executive-summary explainability with supporting facts and direct launch points into branch comparison and job detail views
-- persisted `ai_runs` and `ai_feedback` records so AI output is traceable, cacheable, and rateable
-- `/api/ai/analytics/overview` and `/api/ai/feedback` routes so the AI layer has a real server contract
-- generation metadata surfaced in the analytics UI, including provider, model, cache state, and operator feedback state
-- `/analytics/branches` now has its own AI synthesis layer instead of leaving branch comparison as a purely deterministic table view
+- a proper public marketing header and footer instead of the older placeholder shell
+- a polished landing page that explains PulseOps as an AI-powered operations command center instead of a stale Sprint 1 splash page
+- a real public pricing surface aligned to the live Stripe billing plans and entitlement model
+- a non-placeholder public contact page for rollout, sales, and support conversations
+- stable public route boundaries for `/blog`, `/help`, and `/screenshots` so the rest of Sprint 10 can layer content onto the correct IA without changing public URLs
 
 What this branch does not claim yet:
 
-- warehouse-style BI or forecasting features
-- custom dashboard builders or later-sprint reporting features
-- richer AI explanation drill-ins and broader branch-to-branch narrative synthesis beyond the current Sprint 9 slices
+- the full Sprint 10 content layer yet
+- blog, help center, docs, SEO pages, or screenshot gallery completion beyond the first public route foundations
+- any later CMS admin or marketing automation work beyond Sprint 10 scope
 
 ## Product Surface
 
