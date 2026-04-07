@@ -1,3 +1,4 @@
+import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
 import type { AnalyticsBranchSummaryCard } from '@/features/analytics/types/analytics.types';
 
 const TONE_STYLES: Record<AnalyticsBranchSummaryCard['statusTone'], string> = {
@@ -69,6 +70,18 @@ export function AnalyticsBranchSummaryGrid({
             </dl>
 
             <p className="mt-5 text-sm leading-6 text-white/68">{card.recommendation}</p>
+
+            <div className="mt-5">
+              <AnalyticsAiExplanationSheet
+                title={`${card.branchName} branch explanation`}
+                subtitle="Deterministic analytics and SLA signals behind this branch summary card."
+                tone={card.statusTone}
+                summary={card.summary}
+                drivers={card.topDrivers}
+                facts={card.supportingFacts}
+                recommendation={card.recommendation}
+              />
+            </div>
           </article>
         ))}
       </div>

@@ -20,7 +20,8 @@ This branch currently includes:
 - Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
 - Sprint 8C SLA metrics page, breakdowns, and evaluation API surfaces
 - Sprint 8D CSV export-ready analytics tables and authenticated export route
-- Sprint 9A AI executive summary, branch summary cards, late-job risk signals, and AI explanation UI
+- Sprint 9A AI executive summary, branch summary cards, and late-job risk signals
+- Sprint 9B inspectable AI explanation sheets with supporting facts for branch and late-job signals
 
 What this branch specifically adds beyond `dev`:
 
@@ -46,6 +47,7 @@ What this branch specifically adds beyond `dev`:
 - executive-summary guidance generated server-side from the analytics dataset
 - branch summary cards that explain where backlog, incidents, and SLA pressure are concentrating
 - late-job risk panels that explain why specific jobs are likely to slip and what to do next
+- reusable AI explanation sheets so operators can inspect supporting facts behind branch and job-level AI guidance
 
 What this branch does not claim yet:
 
@@ -133,6 +135,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch summary cards surface localized backlog pressure, overdue concentration, incident activity, and breach counts
 - late-job risk signals combine due-date pressure, priority, blocker state, and SLA risk into explainable job rankings
 - `/analytics` now includes AI-style explanation UI without relying on disconnected placeholder prompts
+- branch and late-job signals now expose inspectable explanation sheets with concrete supporting facts instead of only inline copy
 
 ## Tech Stack
 

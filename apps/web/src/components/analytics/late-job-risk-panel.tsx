@@ -1,3 +1,4 @@
+import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
 import type { AnalyticsLateJobRiskSignal } from '@/features/analytics/types/analytics.types';
 
 const TONE_STYLES: Record<AnalyticsLateJobRiskSignal['statusTone'], string> = {
@@ -72,21 +73,19 @@ export function AnalyticsLateJobRiskPanel({
               </div>
             </dl>
 
-            <div className="mt-4 rounded-[1.2rem] border border-white/6 bg-white/[0.02] p-4">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">
-                Why PulseOps flagged this
-              </p>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-white/68">
-                {signal.reasons.map((reason) => (
-                  <li key={reason} className="flex gap-3">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-cyan-300" />
-                    <span>{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p className="mt-4 text-sm leading-6 text-white/68">{signal.summary}</p>
 
-            <p className="mt-4 text-sm leading-6 text-white/68">{signal.recommendation}</p>
+            <div className="mt-5">
+              <AnalyticsAiExplanationSheet
+                title={`${signal.reference} lateness-risk explanation`}
+                subtitle="Deterministic job, due-date, and SLA signals behind this flagged risk."
+                tone={signal.statusTone}
+                summary={signal.summary}
+                drivers={signal.reasons}
+                facts={signal.supportingFacts}
+                recommendation={signal.recommendation}
+              />
+            </div>
           </article>
         ))}
       </div>
