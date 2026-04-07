@@ -162,6 +162,10 @@ export async function insertBillingEventInDb(
   });
 
   if (error) {
+    if (error.code === '23505') {
+      return;
+    }
+
     throw new Error(error.message);
   }
 }

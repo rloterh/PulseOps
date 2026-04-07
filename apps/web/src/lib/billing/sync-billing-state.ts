@@ -8,6 +8,7 @@ import {
   upsertBillingSubscriptionFromStripeInDb,
   upsertOrganizationEntitlementsInDb,
 } from '@/features/billing/repositories/billing.repository';
+import { resolveEntitlementPlan } from './resolve-entitlement-plan';
 import { getPlanCodeFromStripePriceId } from './stripe-prices';
 
 export async function syncBillingFromStripeSubscription(input: {
@@ -25,7 +26,12 @@ export async function syncBillingFromStripeSubscription(input: {
   await upsertBillingSubscriptionFromStripeInDb(supabase, input);
   await upsertOrganizationEntitlementsInDb(supabase, {
     organizationId: input.organizationId,
-    plan: getPlanCodeFromStripePriceId(input.subscription.items.data[0]?.price.id ?? null),
+    plan: resolveEntitlementPlan({
+      status: input.subscription.status,
+      matchedPlan: getPlanCodeFromStripePriceId(
+        input.subscription.items.data[0]?.price.id ?? null,
+      ),
+    }),
   });
 }
 
