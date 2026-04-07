@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/production-hardening` branch carries the completed baseline through Sprint 10 and continues Sprint 11 hardening on top of that production-shaped product surface.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/qa-release-polish` branch carries the completed baseline through Sprint 11 and starts Sprint 12 portfolio packaging on top of that production-shaped product surface.
 
 ## Branch Status
 
-Current branch: `feature/production-hardening`
+Current branch: `feature/qa-release-polish`
 
 This branch currently includes:
 
@@ -20,26 +20,20 @@ This branch currently includes:
 - Sprint 9 AI executive summaries, late-job risk signals, branch synthesis, explanation UI, run persistence, and feedback capture
 - Sprint 10 public landing, pricing, contact, blog, help center, docs, SEO support pages, and screenshot gallery foundations
 - Sprint 11 hardening foundation for shared safe errors, rate limiting, resilience states, and app-shell accessibility primitives
+- Sprint 12 portfolio packaging foundation for demo docs, architecture diagrams, screenshots planning, walkthrough script, and case study assets
 
-What this branch specifically adds beyond the completed Sprint 10 baseline:
+What this branch specifically adds beyond the completed Sprint 11 baseline:
 
-- centralized safe-error helpers for APIs and future server actions
-- request fingerprinting plus shared rate-limit utilities
-- stronger default security headers and reduced-motion/focus-visible globals
-- shared loading, empty, and error-state primitives for the app shell
-- root skip-link, live-announcer placeholders, and focus boundary support
-- analytics export, analytics JSON, and AI routes use safe error responses, structured logging, and route-level rate limiting
-- assignable-directory API lookups now use safe error responses and route-level rate limiting
-- auth, billing, operations, collaboration, saved-view, and notification mutations use shared action-level rate limiting
-- auth and onboarding failure messages are normalized instead of returning provider/database error text
-- destructive collaboration action lookup failures are logged server-side without surfacing raw database messages
-- job/task create and edit flows plus workspace bootstrap are now covered by the same action-level abuse controls
-- accessibility primitives and performance review helpers are in place for the remaining manual hardening sweep
+- source-controlled architecture, data-flow, and deployment Mermaid diagrams
+- a portfolio architecture companion write-up for reviewer-friendly system explanation
+- demo personas and a reviewer demo guide for role-based walkthroughs
+- screenshot shotlist, walkthrough video script, and case study markdown
+- a versioned screenshots folder placeholder under the web public assets
 
 What this branch does not claim yet:
 
-- final browser-level accessibility and performance QA across the most interaction-heavy surfaces
-- upload hardening adoption on a production upload endpoint, because no real upload endpoint exists yet
+- deterministic demo seed scripts and seeded demo accounts
+- captured screenshot image files or a recorded walkthrough video
 
 ## Product Surface
 
@@ -139,6 +133,13 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - early hardening docs are in place for checklist, security review, rate-limit matrix, and upload policy guidance
 - shared accessibility primitives now cover icon buttons, form fields, and semantic table-empty rows
 - lightweight performance helpers and review docs are in place for bundle and lazy-loading decisions
+
+### Sprint 12 Portfolio Packaging
+
+- architecture diagrams live in source-controlled Mermaid files under `docs/architecture`
+- demo personas and reviewer walkthrough guidance are documented under `docs/product` and `docs/portfolio`
+- screenshot planning, walkthrough narration, and case study materials are ready for portfolio reuse
+- `apps/web/public/screenshots` is reserved for final captured screenshots once demo seed data is complete
 
 ## Tech Stack
 
@@ -278,19 +279,25 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for Sprint 11 sign-off after external browser and deployment QA
+- ready for continued Sprint 12 portfolio packaging on top of the completed Sprint 11 baseline
 
 ## Next Likely Steps
 
-- apply upload hardening when a production upload endpoint is introduced
-- run the broader browser-level performance and bundle review pass for heavy analytics, AI, and admin surfaces
-- review deployment security headers once the production hostname and hosting target are final
+- add resettable demo seed scripts and local demo data
+- update setup docs with the final demo seed flow once scripts are in place
+- capture screenshots and record the walkthrough from seeded data
 
 ## Supporting Docs
 
 - [Architecture](./docs/architecture/README.md)
+- [Portfolio Architecture](./docs/architecture/pulseops-architecture.md)
 - [API](./docs/api/README.md)
 - [Security](./docs/security/README.md)
+- [Demo Personas](./docs/product/demo-personas.md)
+- [Demo Guide](./docs/portfolio/demo-guide.md)
+- [Screenshot Shotlist](./docs/portfolio/screenshot-shotlist.md)
+- [Walkthrough Script](./docs/portfolio/walkthrough-script.md)
+- [Case Study](./docs/portfolio/case-study.md)
 - [Sprint 11 Security Review](./docs/security-review.md)
 - [Sprint 11 Hardening Checklist](./docs/hardening-checklist.md)
 - [Sprint 11 Rate Limit Matrix](./docs/rate-limit-matrix.md)

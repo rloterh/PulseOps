@@ -1,0 +1,12 @@
+flowchart TD
+  ACTION[User action or API request] --> VALIDATE[Schema validation]
+  VALIDATE --> AUTHN[Resolve authenticated user]
+  AUTHN --> AUTHZ[Tenant, role, branch, and entitlement checks]
+  AUTHZ --> MUTATE[Read or mutate domain data]
+  MUTATE --> AUDIT[Audit log where sensitive]
+  MUTATE --> NOTIFY[Watcher and notification updates]
+  MUTATE --> SLA[SLA snapshot or analytics context]
+  MUTATE --> REVALIDATE[Revalidate affected routes]
+  REVALIDATE --> UI[Updated UI state]
+  SLA --> AI[Deterministic AI insight generation]
+  AI --> FEEDBACK[AI run and feedback persistence]

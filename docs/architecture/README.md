@@ -14,3 +14,10 @@ Key Sprint 0 decisions:
 - Route files stay thin and compose feature-owned logic.
 - Shared packages are transpiled explicitly in Next to keep imports stable.
 - Security headers, tests, CI, and Docker exist before business modules land.
+
+## Sprint 12 Portfolio Diagrams
+
+- [PulseOps Architecture](./pulseops-architecture.md)
+- [System architecture diagram](./pulseops-architecture.mmd)
+- [Data flow diagram](./pulseops-data-flow.mmd)
+- [Deployment diagram](./pulseops-deployment.mmd)

@@ -1,0 +1,24 @@
+flowchart LR
+  U[Operators, managers, owners] --> UI[Next.js App Router UI]
+  UI --> SA[Server Actions]
+  UI --> API[Route Handlers]
+  UI --> Z[Zustand shell state]
+
+  SA --> AUTH[Supabase Auth]
+  SA --> DB[(Supabase Postgres)]
+  SA --> STRIPE[Stripe Checkout and Portal]
+  SA --> AI[Deterministic AI insight layer]
+  API --> DB
+  API --> STRIPE
+  API --> AI
+
+  DB --> OPS[Jobs, incidents, tasks]
+  DB --> COLLAB[Comments, watchers, notifications]
+  DB --> BILL[Billing and entitlements]
+  DB --> AUDIT[Audit logs and activity review]
+  DB --> ANALYTICS[Analytics and SLA metrics]
+
+  STRIPE --> WEBHOOK[Stripe webhook route]
+  WEBHOOK --> DB
+  AI --> RUNS[AI runs and feedback]
+  RUNS --> DB

@@ -1,0 +1,13 @@
+flowchart LR
+  DEV[Developer or reviewer] --> REPO[GitHub repository]
+  REPO --> CHECKS[Lint, typecheck, tests, build]
+  REPO --> HOST[Next.js hosting target]
+
+  HOST --> SUPABASE[Supabase Auth, Postgres, Storage]
+  HOST --> STRIPE[Stripe Checkout, Portal, Webhooks]
+  HOST --> AI[AI provider abstraction]
+  HOST --> LOGS[Runtime logs and audit trails]
+
+  SUPABASE --> APPDATA[Operational, billing, analytics, AI run data]
+  STRIPE --> WEBHOOK[Webhook route]
+  WEBHOOK --> APPDATA
