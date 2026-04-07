@@ -4,6 +4,8 @@
 
 - API routes for analytics exports, analytics JSON, AI feedback, and assignable-directory lookups now return safe user-facing errors and log internal failures server-side.
 - Server actions for auth, onboarding, billing, incident, job, task, collaboration, saved-view, and notification mutations use shared action-level rate limiting.
+- Auth and onboarding control paths return normalized user-safe errors for failed sign-in, sign-up, and workspace bootstrap attempts.
+- Collaboration destructive actions log lookup failures server-side rather than throwing raw database messages to the action boundary.
 - Security headers are centralized through the Next configuration and the shared header helper.
 - Upload validation exists as a reusable policy for future endpoints; no production upload route is currently present in the app.
 

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { log } from '@/lib/observability/logger';
 import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { canDeleteRecordComment } from '@/features/collaboration/lib/collaboration-permissions';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
@@ -44,7 +45,16 @@ export async function deleteRecordCommentAction(formData: FormData) {
     .maybeSingle();
 
   if (error) {
-    throw new Error(error.message);
+    log('error', {
+      message: 'Failed to load comment before delete.',
+      context: {
+        tenantId: context.tenantId,
+        viewerId: context.viewerId,
+        commentId: parsed.data.commentId,
+        error: error.message,
+      },
+    });
+    return;
   }
 
   if (

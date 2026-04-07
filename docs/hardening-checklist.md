@@ -9,7 +9,9 @@
 - Job and task create, edit, assignment, and status actions now share the same action-level abuse protection.
 - Workspace bootstrap is rate-limited and no longer surfaces raw database errors.
 - Auth sign-in and sign-up actions are rate-limited by submitted email plus request fingerprint.
+- Auth sign-in and sign-up actions return normalized user-safe failure messages.
 - Collaboration comments, watcher controls, saved views, and notification mutations are rate-limited.
+- Comment deletion lookup failures are logged server-side without surfacing raw database errors.
 - Assignable-directory lookups are rate-limited and return safe errors for invalid or failed searches.
 - All analytics JSON, CSV, and AI API routes now return safe errors instead of raw database messages.
 - Stronger cross-origin and permissions headers are applied at the app edge.
@@ -35,8 +37,7 @@
 - Performance utility coverage exists for lazy-hydration decisions and metric naming.
 - `corepack pnpm check` should stay green after each Sprint 11 slice.
 
-## Remaining Sprint 11 sweeps
+## Remaining External Sweeps
 
 - Extend upload policy adoption once a production upload endpoint exists.
-- Continue sweeping form-heavy and icon-only controls to adopt the new accessibility primitives where they improve semantics.
 - Run the broader accessibility and bundle review pass against a browser build.

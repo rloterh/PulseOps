@@ -31,6 +31,8 @@ What this branch specifically adds beyond the completed Sprint 10 baseline:
 - analytics export, analytics JSON, and AI routes use safe error responses, structured logging, and route-level rate limiting
 - assignable-directory API lookups now use safe error responses and route-level rate limiting
 - auth, billing, operations, collaboration, saved-view, and notification mutations use shared action-level rate limiting
+- auth and onboarding failure messages are normalized instead of returning provider/database error text
+- destructive collaboration action lookup failures are logged server-side without surfacing raw database messages
 - job/task create and edit flows plus workspace bootstrap are now covered by the same action-level abuse controls
 - accessibility primitives and performance review helpers are in place for the remaining manual hardening sweep
 
@@ -276,14 +278,13 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for continued Sprint 11 hardening on top of the completed Sprint 10 platform baseline
+- ready for Sprint 11 sign-off after external browser and deployment QA
 
 ## Next Likely Steps
 
 - apply upload hardening when a production upload endpoint is introduced
-- continue sweeping form-heavy and icon-only controls to adopt the new accessibility primitives where needed
 - run the broader browser-level performance and bundle review pass for heavy analytics, AI, and admin surfaces
-- lock in the final Sprint 11 test matrix and manual QA checklist
+- review deployment security headers once the production hostname and hosting target are final
 
 ## Supporting Docs
 

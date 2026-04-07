@@ -60,7 +60,10 @@ export async function signUpAction(
 
   if (error) {
     return {
-      error: error.message,
+      error:
+        error.status === 422
+          ? 'That email may already be registered. Try signing in or use a different email.'
+          : 'We could not create that account right now. Please try again.',
     };
   }
 

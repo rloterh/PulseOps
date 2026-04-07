@@ -52,7 +52,7 @@ export async function signInAction(
 
   if (error) {
     return {
-      error: error.message,
+      error: 'We could not sign you in with those credentials. Check your email and password, then try again.',
     };
   }
 
