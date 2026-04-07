@@ -51,11 +51,13 @@ export interface AnalyticsExecutiveSummary {
   confidenceLabel: string;
   highlights: string[];
   nextSteps: string[];
+  supportingFacts: AnalyticsSupportingFact[];
 }
 
 export interface AnalyticsBranchSummaryCard {
   branchId: string;
   branchName: string;
+  href: string;
   backlogCount: number;
   overdueCount: number;
   incidentCount: number;
@@ -69,6 +71,7 @@ export interface AnalyticsBranchSummaryCard {
 
 export interface AnalyticsLateJobRiskSignal {
   jobId: string;
+  href: string;
   reference: string;
   title: string;
   branchName: string;

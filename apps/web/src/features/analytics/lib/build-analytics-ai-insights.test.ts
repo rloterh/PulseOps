@@ -52,10 +52,15 @@ describe('buildAnalyticsAiInsights', () => {
     });
 
     expect(result.executiveSummary.headline).toContain('North Branch');
+    expect(result.executiveSummary.supportingFacts).toContainEqual({
+      label: 'Hottest branch',
+      value: 'North Branch',
+    });
     expect(result.branchSummaryCards[0]).toMatchObject({
       branchName: 'North Branch',
       statusTone: 'critical',
       overdueCount: 1,
+      href: '/analytics/branches?branchId=branch-a',
     });
     expect(result.branchSummaryCards[0]?.topDrivers.length).toBeGreaterThan(0);
     expect(result.branchSummaryCards[0]?.supportingFacts).toContainEqual({
@@ -65,6 +70,7 @@ describe('buildAnalyticsAiInsights', () => {
     expect(result.lateJobRiskSignals[0]).toMatchObject({
       reference: 'JOB-001',
       statusTone: 'critical',
+      href: '/jobs/job-1',
     });
     expect(result.lateJobRiskSignals[0]?.reasons).toContain(
       'Job is blocked and cannot move forward without intervention.',
@@ -91,5 +97,9 @@ describe('buildAnalyticsAiInsights', () => {
     expect(result.executiveSummary.headline).toContain('steady');
     expect(result.lateJobRiskSignals).toHaveLength(0);
     expect(result.executiveSummary.confidenceLabel).toBe('Early signal');
+    expect(result.executiveSummary.supportingFacts).toContainEqual({
+      label: 'Critical late-job signals',
+      value: '0',
+    });
   });
 });

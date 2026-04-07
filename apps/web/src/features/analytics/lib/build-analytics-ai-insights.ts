@@ -145,6 +145,15 @@ function buildExecutiveSummary(
     confidenceLabel,
     highlights,
     nextSteps,
+    supportingFacts: buildExecutiveSupportingFacts({
+      jobsCreatedCount: input.jobsCreatedCount,
+      jobsResolvedCount: input.jobsResolvedCount,
+      backlogCount: input.backlogCount,
+      incidentCount: input.incidentsOpened.length,
+      breachCount,
+      criticalSignalCount: criticalSignals.length,
+      hottestBranchName: hottestBranch?.branchName ?? null,
+    }),
   };
 }
 
@@ -179,6 +188,7 @@ function buildBranchSummaryCards(input: BuildInput, now: Date): AnalyticsBranchS
       return {
         branchId: branch.id,
         branchName: locationNames.get(branch.id) ?? 'Unknown branch',
+        href: `/analytics/branches?branchId=${encodeURIComponent(branch.id)}`,
         backlogCount: branchJobs.length,
         overdueCount,
         incidentCount: branchIncidents.length,
@@ -257,6 +267,7 @@ function buildLateJobRiskSignals(
 
       return {
         jobId: job.id,
+        href: `/jobs/${job.id}`,
         reference: job.reference,
         title: job.title,
         branchName: locationNames.get(job.locationId) ?? 'Unknown branch',
@@ -296,6 +307,38 @@ function buildBranchRecommendation(input: {
   }
 
   return 'Stable operating lane. This branch can absorb incremental work if another site needs relief.';
+}
+
+function buildExecutiveSupportingFacts(input: {
+  jobsCreatedCount: number;
+  jobsResolvedCount: number;
+  backlogCount: number;
+  incidentCount: number;
+  breachCount: number;
+  criticalSignalCount: number;
+  hottestBranchName: string | null;
+}): AnalyticsSupportingFact[] {
+  const completionRate =
+    input.jobsCreatedCount > 0
+      ? Math.round((input.jobsResolvedCount / input.jobsCreatedCount) * 100)
+      : null;
+
+  return [
+    { label: 'Jobs created', value: String(input.jobsCreatedCount) },
+    { label: 'Jobs resolved', value: String(input.jobsResolvedCount) },
+    {
+      label: 'Completion rate',
+      value: completionRate === null ? 'Not enough volume' : `${String(completionRate)}%`,
+    },
+    { label: 'Open backlog', value: String(input.backlogCount) },
+    { label: 'Incident count', value: String(input.incidentCount) },
+    { label: 'SLA breaches', value: String(input.breachCount) },
+    { label: 'Critical late-job signals', value: String(input.criticalSignalCount) },
+    {
+      label: 'Hottest branch',
+      value: input.hottestBranchName ?? 'No branch pressure detected',
+    },
+  ];
 }
 
 function buildBranchSummary(input: {
