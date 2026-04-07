@@ -1,12 +1,13 @@
 'use server';
 
 import { getServerEnv } from '@pulseops/env/server';
+import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { canManageBilling } from '@/lib/billing/billing-access';
 import { getStripe } from '@/lib/stripe/server';
-import { createSupabaseServerClient } from '@pulseops/supabase/server';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { getBillingCustomerFromDb } from '@/features/billing/repositories/billing.repository';
 
 export async function createBillingPortalSessionAction() {
@@ -33,6 +34,19 @@ export async function createBillingPortalSessionAction() {
   const session = await stripe.billingPortal.sessions.create({
     customer: billingCustomer.stripe_customer_id,
     return_url: `${env.NEXT_PUBLIC_APP_URL}/billing`,
+  });
+
+  await insertAuditLogInDb(supabase, {
+    tenantId: context.tenantId,
+    actorUserId: context.viewerId,
+    action: 'billing.portal_opened',
+    entityType: 'billing_customer',
+    entityId: billingCustomer.id,
+    entityLabel: context.tenantName,
+    scope: 'billing',
+    metadata: {
+      stripeCustomerId: billingCustomer.stripe_customer_id,
+    },
   });
 
   redirect(session.url as never);

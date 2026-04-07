@@ -2,6 +2,7 @@
 
 import { getServerEnv } from '@pulseops/env/server';
 import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
+import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -10,6 +11,7 @@ import { canManageBilling } from '@/lib/billing/billing-access';
 import { getStripePriceIdForPlan } from '@/lib/billing/stripe-prices';
 import { syncBillingFromStripeSubscription } from '@/lib/billing/sync-billing-state';
 import { getStripe } from '@/lib/stripe/server';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import {
   getBillingCustomerFromDb,
   getBillingSubscriptionFromDb,
@@ -43,6 +45,7 @@ export async function createCheckoutSessionAction(formData: FormData) {
   }
 
   const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const stripe = getStripe();
   const [existingCustomer, existingSubscription] = await Promise.all([
     getBillingCustomerFromDb(admin, context.tenantId),
@@ -114,6 +117,21 @@ export async function createCheckoutSessionAction(formData: FormData) {
       subscription: updatedSubscription,
     });
 
+    await insertAuditLogInDb(supabase, {
+      tenantId: context.tenantId,
+      actorUserId: context.viewerId,
+      action: 'billing.plan_changed',
+      entityType: 'billing_subscription',
+      entityId: existingSubscription.id,
+      entityLabel: context.tenantName,
+      scope: 'billing',
+      metadata: {
+        plan: parsed.data.plan,
+        stripeCustomerId,
+        stripeSubscriptionId: existingSubscription.stripe_subscription_id,
+      },
+    });
+
     redirect('/billing?status=plan-updated' as unknown as Route);
   }
 
@@ -145,6 +163,20 @@ export async function createCheckoutSessionAction(formData: FormData) {
   if (!session.url) {
     redirect('/pricing?status=checkout-error' as unknown as Route);
   }
+
+  await insertAuditLogInDb(supabase, {
+    tenantId: context.tenantId,
+    actorUserId: context.viewerId,
+    action: 'billing.checkout_started',
+    entityType: 'billing_customer',
+    entityLabel: context.tenantName,
+    scope: 'billing',
+    metadata: {
+      plan: parsed.data.plan,
+      stripeCustomerId,
+      stripeCheckoutSessionId: session.id,
+    },
+  });
 
   redirect(session.url as never);
 }

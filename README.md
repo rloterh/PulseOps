@@ -15,7 +15,7 @@ This branch currently includes:
 - Sprint 4 intake, edit flows, collaboration, watchers, notifications, and inbox triage
 - Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
-- Sprint 7A and 7B incident foundations for escalations, audit logging, admin activity review, and manual escalation handling
+- Sprint 7A, 7B, and 7C incident foundations for escalations, audit logging, admin activity review, and manual escalation handling
 
 What this branch specifically adds beyond `dev`:
 
@@ -27,6 +27,7 @@ What this branch specifically adds beyond `dev`:
 - canonical incident severity presentation aligned to escalation-friendly `Sev 1` to `Sev 4` language
 - audit writes from incident create, assignment, and status mutation flows
 - manual incident escalation and acknowledgement actions with timeline, notification, and audit coverage
+- filterable admin activity review plus billing control-path audit logging for sensitive commercial actions
 
 What this branch does not claim yet:
 
@@ -73,6 +74,8 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - initial admin activity page backed by typed audit queries and summary cards
 - manual escalation and acknowledgement actions embedded into the incident detail flow
 - escalation-aware timeline entries, record notifications, and audit log writes
+- server-side admin activity filters for actor, branch, scope, and target entity review
+- billing checkout, portal, and cancellation-control actions now mirrored into the audit trail
 
 ## Tech Stack
 

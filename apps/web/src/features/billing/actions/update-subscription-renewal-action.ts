@@ -2,6 +2,7 @@
 
 import { getServerEnv } from '@pulseops/env/server';
 import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
+import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -9,6 +10,7 @@ import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { canManageBilling } from '@/lib/billing/billing-access';
 import { syncBillingFromStripeSubscription } from '@/lib/billing/sync-billing-state';
 import { getStripe } from '@/lib/stripe/server';
+import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
 import { getBillingSubscriptionFromDb } from '@/features/billing/repositories/billing.repository';
 
 const renewalSchema = z.object({
@@ -37,6 +39,7 @@ export async function updateSubscriptionRenewalAction(formData: FormData) {
   }
 
   const admin = createSupabaseAdminClient();
+  const supabase = await createSupabaseServerClient();
   const subscription = await getBillingSubscriptionFromDb(admin, context.tenantId);
 
   if (!subscription?.stripe_subscription_id || !subscription.stripe_customer_id) {
@@ -55,6 +58,23 @@ export async function updateSubscriptionRenewalAction(formData: FormData) {
     organizationId: context.tenantId,
     stripeCustomerId: subscription.stripe_customer_id,
     subscription: updatedSubscription,
+  });
+
+  await insertAuditLogInDb(supabase, {
+    tenantId: context.tenantId,
+    actorUserId: context.viewerId,
+    action:
+      parsed.data.intent === 'cancel'
+        ? 'billing.cancel_scheduled'
+        : 'billing.cancel_resumed',
+    entityType: 'billing_subscription',
+    entityId: subscription.id,
+    entityLabel: context.tenantName,
+    scope: 'billing',
+    metadata: {
+      intent: parsed.data.intent,
+      stripeSubscriptionId: subscription.stripe_subscription_id,
+    },
   });
 
   redirect(
