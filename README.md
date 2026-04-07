@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/sla-escalations-activity-audit` branch carries the full `dev` baseline through completed Sprint 6 billing, then layers the first Sprint 7 foundations for SLA-aware incident operations, escalation storage, and append-only admin audit visibility on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the first Sprint 8 analytics foundation and overview experience on top.
 
 ## Branch Status
 
-Current branch: `feature/sla-escalations-activity-audit`
+Current branch: `feature/analytics-insights`
 
 This branch currently includes:
 
@@ -15,29 +15,26 @@ This branch currently includes:
 - Sprint 4 intake, edit flows, collaboration, watchers, notifications, and inbox triage
 - Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
-- Sprint 7A, 7B, 7C, and the next evaluator slice for incident escalations, audit logging, admin activity review, and live SLA state
+- Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
+- Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
 
 What this branch specifically adds beyond `dev`:
 
-- SLA policy storage and per-record SLA snapshots for incidents, jobs, and tasks
-- additive `first_response_at` and `resolved_at` timestamps on operational records
-- incident escalation storage with organization and branch scoping
-- append-only audit logs for sensitive operator and billing activity
-- protected `/admin/activity` review for privileged workspace operators
-- canonical incident severity presentation aligned to escalation-friendly `Sev 1` to `Sev 4` language
-- audit writes from incident create, assignment, and status mutation flows
-- manual incident escalation and acknowledgement actions with timeline, notification, and audit coverage
-- filterable admin activity review plus billing control-path audit logging for sensitive commercial actions
-- live incident SLA snapshot sync, breach-risk evaluation, and incident-side SLA visibility
-- interactive admin activity review with row-level metadata inspection and pagination-safe query state
+- shared analytics filters, date-range resolution, and permission helpers aligned to the current organization and branch model
+- an actual `/analytics` overview instead of the old billing-gated placeholder copy
+- overview KPI cards for job volume, backlog, incidents, median resolution time, and SLA attainment
+- lightweight overview trend and breakdown charts built directly into the app without introducing a separate chart stack
+- `/api/analytics/overview` server response for the first analytics dataset
+- targeted analytics index tuning for jobs, incidents, and `work_item_slas`
+- shell navigation entry for Analytics so the new sprint surface is discoverable
 
 What this branch does not claim yet:
 
-- automated SLA evaluation and breach detection
-- broader escalation execution automation beyond the manual and acknowledgement flow
-- full cross-record activity feed UX
-- complete audit-log coverage across every sensitive mutation
-- customer portal, invoice center, seat billing, or usage metering beyond the Sprint 6 billing scope already merged from `dev`
+- full branch comparison analytics UI
+- the dedicated SLA metrics page
+- CSV export-ready analytics tables
+- warehouse-style BI or forecasting features
+- custom dashboard builders or later-sprint reporting features
 
 ## Product Surface
 
@@ -81,6 +78,16 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - billing checkout, portal, and cancellation-control actions now mirrored into the audit trail
 - incident detail now shows live SLA state, due windows, breach timing, and escalation health
 - incident create, edit, status, and escalation flows now recompute SLA snapshots instead of leaving the SLA tables passive
+
+### Sprint 8 Analytics Foundation
+
+- `/analytics` now renders real operational reporting instead of a placeholder message
+- overview KPIs compare the active reporting window with the immediate previous period
+- trend visualisation covers created jobs, resolved jobs, and incident openings over time
+- breakdown views show current-window jobs by status and priority
+- branch-aware analytics filtering is supported through the existing shell branch context plus explicit analytics filters
+- the first analytics API route and shared analytics helpers are in place for later Sprint 8 slices
+- analytics-focused indexes are applied for jobs, incidents, and SLA snapshot queries
 
 ## Tech Stack
 
@@ -143,6 +150,7 @@ Current schema scope on this branch includes:
 - `billing_events`
 - `organization_entitlements`
 - `audit_logs`
+- analytics-focused indexes on `jobs`, `incidents`, and `work_item_slas`
 
 This is now a meaningful operational SaaS schema, though it is still not the full long-term PulseOps domain model.
 
@@ -204,7 +212,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 Important behavior on this branch:
 
 - the public shell can still boot locally without Supabase env values
-- auth, onboarding, dashboard, billing, and admin activity flows require valid Supabase configuration
+- auth, onboarding, dashboard, analytics, billing, and admin activity flows require valid Supabase configuration
 - Stripe flows require the billing-specific env values documented in [`docs/setup/local-development.md`](./docs/setup/local-development.md)
 
 ## Quality Bar On This Branch
@@ -217,16 +225,15 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the next Sprint 7 slices on evaluator logic, automated escalations, and richer activity surfaces
+- ready for the next Sprint 8 slices on branch comparison, SLA reporting, export-ready tables, and analytics polish
 
 ## Next Likely Steps
 
-- automate SLA evaluation and breach-risk calculation
-- add escalation execution automation and responder-targeting rules
-- expand audit coverage across more sensitive server actions
-- add richer activity-feed surfaces on top of the new audit foundation
-- decide whether incident-list SLA risk and admin export flows belong in Sprint 7 or the next sprint
-- harden admin review flows with deeper test coverage
+- add branch comparison analytics surfaces
+- add dedicated SLA metrics reporting
+- add export-ready analytics tables and CSV flows
+- polish analytics loading, empty, and error states further if live QA reveals rough edges
+- run explain-plan review on analytics queries against local seeded Supabase data
 
 ## Supporting Docs
 
