@@ -6,6 +6,7 @@ import { loadLocationNameMap, loadProfileLabelMap } from '@/lib/data/load-label-
 import type {
   AuditActivityFilterOptions,
   AuditActivityFilters,
+  AuditActivityPagination,
   AdminActivitySummary,
   AuditLogListItem,
 } from '@/features/audit/types/audit.types';
@@ -17,15 +18,16 @@ export async function listAuditLogsFromDb(
   input: {
     tenantId: string;
     limit?: number;
+    offset?: number;
     filters?: AuditActivityFilters;
   },
-): Promise<AuditLogListItem[]> {
+): Promise<{ logs: AuditLogListItem[]; total: number }> {
   let query = supabase
     .from('audit_logs')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('organization_id', input.tenantId)
     .order('created_at', { ascending: false })
-    .limit(input.limit ?? 50);
+    .range(input.offset ?? 0, (input.offset ?? 0) + (input.limit ?? 50) - 1);
 
   if (input.filters?.scope && input.filters.scope !== 'all') {
     query = query.eq('scope', input.filters.scope);
@@ -50,7 +52,7 @@ export async function listAuditLogsFromDb(
     );
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -65,7 +67,10 @@ export async function listAuditLogsFromDb(
     data.flatMap((row) => (row.actor_user_id ? [row.actor_user_id] : [])),
   );
 
-  return data.map((row) => mapAuditLogListItem(row, locationNames, actorNames));
+  return {
+    logs: data.map((row) => mapAuditLogListItem(row, locationNames, actorNames)),
+    total: count ?? data.length,
+  };
 }
 
 export async function insertAuditLogInDb(
@@ -113,6 +118,20 @@ export function summarizeAuditLogs(logs: AuditLogListItem[]): AdminActivitySumma
     incidentActions: logs.filter((log) => log.scope === 'incident').length,
     escalationActions: logs.filter((log) => log.action.includes('escalat')).length,
     billingActions: logs.filter((log) => log.scope === 'billing').length,
+  };
+}
+
+export function buildAuditPagination(input: {
+  page: number;
+  pageSize: number;
+  total: number;
+}): AuditActivityPagination {
+  return {
+    page: input.page,
+    pageSize: input.pageSize,
+    total: input.total,
+    hasPrevious: input.page > 1,
+    hasNext: input.page * input.pageSize < input.total,
   };
 }
 
@@ -199,7 +218,16 @@ function mapAuditLogListItem(
     scope: row.scope,
     locationId: row.location_id,
     createdAtLabel: formatDateTimeLabel(row.created_at),
+    createdAt: row.created_at,
     locationName: row.location_id ? (locationNames.get(row.location_id) ?? null) : null,
+    entityId: row.entity_id,
+    metadata:
+      row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+        ? (row.metadata as Record<string, unknown>)
+        : {},
+    requestId: row.request_id,
+    ipAddress: row.ip_address,
+    userAgent: row.user_agent,
   };
 }
 

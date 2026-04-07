@@ -10,7 +10,13 @@ export interface AuditLogListItem {
   scope: string | null;
   locationId: string | null;
   createdAtLabel: string;
+  createdAt: string;
   locationName: string | null;
+  entityId: string | null;
+  metadata: Record<string, unknown>;
+  requestId: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
 }
 
 export interface AdminActivitySummary {
@@ -26,6 +32,14 @@ export interface AuditActivityFilters {
   actorUserId: string;
   entityType: string;
   locationId: string;
+}
+
+export interface AuditActivityPagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
 
 export interface AuditFilterOption {
