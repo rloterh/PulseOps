@@ -1,6 +1,6 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/cms-marketing-platform` branch carries the full `dev` baseline through completed Sprint 9 AI work, then layers the active Sprint 10 marketing and CMS foundations on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/cms-marketing-platform` branch carries the full `dev` baseline through completed Sprint 9 AI work, then layers the active Sprint 10 marketing and CMS implementation on top.
 
 ## Branch Status
 
@@ -18,7 +18,7 @@ This branch currently includes:
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
 - Sprint 8 analytics overview, branch comparison, SLA metrics, and export-ready analytics reporting
 - Sprint 9 AI executive summaries, late-job risk signals, branch synthesis, explanation UI, run persistence, and feedback capture
-- Sprint 10A shared marketing foundation, refreshed landing page, pricing system refresh, public contact surface, and initial public route boundaries for blog, help, and screenshots
+- Sprint 10 public landing, pricing, contact, blog, help center, docs, SEO support pages, and screenshot gallery foundations
 
 What this branch specifically adds beyond `dev`:
 
@@ -26,13 +26,14 @@ What this branch specifically adds beyond `dev`:
 - a polished landing page that explains PulseOps as an AI-powered operations command center instead of a stale Sprint 1 splash page
 - a real public pricing surface aligned to the live Stripe billing plans and entitlement model
 - a non-placeholder public contact page for rollout, sales, and support conversations
-- stable public route boundaries for `/blog`, `/help`, and `/screenshots` so the rest of Sprint 10 can layer content onto the correct IA without changing public URLs
+- typed content-in-repo marketing collections for blog, help center, docs, SEO pages, and screenshot scenes
+- static public article/detail routes for `/blog/[slug]`, `/help/[slug]`, `/docs/[[...slug]]`, `/compare/[slug]`, `/solutions/[slug]`, and `/templates/[slug]`
+- a public screenshot gallery for case-study-ready product scenes and portfolio storytelling
 
 What this branch does not claim yet:
 
-- the full Sprint 10 content layer yet
-- blog, help center, docs, SEO pages, or screenshot gallery completion beyond the first public route foundations
-- any later CMS admin or marketing automation work beyond Sprint 10 scope
+- a full external headless CMS admin
+- marketing automation vendor integrations or localization systems beyond Sprint 10 scope
 
 ## Product Surface
 

@@ -260,7 +260,7 @@ export default function MarketingHomePage() {
               actions={
                 <>
                   <Link
-                    href="/docs"
+                    href={'/docs' as Route}
                     className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white/80 px-5 text-sm font-semibold text-[var(--color-fg)] transition hover:bg-white"
                   >
                     Explore docs

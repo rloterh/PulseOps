@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Route } from 'next';
 import Link from 'next/link';
 import { getSessionUser } from '@/lib/auth/get-session-user';
 import { getCurrentMembership } from '@/lib/organizations/get-current-membership';
@@ -275,7 +275,7 @@ export default async function PricingPage({
               Talk to sales
             </Link>
             <Link
-              href="/docs"
+              href={'/docs' as Route}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/16 bg-white/7 px-6 text-sm font-semibold text-white transition hover:bg-white/12"
             >
               Explore docs

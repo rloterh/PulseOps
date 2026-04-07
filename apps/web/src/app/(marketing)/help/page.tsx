@@ -1,36 +1,38 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import type { Route } from 'next';
+import { ContentListCard } from '@/components/marketing/content-list-card';
 import { MarketingSectionHeading } from '@/components/marketing/marketing-section-heading';
+import { getHelpArticles } from '@/lib/content/marketing-content';
+import { buildMarketingMetadata } from '@/lib/seo/build-marketing-metadata';
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: 'Help Center',
   description:
-    'PulseOps help center foundation for onboarding, troubleshooting, and operational how-to content.',
-};
+    'Find onboarding, analytics, and billing help articles for the current PulseOps product surface.',
+});
 
 export default function HelpIndexPage() {
+  const articles = getHelpArticles();
+
   return (
     <main className="px-6 py-14 lg:px-10">
-      <section className="mx-auto max-w-5xl rounded-[var(--radius-2xl)] border border-white/60 bg-white/82 p-8 shadow-[var(--shadow-card)]">
+      <section className="mx-auto max-w-6xl">
         <MarketingSectionHeading
           eyebrow="Help center"
-          title="Support articles are being added on top of the new public content foundation."
-          description="This route is live now so the public IA is stable while the next subsection adds structured help content, article pages, and docs relationships."
+          title="Support content that matches the live product."
+          description="The help center is designed for onboarding, troubleshooting, and operational how-to content without splitting into a second product language."
         />
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/contact"
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--color-border)] bg-white px-5 text-sm font-semibold text-[var(--color-fg)] transition hover:bg-[var(--color-surface-muted)]"
-          >
-            Contact team
-          </Link>
-          <Link
-            href="/docs"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--color-fg)] px-5 text-sm font-semibold text-white transition hover:opacity-92"
-          >
-            Open docs
-          </Link>
-        </div>
+      </section>
+
+      <section className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-3">
+        {articles.map((article) => (
+          <ContentListCard
+            key={article.slug}
+            eyebrow={article.category}
+            title={article.title}
+            description={article.excerpt}
+            href={`/help/${article.slug}` as Route}
+          />
+        ))}
       </section>
     </main>
   );

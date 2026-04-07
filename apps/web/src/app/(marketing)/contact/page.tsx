@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Route } from 'next';
 import Link from 'next/link';
 import { MarketingSectionHeading } from '@/components/marketing/marketing-section-heading';
 
@@ -84,7 +84,7 @@ export default function ContactPage() {
               Review pricing
             </Link>
             <Link
-              href="/docs"
+              href={'/docs' as Route}
               className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/16 bg-white/7 px-5 text-sm font-semibold text-white transition hover:bg-white/12"
             >
               Explore docs
