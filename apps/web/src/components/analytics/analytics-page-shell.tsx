@@ -74,9 +74,16 @@ export function AnalyticsPageShell({
           >
             Branch comparison
           </Link>
-          <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/58">
-            SLA metrics in next slice
-          </span>
+          <Link
+            href={'/analytics/sla' as Route}
+            className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition ${
+              activeView === 'sla'
+                ? 'bg-white text-slate-950'
+                : 'border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+            }`}
+          >
+            SLA metrics
+          </Link>
         </nav>
       </section>
 

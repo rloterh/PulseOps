@@ -18,6 +18,7 @@ This branch currently includes:
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
 - Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
 - Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
+- Sprint 8C SLA metrics page, breakdowns, and evaluation API surfaces
 
 What this branch specifically adds beyond `dev`:
 
@@ -32,10 +33,13 @@ What this branch specifically adds beyond `dev`:
 - `/api/analytics/branches` server response for branch comparison datasets
 - branch comparison rankings for resolved volume, first response SLA, and breach concentration
 - side-by-side branch table covering created work, resolved work, backlog, backlog delta, incidents, SLA rates, and breaches
+- `/analytics/sla` route for service-target attainment, timing distribution, and breach review
+- `/api/analytics/sla` server response for SLA summary, breakdown, and evaluation datasets
+- SLA summary cards for first response and resolution attainment plus median and p95 timing
+- branch, priority, and severity breakdown tables with record-level evaluation review
 
 What this branch does not claim yet:
 
-- the dedicated SLA metrics page
 - CSV export-ready analytics tables
 - warehouse-style BI or forecasting features
 - custom dashboard builders or later-sprint reporting features
@@ -99,6 +103,13 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch rankings surface resolved volume, first response SLA attainment, and breach concentration
 - the comparison table includes backlog delta versus the previous period when compare mode is enabled
 - the analytics shell now links directly between overview and branch comparison views
+
+### Sprint 8 SLA Metrics
+
+- `/analytics/sla` reports first response and resolution attainment using the existing `work_item_slas` foundation
+- SLA summary cards show first response rate, resolution rate, and median/p95 timings
+- breakdown tables cover branch, priority, and severity cohorts
+- record-level evaluation rows expose the exact items behind the aggregate SLA metrics
 
 ## Tech Stack
 
@@ -236,11 +247,10 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the remaining Sprint 8 slices on SLA reporting, export-ready tables, and analytics polish
+- ready for the remaining Sprint 8 slice on export-ready tables and final analytics polish
 
 ## Next Likely Steps
 
-- add dedicated SLA metrics reporting
 - add export-ready analytics tables and CSV flows
 - polish analytics loading, empty, and error states further if live QA reveals rough edges
 - run explain-plan review on analytics queries against local seeded Supabase data
