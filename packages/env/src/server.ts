@@ -7,6 +7,9 @@ export const serverEnvSchema = clientEnvSchema.extend({
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   STRIPE_PRICE_PRO_MONTHLY: z.string().min(1).optional(),
   STRIPE_PRICE_BUSINESS_MONTHLY: z.string().min(1).optional(),
+  AI_PROVIDER: z.enum(['deterministic', 'openai']).optional(),
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -23,5 +26,8 @@ export function getServerEnv(): ServerEnv {
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_PRICE_PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
     STRIPE_PRICE_BUSINESS_MONTHLY: process.env.STRIPE_PRICE_BUSINESS_MONTHLY,
+    AI_PROVIDER: process.env.AI_PROVIDER,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_MODEL: process.env.OPENAI_MODEL,
   });
 }

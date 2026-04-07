@@ -9,6 +9,140 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      ai_feedback: {
+        Row: {
+          ai_run_id: string;
+          comment: string | null;
+          created_at: string;
+          id: string;
+          organization_id: string;
+          rating: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          ai_run_id: string;
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          rating: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          ai_run_id?: string;
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          rating?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_feedback_ai_run_id_fkey';
+            columns: ['ai_run_id'];
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_feedback_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_feedback_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ai_runs: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          error_message: string | null;
+          fallback_reason: string | null;
+          id: string;
+          input_hash: string;
+          location_id: string | null;
+          model: string;
+          organization_id: string;
+          prompt_version: string;
+          provider: string;
+          request_payload: Json;
+          requested_by_user_id: string;
+          response_payload: Json | null;
+          started_at: string;
+          status: string;
+          task_key: string;
+          updated_at: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_message?: string | null;
+          fallback_reason?: string | null;
+          id?: string;
+          input_hash: string;
+          location_id?: string | null;
+          model?: string;
+          organization_id: string;
+          prompt_version?: string;
+          provider?: string;
+          request_payload?: Json;
+          requested_by_user_id: string;
+          response_payload?: Json | null;
+          started_at?: string;
+          status?: string;
+          task_key: string;
+          updated_at?: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_message?: string | null;
+          fallback_reason?: string | null;
+          id?: string;
+          input_hash?: string;
+          location_id?: string | null;
+          model?: string;
+          organization_id?: string;
+          prompt_version?: string;
+          provider?: string;
+          request_payload?: Json;
+          requested_by_user_id?: string;
+          response_payload?: Json | null;
+          started_at?: string;
+          status?: string;
+          task_key?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_runs_location_id_fkey';
+            columns: ['location_id'];
+            referencedRelation: 'locations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_runs_organization_id_fkey';
+            columns: ['organization_id'];
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_runs_requested_by_user_id_fkey';
+            columns: ['requested_by_user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       incident_timeline_events: {
         Row: {
           actor_name: string;
