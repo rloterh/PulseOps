@@ -34,16 +34,19 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
   pageHref,
   filtersPayload,
   views,
+  maxViews,
 }: {
   resourceType: TResource;
   pageHref: string;
   filtersPayload: string;
   views: SavedListViewRecord<TResource>[];
+  maxViews: number;
 }) {
   const [state, formAction] = useActionState(createSavedListViewAction, initialState);
   const [name, setName] = useState('');
   const trimmedName = name.trim();
-  const canSave = trimmedName.length >= 2;
+  const isAtLimit = views.length >= maxViews;
+  const canSave = trimmedName.length >= 2 && !isAtLimit;
 
   useEffect(() => {
     if (state.success) {
@@ -84,6 +87,7 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
                 setName(event.currentTarget.value);
               }}
               placeholder="Morning triage"
+              disabled={isAtLimit}
               className="h-10 min-w-[13rem] rounded-full border border-white/10 bg-black/20 px-4 text-sm text-white outline-none placeholder:text-white/30"
             />
             <SaveViewButton disabled={!canSave} />
@@ -94,6 +98,10 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
           <p className="text-sm text-red-200">{state.error}</p>
         ) : state.success ? (
           <p className="text-sm text-emerald-200">{state.success}</p>
+        ) : isAtLimit ? (
+          <p className="text-sm text-amber-200">
+            You have reached the current saved view limit for this plan.
+          </p>
         ) : !canSave && name.length > 0 ? (
           <p className="text-sm text-white/42">
             Use at least 2 non-space characters for the saved view name.
@@ -101,6 +109,9 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs uppercase tracking-[0.18em] text-white/35">
+            {String(views.length)} / {String(maxViews)}
+          </span>
           <Link
             href={pageHref as Route}
             className="inline-flex items-center rounded-full border border-white/10 bg-black/18 px-3 py-2 text-sm text-white/68 transition hover:bg-black/28 hover:text-white"

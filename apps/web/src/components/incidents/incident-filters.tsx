@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +11,13 @@ import {
 } from '@/features/incidents/lib/incident-list-query-state';
 import type { IncidentListFilters } from '@/features/incidents/types/incident.types';
 
-export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
+export function IncidentFilters({
+  filters,
+  canUseAdvancedFilters,
+}: {
+  filters: IncidentListFilters;
+  canUseAdvancedFilters: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -91,6 +98,7 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
             onChange={(event) => {
               setSeverity(event.currentTarget.value as typeof severity);
             }}
+            disabled={!canUseAdvancedFilters}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All severities</option>
@@ -132,6 +140,7 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
             onChange={(event) => {
               setSlaRisk(event.currentTarget.value as typeof slaRisk);
             }}
+            disabled={!canUseAdvancedFilters}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All incidents</option>
@@ -142,9 +151,20 @@ export function IncidentFilters({ filters }: { filters: IncidentListFilters }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-white/46">
-          Search sync stays debounced while severity, status, and SLA controls update immediately so the list stays fast and shareable.
-        </p>
+        <div className="space-y-1">
+          <p className="text-sm text-white/46">
+            Search sync stays debounced while status changes update immediately so the list stays fast and shareable.
+          </p>
+          {!canUseAdvancedFilters ? (
+            <p className="text-sm text-amber-100/80">
+              Severity and SLA-health filters are available on paid plans.{' '}
+              <Link href="/billing" className="font-semibold text-white underline-offset-4 hover:underline">
+                Upgrade billing
+              </Link>
+              .
+            </p>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={() => {

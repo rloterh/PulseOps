@@ -14,7 +14,7 @@
 5. Add the local Supabase values to `.env.local`.
 6. Start the app with `corepack pnpm dev`.
 
-The `db reset` step applies the current local schema through the Sprint 5 operations-list layer, including tenancy, operational records, collaboration, notifications, saved views, and related list workflows.
+The `db reset` step applies the current local schema through the Sprint 6 billing foundation, including tenancy, operational records, collaboration, notifications, saved views, and the new billing tables for Stripe customers, subscriptions, entitlements, and webhook events.
 
 ## Verification
 
@@ -55,6 +55,16 @@ Sprint 1 auth, onboarding, and protected dashboard flows require these values:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+
+Sprint 6 billing adds these optional values when you want to test checkout, plan changes, cancel or resume actions, portal launch, or webhook flows locally:
+
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_PRO_MONTHLY`
+- `STRIPE_PRICE_BUSINESS_MONTHLY`
+
+If those Stripe variables are missing, the pricing and billing pages still render, but checkout and portal launch will redirect back with a clear “billing unavailable” state instead of crashing.
 
 Sprint 3 builds on that foundation with the first real operational modules, so it is worth validating these browser flows locally after setup:
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import type { Route } from 'next';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +11,13 @@ import {
 } from '@/features/jobs/lib/job-list-query-state';
 import type { JobListFilters } from '@/features/jobs/types/job.types';
 
-export function JobFilters({ filters }: { filters: JobListFilters }) {
+export function JobFilters({
+  filters,
+  canUseAdvancedFilters,
+}: {
+  filters: JobListFilters;
+  canUseAdvancedFilters: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -89,6 +96,7 @@ export function JobFilters({ filters }: { filters: JobListFilters }) {
             onChange={(event) => {
               setPriority(event.currentTarget.value as typeof priority);
             }}
+            disabled={!canUseAdvancedFilters}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All priorities</option>
@@ -131,6 +139,7 @@ export function JobFilters({ filters }: { filters: JobListFilters }) {
             onChange={(event) => {
               setType(event.currentTarget.value as typeof type);
             }}
+            disabled={!canUseAdvancedFilters}
             className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
           >
             <option value="all">All types</option>
@@ -143,9 +152,20 @@ export function JobFilters({ filters }: { filters: JobListFilters }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-white/46">
-          Search sync is debounced, while priority, status, and type changes update the URL immediately for faster triage.
-        </p>
+        <div className="space-y-1">
+          <p className="text-sm text-white/46">
+            Search sync is debounced, while status changes update immediately for faster triage.
+          </p>
+          {!canUseAdvancedFilters ? (
+            <p className="text-sm text-amber-100/80">
+              Priority and type filters are available on paid plans.{' '}
+              <Link href="/billing" className="font-semibold text-white underline-offset-4 hover:underline">
+                Upgrade billing
+              </Link>
+              .
+            </p>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={() => {

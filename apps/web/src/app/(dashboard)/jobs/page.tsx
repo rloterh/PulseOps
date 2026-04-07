@@ -13,6 +13,7 @@ import { parseJobListFilters } from '@/features/jobs/queries/parse-job-list-filt
 import type { JobListFilters as SavedJobListFilters } from '@/features/jobs/types/job.types';
 import { getSavedListViewsFromDb } from '@/features/list-views/repositories/saved-list-views.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 
 export default async function JobsPage({
   searchParams,
@@ -20,7 +21,15 @@ export default async function JobsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const context = await requireTenantMember();
-  const filters = parseJobListFilters(await searchParams);
+  const rawFilters = parseJobListFilters(await searchParams);
+  const entitlements = await getOrganizationEntitlements(context.tenantId);
+  const filters = entitlements.canUseAdvancedFilters
+    ? rawFilters
+    : {
+        ...rawFilters,
+        priority: 'all' as const,
+        type: 'all' as const,
+      };
   const jobs = await getJobsList({
     tenantId: context.tenantId,
     branchId: context.branchId,
@@ -84,12 +93,16 @@ export default async function JobsPage({
         }
       />
 
-      <JobFilters filters={filters} />
+      <JobFilters
+        filters={filters}
+        canUseAdvancedFilters={entitlements.canUseAdvancedFilters}
+      />
       <SavedListViewsBar
         resourceType="jobs"
         pageHref="/jobs"
         filtersPayload={JSON.stringify(filters)}
         views={savedViews}
+        maxViews={entitlements.maxSavedViews}
       />
 
       {jobs.length > 0 ? (

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import {
   createSavedListViewInDb,
+  getSavedListViewsCountFromDb,
 } from '@/features/list-views/repositories/saved-list-views.repository';
 import {
   createSavedListViewSchema,
@@ -11,6 +12,7 @@ import {
 } from '@/features/list-views/schemas/saved-list-view.schemas';
 import type { SavedListViewActionState } from '@/features/list-views/types/list-view.types';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 
 export async function createSavedListViewAction(
   _prevState: SavedListViewActionState,
@@ -41,6 +43,19 @@ export async function createSavedListViewAction(
 
   const context = await requireTenantMember();
   const supabase = await createSupabaseServerClient();
+  const [entitlements, savedViewCount] = await Promise.all([
+    getOrganizationEntitlements(context.tenantId),
+    getSavedListViewsCountFromDb(supabase, {
+      tenantId: context.tenantId,
+      viewerId: context.viewerId,
+    }),
+  ]);
+
+  if (savedViewCount >= entitlements.maxSavedViews) {
+    return {
+      error: `Your current plan supports up to ${String(entitlements.maxSavedViews)} saved views. Upgrade billing to add more.`,
+    };
+  }
 
   try {
     await createSavedListViewInDb(supabase, {
