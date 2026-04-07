@@ -38,6 +38,31 @@ export async function getSlaPoliciesFromDb(
   return data;
 }
 
+export async function getSlaPolicyByIdFromDb(
+  supabase: SupabaseClient<Database>,
+  input: {
+    tenantId: string;
+    policyId: string | null;
+  },
+): Promise<SlaPolicyRecord | null> {
+  if (!input.policyId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('sla_policies')
+    .select('*')
+    .eq('organization_id', input.tenantId)
+    .eq('id', input.policyId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function getWorkItemSlaSnapshotFromDb(
   supabase: SupabaseClient<Database>,
   input: {
@@ -94,4 +119,38 @@ export async function upsertWorkItemSlaSnapshotInDb(
   }
 
   return data;
+}
+
+export async function updateWorkItemSlaEvaluationInDb(
+  supabase: SupabaseClient<Database>,
+  input: {
+    tenantId: string;
+    entityType: SlaEntityType;
+    entityId: string;
+    riskLevel: Database['public']['Enums']['sla_risk_level'];
+    escalationState: Database['public']['Enums']['sla_escalation_state'];
+    warningSentAt: string | null;
+    firstResponseBreachedAt: string | null;
+    resolutionBreachedAt: string | null;
+    escalationTriggeredAt: string | null;
+  },
+) {
+  const { error } = await supabase
+    .from('work_item_slas')
+    .update({
+      risk_level: input.riskLevel,
+      escalation_state: input.escalationState,
+      warning_sent_at: input.warningSentAt,
+      first_response_breached_at: input.firstResponseBreachedAt,
+      resolution_breached_at: input.resolutionBreachedAt,
+      escalation_triggered_at: input.escalationTriggeredAt,
+      last_evaluated_at: new Date().toISOString(),
+    })
+    .eq('organization_id', input.tenantId)
+    .eq('entity_type', input.entityType)
+    .eq('entity_id', input.entityId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
