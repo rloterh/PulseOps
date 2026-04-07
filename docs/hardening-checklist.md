@@ -10,6 +10,7 @@
 - Workspace bootstrap is rate-limited and no longer surfaces raw database errors.
 - Auth sign-in and sign-up actions are rate-limited by submitted email plus request fingerprint.
 - Collaboration comments, watcher controls, saved views, and notification mutations are rate-limited.
+- Assignable-directory lookups are rate-limited and return safe errors for invalid or failed searches.
 - All analytics JSON, CSV, and AI API routes now return safe errors instead of raw database messages.
 - Stronger cross-origin and permissions headers are applied at the app edge.
 - Sprint 11 security review notes are captured in `docs/security-review.md`.

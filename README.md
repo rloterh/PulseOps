@@ -29,6 +29,7 @@ What this branch specifically adds beyond the completed Sprint 10 baseline:
 - shared loading, empty, and error-state primitives for the app shell
 - root skip-link, live-announcer placeholders, and focus boundary support
 - analytics export, analytics JSON, and AI routes use safe error responses, structured logging, and route-level rate limiting
+- assignable-directory API lookups now use safe error responses and route-level rate limiting
 - auth, billing, operations, collaboration, saved-view, and notification mutations use shared action-level rate limiting
 - job/task create and edit flows plus workspace bootstrap are now covered by the same action-level abuse controls
 - accessibility primitives and performance review helpers are in place for the remaining manual hardening sweep
@@ -130,6 +131,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - analytics export and AI routes now use safe error responses, structured logging, and route-level rate limiting
 - billing checkout, billing portal, subscription renewal, and operations write actions now use shared server-action rate limiting
 - auth, collaboration, saved-view, notification, and analytics JSON routes now have the same abuse-prevention posture
+- assignable directory lookups use the same safe-error and rate-limit posture as analytics APIs
 - job/task create and edit plus workspace bootstrap are covered by the shared action-rate-limit layer
 - stronger default cross-origin and permissions headers are applied through `next.config.ts`
 - early hardening docs are in place for checklist, security review, rate-limit matrix, and upload policy guidance

@@ -31,6 +31,7 @@
 | Task assignment | `task:assignment` | 60 | 10 minutes | Protects assignment churn and watcher fan-out. |
 | Task status update | `task:status` | 60 | 10 minutes | Protects timeline and notification churn. |
 | Workspace bootstrap | `organization:create` | 5 | 1 hour | Protects onboarding workspace creation and organization bootstrap. |
+| Assignable directory API | `directory:assignees` | 80 | 10 minutes | Protects typeahead member lookups used by assignment forms. |
 | Collaboration comments | `collaboration:comment` | 60 | 10 minutes | Protects comment, note, mention, watcher, and notification fan-out. |
 | Record watcher updates | `collaboration:watch` | 80 | 10 minutes | Protects watch/unwatch/mute churn. |
 | Comment delete | `collaboration:delete-comment` | 30 | 10 minutes | Protects destructive comment operations. |
