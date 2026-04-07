@@ -1709,7 +1709,8 @@ export interface Database {
         | 'assignment'
         | 'status_change'
         | 'note'
-        | 'resolution';
+        | 'resolution'
+        | 'escalation';
       escalation_status:
         | 'pending'
         | 'sent'

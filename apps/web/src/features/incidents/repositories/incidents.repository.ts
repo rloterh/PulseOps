@@ -4,17 +4,26 @@ import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
 import { loadLocationNameMap, loadProfileLabelMap } from '@/lib/data/load-label-maps';
 import type {
   IncidentDetail,
+  IncidentEscalationEntry,
   IncidentListFilters,
   IncidentListItem,
   IncidentTimelineEntry,
 } from '@/features/incidents/types/incident.types';
+import { listIncidentEscalationsFromDb } from './incident-escalations.repository';
 
 type IncidentRow = Database['public']['Tables']['incidents']['Row'];
 type JobRow = Pick<Database['public']['Tables']['jobs']['Row'], 'id' | 'reference'>;
 type IncidentTimelineRecord = Database['public']['Tables']['incident_timeline_events']['Row'];
 type IncidentMutationRecord = Pick<
   IncidentRow,
-  'id' | 'title' | 'status' | 'assignee_user_id' | 'location_id'
+  | 'id'
+  | 'title'
+  | 'reference'
+  | 'status'
+  | 'assignee_user_id'
+  | 'location_id'
+  | 'resolved_at'
+  | 'closed_at'
 >;
 
 interface ScopedIncidentInput {
@@ -140,7 +149,7 @@ export async function getIncidentDetailFromDb(
     return null;
   }
 
-  const [linkedJobsResult, timelineResult, locationNames, profileLabels] =
+  const [linkedJobsResult, timelineResult, escalations, locationNames, profileLabels] =
     await Promise.all([
       supabase
         .from('jobs')
@@ -154,6 +163,10 @@ export async function getIncidentDetailFromDb(
         .eq('organization_id', input.tenantId)
         .eq('incident_id', input.incidentId)
         .order('created_at', { ascending: false }),
+      listIncidentEscalationsFromDb(supabase, {
+        tenantId: input.tenantId,
+        incidentId: input.incidentId,
+      }),
       loadLocationNameMap(supabase, [incident.location_id]),
       loadProfileLabelMap(
         supabase,
@@ -174,6 +187,7 @@ export async function getIncidentDetailFromDb(
   return mapIncidentDetail(
     incident,
     linkedJobsResult.data,
+    escalations,
     timelineResult.data,
     locationNames,
     profileLabels,
@@ -206,13 +220,20 @@ export async function updateIncidentStatusInDb(
 
   const query = supabase
     .from('incidents')
-    .update({ status: input.status })
+    .update({
+      status: input.status,
+      resolved_at:
+        input.status === 'resolved' || input.status === 'closed'
+          ? new Date().toISOString()
+          : null,
+      closed_at: input.status === 'closed' ? new Date().toISOString() : null,
+    })
     .eq('organization_id', input.tenantId)
     .eq('location_id', current.location_id)
     .eq('id', input.incidentId);
 
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id, location_id')
+    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
     .single();
 
   if (error) {
@@ -265,7 +286,7 @@ export async function assignIncidentInDb(
     .eq('id', input.incidentId);
 
   const { data, error } = await query
-    .select('id, title, status, assignee_user_id, location_id')
+    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
     .single();
 
   if (error) {
@@ -285,7 +306,7 @@ async function getScopedIncidentForMutation(
 ): Promise<IncidentMutationRecord | null> {
   const { data, error } = await supabase
     .from('incidents')
-    .select('id, title, status, assignee_user_id, location_id')
+    .select('id, title, reference, status, assignee_user_id, location_id, resolved_at, closed_at')
     .eq('organization_id', input.tenantId)
     .eq('id', input.incidentId)
     .maybeSingle();
@@ -323,6 +344,7 @@ function mapIncidentListItem(
 function mapIncidentDetail(
   row: IncidentRow,
   linkedJobs: JobRow[],
+  escalations: IncidentEscalationEntry[],
   timeline: IncidentTimelineRecord[],
   locationNames: Map<string, string>,
   profileLabels: Map<string, string>,
@@ -339,7 +361,13 @@ function mapIncidentDetail(
     severity: row.severity,
     status: row.status,
     slaRisk: row.sla_risk,
+    escalationLevel: row.escalation_level,
     openedAtLabel: formatDateTimeLabel(row.opened_at),
+    acknowledgedAtLabel: row.acknowledged_at
+      ? formatDateTimeLabel(row.acknowledged_at)
+      : null,
+    resolvedAtLabel: row.resolved_at ? formatDateTimeLabel(row.resolved_at) : null,
+    closedAtLabel: row.closed_at ? formatDateTimeLabel(row.closed_at) : null,
     ownerName: profileLabels.get(row.owner_user_id) ?? 'Unknown owner',
     assigneeName: row.assignee_user_id
       ? (profileLabels.get(row.assignee_user_id) ?? null)
@@ -351,6 +379,7 @@ function mapIncidentDetail(
       id: job.id,
       reference: job.reference,
     })),
+    escalations,
     timeline: timeline.map(mapIncidentTimelineEntry),
   };
 }

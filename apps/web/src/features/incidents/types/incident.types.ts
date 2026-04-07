@@ -39,11 +39,31 @@ export interface IncidentListItem {
 
 export interface IncidentTimelineEntry {
   id: string;
-  type: 'created' | 'assignment' | 'status_change' | 'note' | 'resolution';
+  type:
+    | 'created'
+    | 'assignment'
+    | 'status_change'
+    | 'note'
+    | 'resolution'
+    | 'escalation';
   title: string;
   description: string;
   timestampLabel: string;
   actorName: string;
+}
+
+export interface IncidentEscalationEntry {
+  id: string;
+  escalationLevel: number;
+  status: 'pending' | 'sent' | 'acknowledged' | 'completed' | 'cancelled';
+  reason: string | null;
+  targetLabel: string;
+  targetUserId: string | null;
+  triggeredByName: string;
+  acknowledgedByName: string | null;
+  triggeredAtLabel: string;
+  acknowledgedAtLabel: string | null;
+  completedAtLabel: string | null;
 }
 
 export interface IncidentLinkedJob {
@@ -63,13 +83,18 @@ export interface IncidentDetail {
   severity: IncidentSeverity;
   status: IncidentStatus;
   slaRisk: boolean;
+  escalationLevel: number;
   openedAtLabel: string;
+  acknowledgedAtLabel: string | null;
+  resolvedAtLabel: string | null;
+  closedAtLabel: string | null;
   ownerName: string;
   assigneeName: string | null;
   currentAssigneeUserId: string | null;
   impactSummary: string;
   nextAction: string;
   linkedJobs: IncidentLinkedJob[];
+  escalations: IncidentEscalationEntry[];
   timeline: IncidentTimelineEntry[];
 }
 

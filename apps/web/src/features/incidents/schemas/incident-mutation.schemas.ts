@@ -10,6 +10,48 @@ export const assignIncidentSchema = z.object({
   assigneeUserId: z.union([z.uuid(), z.null()]),
 });
 
+const escalationTargetRoleSchema = z.union([
+  z.enum(['owner', 'admin', 'manager', 'agent']),
+  z.literal(''),
+  z.null(),
+  z.undefined(),
+]);
+
+const escalationTargetUserSchema = z.union([z.uuid(), z.literal(''), z.null(), z.undefined()]);
+
+export const createIncidentEscalationSchema = z
+  .object({
+    incidentId: z.uuid(),
+    escalationLevel: z.coerce.number().int().min(1).max(5),
+    reason: z
+      .string()
+      .trim()
+      .max(600)
+      .transform((value) => (value.length > 0 ? value : '')),
+    targetUserId: escalationTargetUserSchema.transform((value) =>
+      typeof value === 'string' && value.length > 0 ? value : null,
+    ),
+    targetRole: escalationTargetRoleSchema.transform((value) =>
+      typeof value === 'string' && value.length > 0 ? value : null,
+    ),
+    targetQueue: z
+      .union([z.string(), z.null(), z.undefined()])
+      .transform((value) => (typeof value === 'string' ? value.trim() : ''))
+      .refine((value) => value.length <= 80, 'Queue must be 80 characters or fewer.'),
+  })
+  .refine(
+    (value) =>
+      value.targetUserId !== null ||
+      value.targetRole !== null ||
+      value.targetQueue.length > 0,
+    'Pick a direct owner, role, or queue target before escalating.',
+  );
+
+export const acknowledgeIncidentEscalationSchema = z.object({
+  incidentId: z.uuid(),
+  escalationId: z.uuid(),
+});
+
 function transformOptionalString(max: number) {
   return z
     .union([z.string(), z.null(), z.undefined()])

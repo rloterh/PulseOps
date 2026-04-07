@@ -5,7 +5,8 @@ export type NotificationEventType =
   | 'mention'
   | 'assignment'
   | 'status_change'
-  | 'record_created';
+  | 'record_created'
+  | 'escalation';
 
 export type NotificationView = 'all' | 'unread' | 'archived';
 
