@@ -47,7 +47,7 @@ export default async function DocsCatchAllPage({
     <main className="px-6 py-14 lg:px-10">
       <article className="mx-auto max-w-4xl rounded-[var(--radius-2xl)] border border-white/60 bg-white/84 p-8 shadow-[var(--shadow-card)]">
         <MarketingSectionHeading
-          eyebrow={`Docs · ${page.section}`}
+          eyebrow={`Docs / ${page.section}`}
           title={page.title}
           description={page.description}
         />

@@ -11,8 +11,9 @@ export default function NotFound() {
           The route you requested does not exist.
         </h1>
         <p className="text-sm leading-6 text-[var(--color-fg-muted)]">
-          PulseOps is scaffolded for Sprint 0, so most routes are intentionally
-          placeholders while the foundation is being locked in.
+          PulseOps now includes public marketing, docs, analytics, AI, and
+          operational product surfaces. This specific URL just does not map to
+          a live route.
         </p>
         <Link
           href="/"
