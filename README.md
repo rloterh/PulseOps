@@ -1,10 +1,10 @@
 # PulseOps
 
-PulseOps is an operations command center for multi-location service businesses. The current `feature/analytics-insights` branch carries the full `dev` baseline through completed Sprint 7 incident and audit work, then layers the Sprint 8 analytics foundation plus the first Sprint 9 AI insight surfaces on top.
+PulseOps is an operations command center for multi-location service businesses. The current `feature/ai-layer` branch carries the full `dev` baseline through completed Sprint 8 analytics work, then layers the active Sprint 9A AI insight surfaces on top.
 
 ## Branch Status
 
-Current branch: `feature/analytics-insights`
+Current branch: `feature/ai-layer`
 
 This branch currently includes:
 
@@ -17,7 +17,10 @@ This branch currently includes:
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
 - Sprint 7 incident escalation, live SLA state, audit logging, and admin activity review
 - Sprint 8A analytics foundation, overview KPIs, trend charts, and analytics index tuning
-- Sprint 9A AI executive summary, branch summary cards, and late-job risk signals
+- Sprint 8B branch comparison rankings, side-by-side performance tables, and comparison API surfaces
+- Sprint 8C SLA metrics page, breakdowns, and evaluation API surfaces
+- Sprint 8D CSV export-ready analytics tables and authenticated export route
+- Sprint 9A AI executive summary, branch summary cards, late-job risk signals, and AI explanation UI
 
 What this branch specifically adds beyond `dev`:
 
@@ -28,18 +31,27 @@ What this branch specifically adds beyond `dev`:
 - `/api/analytics/overview` server response for the first analytics dataset
 - targeted analytics index tuning for jobs, incidents, and `work_item_slas`
 - shell navigation entry for Analytics so the new sprint surface is discoverable
+- `/analytics/branches` route for branch-level throughput and SLA comparison
+- `/api/analytics/branches` server response for branch comparison datasets
+- branch comparison rankings for resolved volume, first response SLA, and breach concentration
+- side-by-side branch table covering created work, resolved work, backlog, backlog delta, incidents, SLA rates, and breaches
+- `/analytics/sla` route for service-target attainment, timing distribution, and breach review
+- `/api/analytics/sla` server response for SLA summary, breakdown, and evaluation datasets
+- SLA summary cards for first response and resolution attainment plus median and p95 timing
+- branch, priority, and severity breakdown tables with record-level evaluation review
+- authenticated `/api/analytics/export` route for stable branch-comparison and SLA CSV downloads
+- export links wired directly into the branch-comparison and SLA table surfaces
+- analytics pages, API routes, and CSV exports now resolve branch scope consistently from the same shell or explicit filter context
+- SLA CSV exports now use raw stable timestamps for `created_at` instead of UI-formatted display labels
 - executive-summary guidance generated server-side from the analytics dataset
 - branch summary cards that explain where backlog, incidents, and SLA pressure are concentrating
 - late-job risk panels that explain why specific jobs are likely to slip and what to do next
 
 What this branch does not claim yet:
 
-- full branch comparison analytics UI
-- the dedicated SLA metrics page
-- CSV export-ready analytics tables
-- richer AI explanation drill-ins and cross-branch narratives
 - warehouse-style BI or forecasting features
 - custom dashboard builders or later-sprint reporting features
+- richer AI explanation drill-ins and broader branch-to-branch narrative synthesis beyond Sprint 9A
 
 ## Product Surface
 
@@ -93,6 +105,27 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - branch-aware analytics filtering is supported through the existing shell branch context plus explicit analytics filters
 - the first analytics API route and shared analytics helpers are in place for later Sprint 8 slices
 - analytics-focused indexes are applied for jobs, incidents, and SLA snapshot queries
+
+### Sprint 8 Branch Comparison
+
+- `/analytics/branches` compares branch-level throughput, incident pressure, and SLA performance
+- branch rankings surface resolved volume, first response SLA attainment, and breach concentration
+- the comparison table includes backlog delta versus the previous period when compare mode is enabled
+- the analytics shell now links directly between overview and branch comparison views
+
+### Sprint 8 SLA Metrics
+
+- `/analytics/sla` reports first response and resolution attainment using the existing `work_item_slas` foundation
+- SLA summary cards show first response rate, resolution rate, and median/p95 timings
+- breakdown tables cover branch, priority, and severity cohorts
+- record-level evaluation rows expose the exact items behind the aggregate SLA metrics
+
+### Sprint 8 Export-Ready Tables
+
+- branch comparison and SLA evaluation tables now expose stable CSV download flows
+- export URLs preserve the current analytics filters and stay server-generated
+- `/api/analytics/export` enforces the same analytics access and billing entitlement checks as the live pages
+- CSV serialization is centralized so exported contracts stay stable across future analytics slices
 
 ### Sprint 9 AI Layer Foundations
 
@@ -237,17 +270,13 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the next Sprint 8 slices on branch comparison, SLA reporting, export-ready tables, and analytics polish
-- ready for the next Sprint 9 slices on richer AI explanations and branch-to-branch narrative insights
+- ready for Sprint 9 continuation on top of the completed Sprint 8 analytics baseline
 
 ## Next Likely Steps
 
-- add branch comparison analytics surfaces
-- add dedicated SLA metrics reporting
-- add export-ready analytics tables and CSV flows
-- add richer branch-to-branch AI narratives and executive summary drill-downs
-- polish analytics loading, empty, and error states further if live QA reveals rough edges
-- run explain-plan review on analytics queries against local seeded Supabase data
+- add richer AI explanation drill-downs and more nuanced executive narratives
+- expand late-job risk modelling beyond the first explainable heuristics layer
+- keep analytics performance under review with local explain-plan checks against seeded Supabase data
 
 ## Supporting Docs
 

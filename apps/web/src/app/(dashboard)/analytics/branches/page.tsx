@@ -1,23 +1,20 @@
 import Link from 'next/link';
-import { AnalyticsAiExecutiveSummary } from '@/components/analytics/ai-executive-summary';
 import { AnalyticsBarList } from '@/components/analytics/analytics-bar-list';
-import { AnalyticsBranchSummaryGrid } from '@/components/analytics/branch-summary-grid';
+import { BranchComparisonTable } from '@/components/analytics/branch-comparison-table';
 import { AnalyticsFiltersBar } from '@/components/analytics/analytics-filters';
-import { AnalyticsKpiCard } from '@/components/analytics/kpi-card';
 import { AnalyticsPageShell } from '@/components/analytics/analytics-page-shell';
 import { EmptyAnalyticsState } from '@/components/analytics/empty-analytics-state';
-import { AnalyticsLateJobRiskPanel } from '@/components/analytics/late-job-risk-panel';
-import { TrendLineChart } from '@/components/analytics/trend-line-chart';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
+import { buildAnalyticsExportHref } from '@/features/analytics/lib/build-analytics-export-href';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
-import { getAnalyticsOverview } from '@/features/analytics/queries/get-analytics-overview';
+import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 import { redirect } from 'next/navigation';
 
-export default async function AnalyticsPage({
+export default async function AnalyticsBranchComparisonPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -41,7 +38,7 @@ export default async function AnalyticsPage({
   }
 
   const parsedFilters = parseAnalyticsFilters(await searchParams);
-  const { filters, selectedBranch } = resolveAnalyticsScope({
+  const { filters } = resolveAnalyticsScope({
     filters: parsedFilters,
     locations,
     shellBranchId: context.branchId,
@@ -56,12 +53,11 @@ export default async function AnalyticsPage({
             Analytics
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            Analytics is locked on the current billing plan.
+            Branch comparison is locked on the current billing plan.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
-            Sprint 8 starts the real analytics layer, but the data views remain gated
-            behind paid entitlements. Upgrade the workspace to unlock overview trends,
-            branch comparison, and SLA reporting.
+            Upgrade the workspace to compare branch throughput, backlog, incidents,
+            and SLA performance side by side.
           </p>
           <div className="mt-6">
             <Link
@@ -76,66 +72,59 @@ export default async function AnalyticsPage({
     );
   }
 
-  const overview = await getAnalyticsOverview({
+  const data = await getAnalyticsBranchComparison({
     tenantId: context.tenantId,
-    branchId: filters.branchId,
     filters,
     range,
-    branchName: selectedBranch?.name ?? context.branchName,
     branches: locations,
   });
-  const hasData = overview.kpis.some((kpi) => kpi.value !== '0');
+  const exportHref = buildAnalyticsExportHref({
+    dataset: 'branches',
+    filters,
+  });
 
   return (
     <AnalyticsPageShell
-      title="Operations overview"
-      subtitle="Track volume, response health, incident pressure, and the first AI-generated operational signals without leaving the protected PulseOps shell."
-      scopeLabel={overview.scopeLabel}
-      rangeLabel={overview.rangeLabel}
-      compareLabel={overview.compareLabel}
-      activeView="overview"
+      title="Branch comparison"
+      subtitle="Compare how each branch is handling volume, backlog pressure, incidents, and service outcomes in the same reporting window."
+      scopeLabel={data.scopeLabel}
+      rangeLabel={data.rangeLabel}
+      compareLabel={data.compareLabel}
+      activeView="branches"
     >
       <AnalyticsFiltersBar
-        action="/analytics"
+        action="/analytics/branches"
         filters={filters}
         branches={locations}
       />
 
-      {hasData ? (
+      {data.rows.length > 0 ? (
         <>
-          <AnalyticsAiExecutiveSummary summary={overview.ai.executiveSummary} />
-
-          <AnalyticsBranchSummaryGrid cards={overview.ai.branchSummaryCards} />
-
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {overview.kpis.map((kpi) => (
-              <AnalyticsKpiCard key={kpi.label} kpi={kpi} />
-            ))}
-          </section>
-
-          <section className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
-            <TrendLineChart
-              title="Jobs and incidents over time"
-              description="Created jobs, resolved jobs, and incident openings across the selected reporting window."
-              data={overview.charts.volumeTrend}
+          <section className="grid gap-6 xl:grid-cols-3">
+            <AnalyticsBarList
+              title="Resolved volume by branch"
+              description="Which branches are clearing work fastest in the selected window."
+              rows={data.rankings.resolvedVolume}
             />
             <AnalyticsBarList
-              title="Jobs by status"
-              description="Current status mix for jobs created in the selected window."
-              rows={overview.charts.jobsByStatus}
+              title="First response SLA by branch"
+              description="Response discipline across locations in the same reporting period."
+              rows={data.rankings.firstResponseSla}
+            />
+            <AnalyticsBarList
+              title="Breach count by branch"
+              description="Where SLA misses are concentrating right now."
+              rows={data.rankings.breachCount}
             />
           </section>
 
-          <AnalyticsBarList
-            title="Jobs by priority"
-            description="Operational demand mix across the current reporting window."
-            rows={overview.charts.jobsByPriority}
-          />
-
-          <AnalyticsLateJobRiskPanel signals={overview.ai.lateJobRiskSignals} />
+          <BranchComparisonTable rows={data.rows} exportHref={exportHref} />
         </>
       ) : (
-        <EmptyAnalyticsState />
+        <EmptyAnalyticsState
+          title="No branch comparison data in this period"
+          description="Try widening the reporting window or resetting the branch filter to compare more locations."
+        />
       )}
     </AnalyticsPageShell>
   );

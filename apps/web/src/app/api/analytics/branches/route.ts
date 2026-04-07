@@ -5,7 +5,7 @@ import { getOrganizationEntitlements } from '@/lib/billing/get-organization-enti
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
 import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
-import { getAnalyticsOverview } from '@/features/analytics/queries/get-analytics-overview';
+import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
   }
 
   const entitlements = await getOrganizationEntitlements(context.tenantId);
-
   if (!entitlements.canUseAnalytics) {
     return NextResponse.json({ error: 'Analytics not enabled' }, { status: 403 });
   }
@@ -25,7 +24,8 @@ export async function GET(request: NextRequest) {
     .from('locations')
     .select('id, name')
     .eq('organization_id', context.tenantId)
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .order('created_at', { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,18 +34,16 @@ export async function GET(request: NextRequest) {
   const filters = parseAnalyticsFilters(
     Object.fromEntries(request.nextUrl.searchParams.entries()),
   );
-  const { filters: effectiveFilters, selectedBranch } = resolveAnalyticsScope({
+  const { filters: effectiveFilters } = resolveAnalyticsScope({
     filters,
     locations,
     shellBranchId: context.branchId,
   });
   const range = resolveAnalyticsDateRange(effectiveFilters);
-  const payload = await getAnalyticsOverview({
+  const payload = await getAnalyticsBranchComparison({
     tenantId: context.tenantId,
-    branchId: effectiveFilters.branchId,
     filters: effectiveFilters,
     range,
-    branchName: selectedBranch?.name ?? context.branchName,
     branches: locations,
   });
 
