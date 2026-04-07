@@ -56,7 +56,7 @@ Sprint 1 auth, onboarding, and protected dashboard flows require these values:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-Sprint 6 billing adds these optional values when you want to test checkout, portal, or webhook flows locally:
+Sprint 6 billing adds these optional values when you want to test checkout, plan changes, cancel or resume actions, portal launch, or webhook flows locally:
 
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY`

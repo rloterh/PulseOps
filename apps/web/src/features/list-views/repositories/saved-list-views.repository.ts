@@ -33,6 +33,26 @@ export async function getSavedListViewsFromDb(
   }));
 }
 
+export async function getSavedListViewsCountFromDb(
+  supabase: SupabaseClient<Database>,
+  input: {
+    tenantId: string;
+    viewerId: string;
+  },
+) {
+  const { count, error } = await supabase
+    .from('saved_list_views')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', input.tenantId)
+    .eq('user_id', input.viewerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
 export async function createSavedListViewInDb(
   supabase: SupabaseClient<Database>,
   input: {

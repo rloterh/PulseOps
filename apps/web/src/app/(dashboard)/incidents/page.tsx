@@ -13,6 +13,7 @@ import { parseIncidentListFilters } from '@/features/incidents/queries/parse-inc
 import type { IncidentListFilters as SavedIncidentListFilters } from '@/features/incidents/types/incident.types';
 import { getSavedListViewsFromDb } from '@/features/list-views/repositories/saved-list-views.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
+import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 
 export default async function IncidentsPage({
   searchParams,
@@ -20,7 +21,15 @@ export default async function IncidentsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const context = await requireTenantMember();
-  const filters = parseIncidentListFilters(await searchParams);
+  const rawFilters = parseIncidentListFilters(await searchParams);
+  const entitlements = await getOrganizationEntitlements(context.tenantId);
+  const filters = entitlements.canUseAdvancedFilters
+    ? rawFilters
+    : {
+        ...rawFilters,
+        severity: 'all' as const,
+        slaRisk: 'all' as const,
+      };
   const incidents = await getIncidentsList({
     tenantId: context.tenantId,
     branchId: context.branchId,
@@ -84,12 +93,16 @@ export default async function IncidentsPage({
         }
       />
 
-      <IncidentFilters filters={filters} />
+      <IncidentFilters
+        filters={filters}
+        canUseAdvancedFilters={entitlements.canUseAdvancedFilters}
+      />
       <SavedListViewsBar
         resourceType="incidents"
         pageHref="/incidents"
         filtersPayload={JSON.stringify(filters)}
         views={savedViews}
+        maxViews={entitlements.maxSavedViews}
       />
 
       {incidents.length > 0 ? (
