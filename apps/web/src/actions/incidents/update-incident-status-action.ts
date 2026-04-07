@@ -5,6 +5,7 @@ import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getCollaborationTargetFromDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
+import { completeOpenIncidentEscalationsInDb } from '@/features/incidents/repositories/incident-escalations.repository';
 import { updateIncidentStatusInDb } from '@/features/incidents/repositories/incidents.repository';
 import { updateIncidentStatusSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
@@ -36,6 +37,13 @@ export async function updateIncidentStatusAction(formData: FormData) {
   }
 
   if (updated.changed) {
+    const completedEscalationCount =
+      parsed.data.status === 'resolved' || parsed.data.status === 'closed'
+        ? await completeOpenIncidentEscalationsInDb(supabase, {
+            tenantId: context.tenantId,
+            incidentId: parsed.data.incidentId,
+          })
+        : 0;
     const target = await getCollaborationTargetFromDb(supabase, {
       tenantId: context.tenantId,
       entityType: 'incident',
@@ -68,6 +76,7 @@ export async function updateIncidentStatusAction(formData: FormData) {
       metadata: {
         fromStatus: updated.previousStatus,
         toStatus: parsed.data.status,
+        completedEscalationCount,
       },
     });
 
@@ -85,6 +94,8 @@ export async function updateIncidentStatusAction(formData: FormData) {
     revalidatePath('/dashboard');
     revalidatePath('/incidents');
     revalidatePath(`/incidents/${parsed.data.incidentId}`);
+    revalidatePath('/admin/activity');
+    revalidatePath('/inbox');
   }
 
   return;

@@ -135,6 +135,8 @@ export async function assignIncidentAction(formData: FormData) {
     revalidatePath('/dashboard');
     revalidatePath('/incidents');
     revalidatePath(`/incidents/${parsed.data.incidentId}`);
+    revalidatePath('/admin/activity');
+    revalidatePath('/inbox');
   }
 
   return;

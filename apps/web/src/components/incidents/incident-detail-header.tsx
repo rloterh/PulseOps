@@ -12,6 +12,11 @@ export function IncidentDetailHeader({ incident }: { incident: IncidentDetail })
           <div className="flex flex-wrap items-center gap-2">
             <IncidentSeverityBadge severity={incident.severity} />
             <IncidentStatusBadge status={incident.status} />
+            {incident.escalationLevel > 0 ? (
+              <span className="rounded-full border border-amber-400/25 bg-amber-500/12 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-amber-200">
+                Escalation level {incident.escalationLevel}
+              </span>
+            ) : null}
             <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/56">
               {incident.reference}
             </span>
@@ -41,6 +46,15 @@ export function IncidentDetailHeader({ incident }: { incident: IncidentDetail })
           <DetailRow label="Owner" value={incident.ownerName} />
           <DetailRow label="Assignee" value={incident.assigneeName ?? 'Unassigned'} />
           <DetailRow label="Opened" value={incident.openedAtLabel} />
+          {incident.acknowledgedAtLabel ? (
+            <DetailRow label="Acknowledged" value={incident.acknowledgedAtLabel} />
+          ) : null}
+          {incident.resolvedAtLabel ? (
+            <DetailRow label="Resolved" value={incident.resolvedAtLabel} />
+          ) : null}
+          {incident.closedAtLabel ? (
+            <DetailRow label="Closed" value={incident.closedAtLabel} />
+          ) : null}
           <div>
             <dt className="text-white/42">Linked jobs</dt>
             <dd className="mt-2 flex flex-wrap gap-2">

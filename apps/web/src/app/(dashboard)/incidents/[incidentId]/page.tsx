@@ -2,6 +2,7 @@ import { RecordCollaborationPanel } from '@/components/collaboration/record-coll
 import { WatchRecordControls } from '@/components/collaboration/watch-record-controls';
 import { IncidentAssigneeForm } from '@/components/incidents/incident-assignee-form';
 import { IncidentDetailHeader } from '@/components/incidents/incident-detail-header';
+import { IncidentEscalationPanel } from '@/components/incidents/incident-escalation-panel';
 import { IncidentStatusForm } from '@/components/incidents/incident-status-form';
 import { IncidentTimeline } from '@/components/incidents/incident-timeline';
 import { getRecordCollaboration } from '@/features/collaboration/queries/get-record-collaboration';
@@ -59,6 +60,15 @@ export default async function IncidentDetailPage({
             incidentId={incident.id}
             currentAssigneeUserId={incident.currentAssigneeUserId}
             assignees={assignees}
+          />
+          <IncidentEscalationPanel
+            incidentId={incident.id}
+            escalationLevel={incident.escalationLevel}
+            escalations={incident.escalations}
+            assignees={assignees}
+            currentAssigneeUserId={incident.currentAssigneeUserId}
+            viewerId={context.viewerId}
+            viewerRole={context.membershipRole}
           />
           {collaboration ? (
             <WatchRecordControls

@@ -15,7 +15,7 @@ This branch currently includes:
 - Sprint 4 intake, edit flows, collaboration, watchers, notifications, and inbox triage
 - Sprint 5 list productivity upgrades, saved views, bulk workflows, and E2E scaffolding
 - Sprint 6 billing and Stripe checkout, portal, webhook sync, entitlement mapping, and premium gating
-- Sprint 7A groundwork for incident escalations, audit logging, admin activity review, and clearer incident severity language
+- Sprint 7A and 7B incident foundations for escalations, audit logging, admin activity review, and manual escalation handling
 
 What this branch specifically adds beyond `dev`:
 
@@ -26,11 +26,12 @@ What this branch specifically adds beyond `dev`:
 - protected `/admin/activity` review for privileged workspace operators
 - canonical incident severity presentation aligned to escalation-friendly `Sev 1` to `Sev 4` language
 - audit writes from incident create, assignment, and status mutation flows
+- manual incident escalation and acknowledgement actions with timeline, notification, and audit coverage
 
 What this branch does not claim yet:
 
 - automated SLA evaluation and breach detection
-- escalation execution or responder-targeting workflows
+- broader escalation execution automation beyond the manual and acknowledgement flow
 - full cross-record activity feed UX
 - complete audit-log coverage across every sensitive mutation
 - customer portal, invoice center, seat billing, or usage metering beyond the Sprint 6 billing scope already merged from `dev`
@@ -63,13 +64,15 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - webhook ingestion with idempotent event recording and subscription sync
 - server-side entitlement enforcement for premium analytics, saved views, and advanced list filters
 
-### Sprint 7A Incident And Audit Foundation
+### Sprint 7 Incident And Audit Foundation
 
 - `incident_escalations` table with escalation level, target metadata, acknowledgement fields, and response-state tracking
 - `audit_logs` table with append-only storage and privileged read access
 - additive incident fields for `acknowledged_at`, `closed_at`, `escalation_level`, and `last_activity_at`
 - tested SLA status-category helpers and typed SLA repository wrappers to support future evaluator work
 - initial admin activity page backed by typed audit queries and summary cards
+- manual escalation and acknowledgement actions embedded into the incident detail flow
+- escalation-aware timeline entries, record notifications, and audit log writes
 
 ## Tech Stack
 
@@ -206,12 +209,12 @@ This branch is meant to stay:
 - buildable
 - documented
 - production-minded in validation and authorization
-- ready for the next Sprint 7 slices on evaluator logic, escalations, and activity surfaces
+- ready for the next Sprint 7 slices on evaluator logic, automated escalations, and richer activity surfaces
 
 ## Next Likely Steps
 
 - automate SLA evaluation and breach-risk calculation
-- add escalation execution and acknowledgement workflows
+- add escalation execution automation and responder-targeting rules
 - expand audit coverage across more sensitive server actions
 - add richer activity-feed surfaces on top of the new audit foundation
 - harden admin review flows with deeper test coverage
