@@ -1,8 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@pulseops/supabase/types';
 import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
+import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 import { loadLocationNameMap, loadProfileLabelMap } from '@/lib/data/load-label-maps';
 import type {
+  AuditActivityFilterOptions,
+  AuditActivityFilters,
   AdminActivitySummary,
   AuditLogListItem,
 } from '@/features/audit/types/audit.types';
@@ -14,14 +17,40 @@ export async function listAuditLogsFromDb(
   input: {
     tenantId: string;
     limit?: number;
+    filters?: AuditActivityFilters;
   },
 ): Promise<AuditLogListItem[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('audit_logs')
     .select('*')
     .eq('organization_id', input.tenantId)
     .order('created_at', { ascending: false })
     .limit(input.limit ?? 50);
+
+  if (input.filters?.scope && input.filters.scope !== 'all') {
+    query = query.eq('scope', input.filters.scope);
+  }
+
+  if (input.filters?.actorUserId && input.filters.actorUserId !== 'all') {
+    query = query.eq('actor_user_id', input.filters.actorUserId);
+  }
+
+  if (input.filters?.entityType && input.filters.entityType !== 'all') {
+    query = query.eq('entity_type', input.filters.entityType);
+  }
+
+  if (input.filters?.locationId && input.filters.locationId !== 'all') {
+    query = query.eq('location_id', input.filters.locationId);
+  }
+
+  if (input.filters?.q) {
+    const q = sanitizeSearchQuery(input.filters.q);
+    query = query.or(
+      `action.ilike.%${q}%,entity_label.ilike.%${q}%,entity_type.ilike.%${q}%`,
+    );
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -87,6 +116,66 @@ export function summarizeAuditLogs(logs: AuditLogListItem[]): AdminActivitySumma
   };
 }
 
+export async function getAuditActivityFilterOptionsFromDb(
+  supabase: SupabaseClient<Database>,
+  input: {
+    tenantId: string;
+  },
+): Promise<AuditActivityFilterOptions> {
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('*')
+    .eq('organization_id', input.tenantId)
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const locationNames = await loadLocationNameMap(
+    supabase,
+    data.flatMap((row) => (row.location_id ? [row.location_id] : [])),
+  );
+  const actorNames = await loadProfileLabelMap(
+    supabase,
+    data.flatMap((row) => (row.actor_user_id ? [row.actor_user_id] : [])),
+  );
+
+  return {
+    actors: uniqueOptions(
+      data
+        .filter((row): row is AuditLogRow & { actor_user_id: string } => Boolean(row.actor_user_id))
+        .map((row) => ({
+          value: row.actor_user_id,
+          label: actorNames.get(row.actor_user_id) ?? 'Unknown teammate',
+        })),
+    ),
+    scopes: uniqueOptions(
+      data
+        .filter((row): row is AuditLogRow & { scope: string } => Boolean(row.scope))
+        .map((row) => ({
+          value: row.scope,
+          label: formatTokenLabel(row.scope),
+        })),
+    ),
+    entityTypes: uniqueOptions(
+      data.map((row) => ({
+        value: row.entity_type,
+        label: formatTokenLabel(row.entity_type),
+      })),
+    ),
+    locations: uniqueOptions(
+      data
+        .filter((row): row is AuditLogRow & { location_id: string } => Boolean(row.location_id))
+        .map((row) => ({
+          value: row.location_id,
+          label: locationNames.get(row.location_id) ?? 'Unknown branch',
+        })),
+    ),
+  };
+}
+
 function mapAuditLogListItem(
   row: AuditLogRow,
   locationNames: Map<string, string>,
@@ -95,6 +184,7 @@ function mapAuditLogListItem(
   return {
     id: row.id,
     action: row.action,
+    actionLabel: formatTokenLabel(row.action.replace(/\./g, ' ')),
     actorName: row.actor_user_id
       ? (actorNames.get(row.actor_user_id) ?? 'Unknown teammate')
       : row.actor_type === 'system'
@@ -102,11 +192,30 @@ function mapAuditLogListItem(
         : row.actor_type === 'service'
           ? 'Service'
           : 'Unknown actor',
+    actorUserId: row.actor_user_id,
     actorType: row.actor_type,
     entityType: row.entity_type,
     entityLabel: row.entity_label,
     scope: row.scope,
+    locationId: row.location_id,
     createdAtLabel: formatDateTimeLabel(row.created_at),
     locationName: row.location_id ? (locationNames.get(row.location_id) ?? null) : null,
   };
+}
+
+function uniqueOptions<T extends { value: string; label: string }>(options: T[]) {
+  const seen = new Set<string>();
+
+  return options.filter((option) => {
+    if (seen.has(option.value)) {
+      return false;
+    }
+
+    seen.add(option.value);
+    return true;
+  });
+}
+
+function sanitizeSearchQuery(query: string) {
+  return query.replace(/[,%()]/g, ' ').trim();
 }

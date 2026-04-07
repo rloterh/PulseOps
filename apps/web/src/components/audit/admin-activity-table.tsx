@@ -31,7 +31,10 @@ export function AdminActivityTable({ logs }: { logs: AuditLogListItem[] }) {
             {logs.map((log) => (
               <tr key={log.id} className="border-t border-white/6 align-top">
                 <td className="px-5 py-4">
-                  <p className="font-medium text-white">{log.action}</p>
+                  <p className="font-medium text-white">{log.actionLabel}</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/38">
+                    {log.action}
+                  </p>
                 </td>
                 <td className="px-5 py-4">
                   <p className="text-white">{log.actorName}</p>

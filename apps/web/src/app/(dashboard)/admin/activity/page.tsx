@@ -1,9 +1,16 @@
+import { AdminActivityFilters } from '@/components/audit/admin-activity-filters';
 import { AdminActivitySummaryCards } from '@/components/audit/admin-activity-summary-cards';
 import { AdminActivityTable } from '@/components/audit/admin-activity-table';
 import { getAdminActivity } from '@/features/audit/queries/get-admin-activity';
 
-export default async function AdminActivityPage() {
-  const { logs, summary, tenantName } = await getAdminActivity();
+export default async function AdminActivityPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const { logs, summary, tenantName, filters, filterOptions } =
+    await getAdminActivity(resolvedSearchParams);
 
   return (
     <main className="space-y-6">
@@ -21,6 +28,7 @@ export default async function AdminActivityPage() {
         </p>
       </section>
 
+      <AdminActivityFilters filters={filters} options={filterOptions} />
       <AdminActivitySummaryCards summary={summary} />
       <AdminActivityTable logs={logs} />
     </main>
