@@ -40,6 +40,11 @@ export interface AnalyticsBreakdownRow {
   helperText: string;
 }
 
+export interface AnalyticsSupportingFact {
+  label: string;
+  value: string;
+}
+
 export interface AnalyticsExecutiveSummary {
   headline: string;
   narrative: string;
@@ -55,6 +60,9 @@ export interface AnalyticsBranchSummaryCard {
   overdueCount: number;
   incidentCount: number;
   breachCount: number;
+  summary: string;
+  topDrivers: string[];
+  supportingFacts: AnalyticsSupportingFact[];
   recommendation: string;
   statusTone: 'stable' | 'watch' | 'critical';
 }
@@ -69,7 +77,9 @@ export interface AnalyticsLateJobRiskSignal {
   dueAtLabel: string;
   score: number;
   statusTone: 'watch' | 'critical';
+  summary: string;
   reasons: string[];
+  supportingFacts: AnalyticsSupportingFact[];
   recommendation: string;
 }
 

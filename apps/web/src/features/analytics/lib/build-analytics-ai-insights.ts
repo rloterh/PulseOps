@@ -3,6 +3,7 @@ import type {
   AnalyticsBranchSummaryCard,
   AnalyticsExecutiveSummary,
   AnalyticsLateJobRiskSignal,
+  AnalyticsSupportingFact,
 } from '@/features/analytics/types/analytics.types';
 import { formatDateTimeLabel } from '@/lib/formatting/format-date-time-label';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
@@ -182,6 +183,29 @@ function buildBranchSummaryCards(input: BuildInput, now: Date): AnalyticsBranchS
         overdueCount,
         incidentCount: branchIncidents.length,
         breachCount,
+        summary: buildBranchSummary({
+          branchName: locationNames.get(branch.id) ?? 'Unknown branch',
+          backlogCount: branchJobs.length,
+          overdueCount,
+          incidentCount: branchIncidents.length,
+          breachCount,
+          watchCount,
+          statusTone,
+        }),
+        topDrivers: buildBranchTopDrivers({
+          overdueCount,
+          backlogCount: branchJobs.length,
+          incidentCount: branchIncidents.length,
+          breachCount,
+          watchCount,
+        }),
+        supportingFacts: buildBranchSupportingFacts({
+          backlogCount: branchJobs.length,
+          overdueCount,
+          incidentCount: branchIncidents.length,
+          breachCount,
+          watchCount,
+        }),
         recommendation: buildBranchRecommendation({
           overdueCount,
           backlogCount: branchJobs.length,
@@ -241,7 +265,9 @@ function buildLateJobRiskSignals(
         dueAtLabel: formatDateTimeLabel(job.dueAt),
         score,
         statusTone,
+        summary: buildLateJobSummary(job, snapshot, now),
         reasons,
+        supportingFacts: buildLateJobSupportingFacts(job, snapshot, now, score),
         recommendation: buildLateJobRecommendation(job, snapshot, now),
       } satisfies AnalyticsLateJobRiskSignal;
     })
@@ -270,6 +296,84 @@ function buildBranchRecommendation(input: {
   }
 
   return 'Stable operating lane. This branch can absorb incremental work if another site needs relief.';
+}
+
+function buildBranchSummary(input: {
+  branchName: string;
+  backlogCount: number;
+  overdueCount: number;
+  incidentCount: number;
+  breachCount: number;
+  watchCount: number;
+  statusTone: AnalyticsBranchSummaryCard['statusTone'];
+}) {
+  if (input.statusTone === 'critical') {
+    return `${input.branchName} is carrying concentrated pressure from overdue jobs or breached SLA work and needs faster supervisory attention.`;
+  }
+
+  if (input.statusTone === 'watch') {
+    return `${input.branchName} is still controllable, but emerging SLA or due-date pressure is worth correcting before it compounds.`;
+  }
+
+  return `${input.branchName} is operating steadily in the current window and can tolerate modest workload swings.`;
+}
+
+function buildBranchTopDrivers(input: {
+  backlogCount: number;
+  overdueCount: number;
+  incidentCount: number;
+  breachCount: number;
+  watchCount: number;
+}) {
+  const drivers: string[] = [];
+
+  if (input.overdueCount > 0) {
+    drivers.push(
+      `${String(input.overdueCount)} overdue job${input.overdueCount === 1 ? '' : 's'} are already past due.`,
+    );
+  }
+
+  if (input.breachCount > 0) {
+    drivers.push(
+      `${String(input.breachCount)} SLA breach${input.breachCount === 1 ? '' : 'es'} are concentrated here.`,
+    );
+  }
+
+  if (input.watchCount > 0) {
+    drivers.push(
+      `${String(input.watchCount)} additional SLA snapshot${input.watchCount === 1 ? '' : 's'} are already at risk.`,
+    );
+  }
+
+  if (input.incidentCount > 0) {
+    drivers.push(
+      `${String(input.incidentCount)} incident${input.incidentCount === 1 ? '' : 's'} add operational noise in the same branch.`,
+    );
+  }
+
+  if (drivers.length === 0) {
+    drivers.push(
+      `${String(input.backlogCount)} active job${input.backlogCount === 1 ? '' : 's'} remain open, but the branch is currently stable.`,
+    );
+  }
+
+  return drivers.slice(0, 4);
+}
+
+function buildBranchSupportingFacts(input: {
+  backlogCount: number;
+  overdueCount: number;
+  incidentCount: number;
+  breachCount: number;
+  watchCount: number;
+}): AnalyticsSupportingFact[] {
+  return [
+    { label: 'Active backlog', value: String(input.backlogCount) },
+    { label: 'Overdue jobs', value: String(input.overdueCount) },
+    { label: 'Open incidents', value: String(input.incidentCount) },
+    { label: 'Breached SLA snapshots', value: String(input.breachCount) },
+    { label: 'At-risk SLA snapshots', value: String(input.watchCount) },
+  ];
 }
 
 function buildLateJobReasons(
@@ -360,6 +464,56 @@ function buildLateJobRecommendation(
   }
 
   return 'Monitor closely and keep this job visible in the next branch stand-up.';
+}
+
+function buildLateJobSummary(
+  job: InsightJob,
+  snapshot: InsightSlaSnapshot | null,
+  now: Date,
+) {
+  if (job.status === 'blocked') {
+    return `${job.reference} is exposed because it is blocked while due-time or SLA pressure is still accumulating.`;
+  }
+
+  if (snapshot?.riskLevel === 'breached' || isOverdue(job.dueAt, now)) {
+    return `${job.reference} has already crossed a due or SLA threshold, so recovery now matters more than routine follow-up.`;
+  }
+
+  if (snapshot?.riskLevel === 'at_risk' || isDueSoon(job.dueAt, now)) {
+    return `${job.reference} is not late yet, but the next delay will likely turn it into a breach candidate.`;
+  }
+
+  return `${job.reference} is carrying enough pressure signals that it should stay on the dispatch watchlist.`;
+}
+
+function buildLateJobSupportingFacts(
+  job: InsightJob,
+  snapshot: InsightSlaSnapshot | null,
+  now: Date,
+  score: number,
+): AnalyticsSupportingFact[] {
+  return [
+    { label: 'Risk score', value: String(score) },
+    { label: 'Status', value: formatTokenLabel(job.status) },
+    { label: 'Priority', value: formatTokenLabel(job.priority) },
+    { label: 'Due at', value: formatDateTimeLabel(job.dueAt) },
+    {
+      label: 'Due pressure',
+      value: isOverdue(job.dueAt, now)
+        ? 'Past due'
+        : isDueSoon(job.dueAt, now)
+          ? 'Due within 24 hours'
+          : 'Not immediate',
+    },
+    {
+      label: 'SLA risk',
+      value: snapshot ? formatTokenLabel(snapshot.riskLevel) : 'No snapshot',
+    },
+    {
+      label: 'Escalation state',
+      value: snapshot ? formatTokenLabel(snapshot.escalationState) : 'None',
+    },
+  ];
 }
 
 function scoreBranchTone(value: AnalyticsBranchSummaryCard['statusTone']) {

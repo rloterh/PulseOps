@@ -57,6 +57,11 @@ describe('buildAnalyticsAiInsights', () => {
       statusTone: 'critical',
       overdueCount: 1,
     });
+    expect(result.branchSummaryCards[0]?.topDrivers.length).toBeGreaterThan(0);
+    expect(result.branchSummaryCards[0]?.supportingFacts).toContainEqual({
+      label: 'Overdue jobs',
+      value: '1',
+    });
     expect(result.lateJobRiskSignals[0]).toMatchObject({
       reference: 'JOB-001',
       statusTone: 'critical',
@@ -64,6 +69,11 @@ describe('buildAnalyticsAiInsights', () => {
     expect(result.lateJobRiskSignals[0]?.reasons).toContain(
       'Job is blocked and cannot move forward without intervention.',
     );
+    expect(result.lateJobRiskSignals[0]?.summary).toContain('JOB-001');
+    expect(result.lateJobRiskSignals[0]?.supportingFacts).toContainEqual({
+      label: 'Risk score',
+      value: String(result.lateJobRiskSignals[0]?.score),
+    });
   });
 
   it('returns calmer guidance when no critical signals exist', () => {
