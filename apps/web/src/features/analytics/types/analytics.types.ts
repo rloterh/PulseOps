@@ -1,3 +1,5 @@
+import type { AiGenerationMeta } from '@/features/ai/types/ai.types';
+
 export interface AnalyticsFilters {
   preset: '7d' | '30d' | '90d' | 'custom';
   from: string | null;
@@ -92,6 +94,11 @@ export interface AnalyticsAiInsights {
   lateJobRiskSignals: AnalyticsLateJobRiskSignal[];
 }
 
+export interface AnalyticsAiResult {
+  generation: AiGenerationMeta;
+  insights: AnalyticsAiInsights;
+}
+
 export interface AnalyticsOverviewData {
   filters: AnalyticsFilters;
   rangeLabel: string;
@@ -103,7 +110,7 @@ export interface AnalyticsOverviewData {
     jobsByStatus: AnalyticsBreakdownRow[];
     jobsByPriority: AnalyticsBreakdownRow[];
   };
-  ai: AnalyticsAiInsights;
+  ai: AnalyticsAiResult;
 }
 
 export interface AnalyticsBranchComparisonRow {

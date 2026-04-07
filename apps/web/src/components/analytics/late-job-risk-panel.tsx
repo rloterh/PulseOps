@@ -1,4 +1,5 @@
 import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
+import type { AiGenerationMeta } from '@/features/ai/types/ai.types';
 import type { AnalyticsLateJobRiskSignal } from '@/features/analytics/types/analytics.types';
 
 const TONE_STYLES: Record<AnalyticsLateJobRiskSignal['statusTone'], string> = {
@@ -8,8 +9,10 @@ const TONE_STYLES: Record<AnalyticsLateJobRiskSignal['statusTone'], string> = {
 
 export function AnalyticsLateJobRiskPanel({
   signals,
+  generation,
 }: {
   signals: AnalyticsLateJobRiskSignal[];
+  generation: AiGenerationMeta;
 }) {
   if (signals.length === 0) {
     return null;
@@ -84,6 +87,7 @@ export function AnalyticsLateJobRiskPanel({
                 drivers={signal.reasons}
                 facts={signal.supportingFacts}
                 recommendation={signal.recommendation}
+                generation={generation}
               />
               <a
                 href={signal.href}

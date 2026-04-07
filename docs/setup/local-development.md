@@ -14,7 +14,7 @@
 5. Add the local Supabase values to `.env.local`.
 6. Start the app with `corepack pnpm dev`.
 
-The `db reset` step applies the current local schema through the Sprint 6 billing foundation, including tenancy, operational records, collaboration, notifications, saved views, and the new billing tables for Stripe customers, subscriptions, entitlements, and webhook events.
+The `db reset` step applies the current local schema through the current branch baseline, including tenancy, operational records, collaboration, notifications, billing, audit logging, analytics, and the Sprint 9 AI run plus feedback tables.
 
 ## Verification
 
@@ -65,6 +65,14 @@ Sprint 6 billing adds these optional values when you want to test checkout, plan
 - `STRIPE_PRICE_BUSINESS_MONTHLY`
 
 If those Stripe variables are missing, the pricing and billing pages still render, but checkout and portal launch will redirect back with a clear “billing unavailable” state instead of crashing.
+
+Sprint 9 adds these optional values when you want to experiment with future external AI-provider wiring locally:
+
+- `AI_PROVIDER`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+
+If those AI variables are missing, PulseOps stays on the deterministic analytics AI layer and still records `ai_runs` plus operator feedback without crashing.
 
 Sprint 3 builds on that foundation with the first real operational modules, so it is worth validating these browser flows locally after setup:
 

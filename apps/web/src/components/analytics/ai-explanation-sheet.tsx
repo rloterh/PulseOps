@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
+import type { AiGenerationMeta } from '@/features/ai/types/ai.types';
 import type { AnalyticsSupportingFact } from '@/features/analytics/types/analytics.types';
 
 const TONE_STYLES = {
@@ -19,6 +20,7 @@ export function AnalyticsAiExplanationSheet({
   drivers,
   facts,
   recommendation,
+  generation,
 }: {
   triggerLabel?: string;
   title: string;
@@ -29,6 +31,7 @@ export function AnalyticsAiExplanationSheet({
   drivers: string[];
   facts: AnalyticsSupportingFact[];
   recommendation: string | string[];
+  generation?: AiGenerationMeta;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const titleId = useId();
@@ -84,6 +87,16 @@ export function AnalyticsAiExplanationSheet({
                 >
                   {tone}
                 </span>
+                {generation ? (
+                  <>
+                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-white/72">
+                      {generation.source === 'cached' ? 'Cached run' : 'Fresh run'}
+                    </span>
+                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-white/72">
+                      {generation.providerLabel}
+                    </span>
+                  </>
+                ) : null}
               </div>
 
               <section className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
@@ -125,6 +138,57 @@ export function AnalyticsAiExplanationSheet({
                   ))}
                 </dl>
               </section>
+
+              {generation ? (
+                <section className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">
+                    Generation metadata
+                  </p>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-white/6 bg-black/18 px-4 py-3">
+                      <dt className="text-[11px] uppercase tracking-[0.14em] text-white/42">
+                        Generated at
+                      </dt>
+                      <dd className="mt-2 text-sm font-medium text-white">
+                        {generation.generatedAtLabel}
+                      </dd>
+                    </div>
+                    <div className="rounded-2xl border border-white/6 bg-black/18 px-4 py-3">
+                      <dt className="text-[11px] uppercase tracking-[0.14em] text-white/42">
+                        Model
+                      </dt>
+                      <dd className="mt-2 text-sm font-medium text-white">
+                        {generation.modelLabel}
+                      </dd>
+                    </div>
+                    <div className="rounded-2xl border border-white/6 bg-black/18 px-4 py-3">
+                      <dt className="text-[11px] uppercase tracking-[0.14em] text-white/42">
+                        Prompt version
+                      </dt>
+                      <dd className="mt-2 text-sm font-medium text-white">
+                        {generation.promptVersion}
+                      </dd>
+                    </div>
+                    <div className="rounded-2xl border border-white/6 bg-black/18 px-4 py-3">
+                      <dt className="text-[11px] uppercase tracking-[0.14em] text-white/42">
+                        Feedback state
+                      </dt>
+                      <dd className="mt-2 text-sm font-medium text-white">
+                        {generation.feedbackRating === 'helpful'
+                          ? 'Helpful'
+                          : generation.feedbackRating === 'not_helpful'
+                            ? 'Needs work'
+                            : 'Not rated yet'}
+                      </dd>
+                    </div>
+                  </dl>
+                  {generation.fallbackReason ? (
+                    <p className="mt-4 text-sm leading-6 text-white/60">
+                      {generation.fallbackReason}
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
 
               <section className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-4">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-white/42">

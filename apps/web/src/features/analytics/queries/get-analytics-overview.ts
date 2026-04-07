@@ -2,6 +2,7 @@ import 'server-only';
 
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import type { Database } from '@pulseops/supabase/types';
+import { generateAnalyticsAiRun } from '@/features/ai/lib/generate-analytics-ai-run';
 import type {
   AnalyticsBranchOption,
   AnalyticsBreakdownRow,
@@ -59,6 +60,7 @@ type SlaRow = Pick<
 interface Input {
   tenantId: string;
   branchId: string | null;
+  viewerId: string;
   filters: AnalyticsFilters;
   range: AnalyticsDateRange;
   branchName: string | null;
@@ -68,6 +70,7 @@ interface Input {
 export async function getAnalyticsOverview({
   tenantId,
   branchId,
+  viewerId,
   filters,
   range,
   branchName,
@@ -90,14 +93,74 @@ export async function getAnalyticsOverview({
         })
       : null;
 
+  const rangeLabel = formatRangeLabel(range.from, range.to);
+  const compareLabel =
+    range.compareFrom && range.compareTo
+      ? formatRangeLabel(range.compareFrom, range.compareTo)
+      : null;
+  const scopeLabel = branchId ? `${branchName ?? 'Selected branch'} scope` : 'All branches';
+  const baseInsights = buildAnalyticsAiInsights({
+    branches: branchId
+      ? branches.filter((branch) => branch.id === branchId)
+      : branches,
+    jobsCreatedCount: currentPeriod.jobsCreated.length,
+    jobsResolvedCount: currentPeriod.jobsResolved.length,
+    backlogCount: currentPeriod.backlogCount,
+    incidentsOpened: currentPeriod.incidentsOpened.map((incident) => ({
+      id: incident.id,
+      locationId: incident.location_id,
+    })),
+    activeJobs: currentPeriod.activeJobs.map((job) => ({
+      id: job.id,
+      reference: job.reference,
+      title: job.title,
+      status: job.status,
+      priority: job.priority,
+      dueAt: job.due_at,
+      locationId: job.location_id,
+    })),
+    slaSnapshots: currentPeriod.slaRows
+      .filter(
+        (
+          snapshot,
+        ): snapshot is SlaRow & {
+          entity_type: 'job' | 'incident';
+        } => snapshot.entity_type === 'job' || snapshot.entity_type === 'incident',
+      )
+      .map((snapshot) => ({
+        entityId: snapshot.entity_id,
+        entityType: snapshot.entity_type,
+        locationId: snapshot.location_id,
+        riskLevel: snapshot.risk_level,
+        escalationState: snapshot.escalation_state,
+        firstResponseDueAt: snapshot.first_response_due_at,
+        resolutionDueAt: snapshot.resolution_due_at,
+        firstResponseBreachedAt: snapshot.first_response_breached_at,
+        resolutionBreachedAt: snapshot.resolution_breached_at,
+      })),
+  });
+  const ai = await generateAnalyticsAiRun(supabase, {
+    organizationId: tenantId,
+    locationId: branchId,
+    viewerId,
+    filters: {
+      preset: filters.preset,
+      from: filters.from,
+      to: filters.to,
+      branchId: filters.branchId,
+      compare: filters.compare,
+    },
+    scopeLabel,
+    rangeLabel,
+    compareLabel,
+    insights: baseInsights,
+  });
+
   return {
     filters,
-    rangeLabel: formatRangeLabel(range.from, range.to),
-    compareLabel:
-      range.compareFrom && range.compareTo
-        ? formatRangeLabel(range.compareFrom, range.compareTo)
-        : null,
-    scopeLabel: branchId ? `${branchName ?? 'Selected branch'} scope` : 'All branches',
+    rangeLabel,
+    compareLabel,
+    scopeLabel,
     kpis: buildOverviewKpis(currentPeriod, previousPeriod),
     charts: {
       volumeTrend: buildVolumeTrend({
@@ -116,46 +179,7 @@ export async function getAnalyticsOverview({
         'jobs in the selected window',
       ),
     },
-    ai: buildAnalyticsAiInsights({
-      branches: branchId
-        ? branches.filter((branch) => branch.id === branchId)
-        : branches,
-      jobsCreatedCount: currentPeriod.jobsCreated.length,
-      jobsResolvedCount: currentPeriod.jobsResolved.length,
-      backlogCount: currentPeriod.backlogCount,
-      incidentsOpened: currentPeriod.incidentsOpened.map((incident) => ({
-        id: incident.id,
-        locationId: incident.location_id,
-      })),
-      activeJobs: currentPeriod.activeJobs.map((job) => ({
-        id: job.id,
-        reference: job.reference,
-        title: job.title,
-        status: job.status,
-        priority: job.priority,
-        dueAt: job.due_at,
-        locationId: job.location_id,
-      })),
-      slaSnapshots: currentPeriod.slaRows
-        .filter(
-          (
-            snapshot,
-          ): snapshot is SlaRow & {
-            entity_type: 'job' | 'incident';
-          } => snapshot.entity_type === 'job' || snapshot.entity_type === 'incident',
-        )
-        .map((snapshot) => ({
-          entityId: snapshot.entity_id,
-          entityType: snapshot.entity_type,
-          locationId: snapshot.location_id,
-          riskLevel: snapshot.risk_level,
-          escalationState: snapshot.escalation_state,
-          firstResponseDueAt: snapshot.first_response_due_at,
-          resolutionDueAt: snapshot.resolution_due_at,
-          firstResponseBreachedAt: snapshot.first_response_breached_at,
-          resolutionBreachedAt: snapshot.resolution_breached_at,
-        })),
-    }),
+    ai,
   };
 }
 

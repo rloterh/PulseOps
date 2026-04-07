@@ -1,11 +1,15 @@
+import { AnalyticsAiFeedback } from '@/components/analytics/analytics-ai-feedback';
 import Link from 'next/link';
 import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
+import type { AiGenerationMeta } from '@/features/ai/types/ai.types';
 import type { AnalyticsExecutiveSummary } from '@/features/analytics/types/analytics.types';
 
 export function AnalyticsAiExecutiveSummary({
   summary,
+  generation,
 }: {
   summary: AnalyticsExecutiveSummary;
+  generation: AiGenerationMeta;
 }) {
   return (
     <section className="rounded-[1.8rem] border border-cyan-300/15 bg-[linear-gradient(135deg,rgba(12,22,35,0.96),rgba(11,75,109,0.32))] px-6 py-6 shadow-[0_24px_70px_rgba(2,6,23,0.22)]">
@@ -20,6 +24,20 @@ export function AnalyticsAiExecutiveSummary({
           <p className="mt-3 text-sm leading-7 text-white/68 sm:text-base">
             {summary.narrative}
           </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-white/48">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+              {generation.source === 'cached' ? 'Cached AI run' : 'Fresh AI run'}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+              {generation.providerLabel}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+              {generation.modelLabel}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
+              {generation.generatedAtLabel}
+            </span>
+          </div>
         </div>
         <div className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
           {summary.confidenceLabel}
@@ -37,6 +55,7 @@ export function AnalyticsAiExecutiveSummary({
           drivers={summary.highlights}
           facts={summary.supportingFacts}
           recommendation={summary.nextSteps}
+          generation={generation}
         />
         <Link
           href="/analytics/branches"
@@ -44,6 +63,13 @@ export function AnalyticsAiExecutiveSummary({
         >
           Open branch comparison
         </Link>
+      </div>
+
+      <div className="mt-4">
+        <AnalyticsAiFeedback
+          runId={generation.runId}
+          initialRating={generation.feedbackRating}
+        />
       </div>
 
       <div className="mt-6 grid gap-5 xl:grid-cols-2">
@@ -75,6 +101,12 @@ export function AnalyticsAiExecutiveSummary({
           </ul>
         </div>
       </div>
+
+      {generation.fallbackReason ? (
+        <p className="mt-5 text-sm leading-6 text-white/55">
+          {generation.fallbackReason}
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -23,6 +23,7 @@ This branch currently includes:
 - Sprint 9A AI executive summary, branch summary cards, and late-job risk signals
 - Sprint 9B inspectable AI explanation sheets with supporting facts for branch and late-job signals
 - Sprint 9C executive-summary explainability and direct action links into branch and job views
+- Sprint 9D AI run storage, feedback capture, metadata-aware explanation UI, and `/api/ai/*` analytics routes
 
 What this branch specifically adds beyond `dev`:
 
@@ -50,12 +51,15 @@ What this branch specifically adds beyond `dev`:
 - late-job risk panels that explain why specific jobs are likely to slip and what to do next
 - reusable AI explanation sheets so operators can inspect supporting facts behind branch and job-level AI guidance
 - executive-summary explainability with supporting facts and direct launch points into branch comparison and job detail views
+- persisted `ai_runs` and `ai_feedback` records so AI output is traceable, cacheable, and rateable
+- `/api/ai/analytics/overview` and `/api/ai/feedback` routes so the AI layer has a real server contract
+- generation metadata surfaced in the analytics UI, including provider, model, cache state, and operator feedback state
 
 What this branch does not claim yet:
 
 - warehouse-style BI or forecasting features
 - custom dashboard builders or later-sprint reporting features
-- richer AI explanation drill-ins and broader branch-to-branch narrative synthesis beyond Sprint 9A
+- richer AI explanation drill-ins and broader branch-to-branch narrative synthesis beyond the current Sprint 9 slices
 
 ## Product Surface
 
@@ -139,6 +143,7 @@ The route structure follows PulseOps-native concepts such as organizations, loca
 - `/analytics` now includes AI-style explanation UI without relying on disconnected placeholder prompts
 - branch and late-job signals now expose inspectable explanation sheets with concrete supporting facts instead of only inline copy
 - the executive summary now exposes its own supporting facts and connects directly to downstream operational views
+- AI outputs now persist as traceable runs with feedback capture instead of only existing as server-rendered copy
 
 ## Tech Stack
 
@@ -201,6 +206,8 @@ Current schema scope on this branch includes:
 - `billing_events`
 - `organization_entitlements`
 - `audit_logs`
+- `ai_runs`
+- `ai_feedback`
 - analytics-focused indexes on `jobs`, `incidents`, and `work_item_slas`
 
 This is now a meaningful operational SaaS schema, though it is still not the full long-term PulseOps domain model.
@@ -282,6 +289,7 @@ This branch is meant to stay:
 
 - add richer AI explanation drill-downs and more nuanced executive narratives
 - expand late-job risk modelling beyond the first explainable heuristics layer
+- decide whether a later Sprint 9 follow-up should keep the deterministic provider or add a live LLM provider on top of the new run/feedback backbone
 - keep analytics performance under review with local explain-plan checks against seeded Supabase data
 
 ## Supporting Docs

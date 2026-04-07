@@ -1,4 +1,5 @@
 import { AnalyticsAiExplanationSheet } from '@/components/analytics/ai-explanation-sheet';
+import type { AiGenerationMeta } from '@/features/ai/types/ai.types';
 import type { AnalyticsBranchSummaryCard } from '@/features/analytics/types/analytics.types';
 
 const TONE_STYLES: Record<AnalyticsBranchSummaryCard['statusTone'], string> = {
@@ -9,8 +10,10 @@ const TONE_STYLES: Record<AnalyticsBranchSummaryCard['statusTone'], string> = {
 
 export function AnalyticsBranchSummaryGrid({
   cards,
+  generation,
 }: {
   cards: AnalyticsBranchSummaryCard[];
+  generation: AiGenerationMeta;
 }) {
   if (cards.length === 0) {
     return null;
@@ -80,6 +83,7 @@ export function AnalyticsBranchSummaryGrid({
                 drivers={card.topDrivers}
                 facts={card.supportingFacts}
                 recommendation={card.recommendation}
+                generation={generation}
               />
               <a
                 href={card.href}

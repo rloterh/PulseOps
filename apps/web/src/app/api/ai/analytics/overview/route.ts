@@ -50,5 +50,6 @@ export async function GET(request: NextRequest) {
     branches: locations,
   });
 
-  return NextResponse.json(payload);
+  return NextResponse.json(payload.ai);
 }
+

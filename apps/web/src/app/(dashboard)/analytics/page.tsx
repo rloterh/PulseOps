@@ -79,6 +79,7 @@ export default async function AnalyticsPage({
   const overview = await getAnalyticsOverview({
     tenantId: context.tenantId,
     branchId: filters.branchId,
+    viewerId: context.viewerId,
     filters,
     range,
     branchName: selectedBranch?.name ?? context.branchName,
@@ -103,9 +104,15 @@ export default async function AnalyticsPage({
 
       {hasData ? (
         <>
-          <AnalyticsAiExecutiveSummary summary={overview.ai.executiveSummary} />
+          <AnalyticsAiExecutiveSummary
+            summary={overview.ai.insights.executiveSummary}
+            generation={overview.ai.generation}
+          />
 
-          <AnalyticsBranchSummaryGrid cards={overview.ai.branchSummaryCards} />
+          <AnalyticsBranchSummaryGrid
+            cards={overview.ai.insights.branchSummaryCards}
+            generation={overview.ai.generation}
+          />
 
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {overview.kpis.map((kpi) => (
@@ -132,7 +139,10 @@ export default async function AnalyticsPage({
             rows={overview.charts.jobsByPriority}
           />
 
-          <AnalyticsLateJobRiskPanel signals={overview.ai.lateJobRiskSignals} />
+          <AnalyticsLateJobRiskPanel
+            signals={overview.ai.insights.lateJobRiskSignals}
+            generation={overview.ai.generation}
+          />
         </>
       ) : (
         <EmptyAnalyticsState />
