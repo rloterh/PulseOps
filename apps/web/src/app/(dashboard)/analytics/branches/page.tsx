@@ -7,6 +7,7 @@ import { EmptyAnalyticsState } from '@/components/analytics/empty-analytics-stat
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { buildAnalyticsExportHref } from '@/features/analytics/lib/build-analytics-export-href';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
+import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
 import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -36,7 +37,12 @@ export default async function AnalyticsBranchComparisonPage({
     throw new Error(error.message);
   }
 
-  const filters = parseAnalyticsFilters(await searchParams);
+  const parsedFilters = parseAnalyticsFilters(await searchParams);
+  const { filters } = resolveAnalyticsScope({
+    filters: parsedFilters,
+    locations,
+    shellBranchId: context.branchId,
+  });
   const range = resolveAnalyticsDateRange(filters);
 
   if (!entitlements.canUseAnalytics) {

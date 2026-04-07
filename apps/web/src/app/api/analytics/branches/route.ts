@@ -4,6 +4,7 @@ import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
+import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
 import { getAnalyticsBranchComparison } from '@/features/analytics/queries/get-analytics-branch-comparison';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 
@@ -33,10 +34,15 @@ export async function GET(request: NextRequest) {
   const filters = parseAnalyticsFilters(
     Object.fromEntries(request.nextUrl.searchParams.entries()),
   );
-  const range = resolveAnalyticsDateRange(filters);
+  const { filters: effectiveFilters } = resolveAnalyticsScope({
+    filters,
+    locations,
+    shellBranchId: context.branchId,
+  });
+  const range = resolveAnalyticsDateRange(effectiveFilters);
   const payload = await getAnalyticsBranchComparison({
     tenantId: context.tenantId,
-    filters,
+    filters: effectiveFilters,
     range,
     branches: locations,
   });

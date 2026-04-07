@@ -7,6 +7,7 @@ import { EmptyAnalyticsState } from '@/components/analytics/empty-analytics-stat
 import { TrendLineChart } from '@/components/analytics/trend-line-chart';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
+import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
 import { getAnalyticsOverview } from '@/features/analytics/queries/get-analytics-overview';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -37,12 +38,11 @@ export default async function AnalyticsPage({
   }
 
   const parsedFilters = parseAnalyticsFilters(await searchParams);
-  const filters = {
-    ...parsedFilters,
-    branchId: parsedFilters.branchId ?? context.branchId ?? null,
-  };
-  const selectedBranch =
-    locations.find((location) => location.id === filters.branchId) ?? null;
+  const { filters, selectedBranch } = resolveAnalyticsScope({
+    filters: parsedFilters,
+    locations,
+    shellBranchId: context.branchId,
+  });
   const range = resolveAnalyticsDateRange(filters);
 
   if (!entitlements.canUseAnalytics) {

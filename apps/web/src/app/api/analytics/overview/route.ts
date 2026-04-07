@@ -4,6 +4,7 @@ import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { getOrganizationEntitlements } from '@/lib/billing/get-organization-entitlements';
 import { canViewAnalytics } from '@/features/analytics/lib/analytics.permissions';
 import { resolveAnalyticsDateRange } from '@/features/analytics/lib/date-range';
+import { resolveAnalyticsScope } from '@/features/analytics/lib/resolve-analytics-scope';
 import { getAnalyticsOverview } from '@/features/analytics/queries/get-analytics-overview';
 import { parseAnalyticsFilters } from '@/features/analytics/schemas/analytics-filters.schema';
 
@@ -33,20 +34,16 @@ export async function GET(request: NextRequest) {
   const filters = parseAnalyticsFilters(
     Object.fromEntries(request.nextUrl.searchParams.entries()),
   );
-  const effectiveBranchId = filters.branchId ?? context.branchId ?? null;
-  const range = resolveAnalyticsDateRange({
-    ...filters,
-    branchId: effectiveBranchId,
+  const { filters: effectiveFilters, selectedBranch } = resolveAnalyticsScope({
+    filters,
+    locations,
+    shellBranchId: context.branchId,
   });
-  const selectedBranch =
-    locations.find((location) => location.id === effectiveBranchId) ?? null;
+  const range = resolveAnalyticsDateRange(effectiveFilters);
   const payload = await getAnalyticsOverview({
     tenantId: context.tenantId,
-    branchId: effectiveBranchId,
-    filters: {
-      ...filters,
-      branchId: effectiveBranchId,
-    },
+    branchId: effectiveFilters.branchId,
+    filters: effectiveFilters,
     range,
     branchName: selectedBranch?.name ?? context.branchName,
   });
