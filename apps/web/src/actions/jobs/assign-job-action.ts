@@ -7,11 +7,13 @@ import {
   ensureRecordWatchersInDb,
   getCollaborationTargetFromDb,
 } from '@/features/collaboration/repositories/collaboration.repository';
+import { canCreateJobs } from '@/features/jobs/lib/jobs-permissions';
 import {
   assignJobInDb,
   getJobMutationTargetFromDb,
 } from '@/features/jobs/repositories/jobs.repository';
 import { assignJobSchema } from '@/features/jobs/schemas/job-mutation.schemas';
+import type { CreateJobActionState } from '@/features/jobs/types/job.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -30,7 +32,12 @@ function getMemberLabel(
   return members.find((member) => member.id === userId)?.label ?? 'Unknown assignee';
 }
 
-export async function assignJobAction(formData: FormData) {
+const invalidAssigneeError = 'Choose a valid assignee before saving.';
+
+export async function assignJobAction(
+  _previousState: CreateJobActionState,
+  formData: FormData,
+): Promise<CreateJobActionState> {
   const rawAssignee = formData.get('assigneeUserId');
   const assigneeUserId =
     typeof rawAssignee === 'string' && rawAssignee.length > 0 ? rawAssignee : null;
@@ -40,10 +47,18 @@ export async function assignJobAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidAssigneeError,
+    };
   }
 
   const context = await requireTenantMember();
+
+  if (!canCreateJobs(context.membershipRole)) {
+    return {
+      error: 'You do not have permission to assign jobs in this workspace.',
+    };
+  }
 
   if (
     await isServerActionRateLimited({
@@ -53,7 +68,9 @@ export async function assignJobAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many job assignment updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -64,13 +81,17 @@ export async function assignJobAction(formData: FormData) {
   });
 
   if (!current) {
-    return;
+    return {
+      error: 'This job is no longer available in the selected branch.',
+    };
   }
 
   const assignees = await getMemberOptions(context.tenantId, current.location_id);
 
   if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
-    return;
+    return {
+      error: 'Selected assignee is no longer available for this branch.',
+    };
   }
 
   const updated = await assignJobInDb(supabase, {
@@ -81,7 +102,9 @@ export async function assignJobAction(formData: FormData) {
   });
 
   if (!updated) {
-    return;
+    return {
+      error: 'This job is no longer available in the selected branch.',
+    };
   }
 
   if (updated.changed) {
@@ -132,5 +155,5 @@ export async function assignJobAction(formData: FormData) {
     revalidatePath(`/jobs/${parsed.data.jobId}`);
   }
 
-  return;
+  return {};
 }

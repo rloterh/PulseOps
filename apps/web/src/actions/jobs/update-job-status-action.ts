@@ -4,25 +4,40 @@ import { revalidatePath } from 'next/cache';
 import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getCollaborationTargetFromDb } from '@/features/collaboration/repositories/collaboration.repository';
+import { canCreateJobs } from '@/features/jobs/lib/jobs-permissions';
 import { updateJobStatusInDb } from '@/features/jobs/repositories/jobs.repository';
 import { updateJobStatusSchema } from '@/features/jobs/schemas/job-mutation.schemas';
+import type { CreateJobActionState } from '@/features/jobs/types/job.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
-export async function updateJobStatusAction(formData: FormData) {
+const invalidStatusError = 'Choose a valid job status before saving.';
+
+export async function updateJobStatusAction(
+  _previousState: CreateJobActionState,
+  formData: FormData,
+): Promise<CreateJobActionState> {
   const parsed = updateJobStatusSchema.safeParse({
     jobId: formData.get('jobId'),
     status: formData.get('status'),
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidStatusError,
+    };
   }
 
   const context = await requireTenantMember();
+
+  if (!canCreateJobs(context.membershipRole)) {
+    return {
+      error: 'You do not have permission to update jobs in this workspace.',
+    };
+  }
 
   if (
     await isServerActionRateLimited({
@@ -32,7 +47,9 @@ export async function updateJobStatusAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many job status updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -44,7 +61,9 @@ export async function updateJobStatusAction(formData: FormData) {
   });
 
   if (!updated) {
-    return;
+    return {
+      error: 'This job is no longer available in the selected branch.',
+    };
   }
 
   if (updated.changed) {
@@ -81,5 +100,5 @@ export async function updateJobStatusAction(formData: FormData) {
     revalidatePath(`/jobs/${parsed.data.jobId}`);
   }
 
-  return;
+  return {};
 }

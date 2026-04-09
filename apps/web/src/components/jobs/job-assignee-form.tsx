@@ -1,5 +1,26 @@
-import type { MemberOption } from '@/lib/organizations/get-member-options';
+'use client';
+
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { assignJobAction } from '@/actions/jobs/assign-job-action';
+import type { CreateJobActionState } from '@/features/jobs/types/job.types';
+import type { MemberOption } from '@/lib/organizations/get-member-options';
+
+const initialState: CreateJobActionState = {};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex w-full justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? 'Saving assignee...' : 'Save assignee'}
+    </button>
+  );
+}
 
 export function JobAssigneeForm({
   jobId,
@@ -10,9 +31,11 @@ export function JobAssigneeForm({
   currentAssigneeUserId: string | null;
   assignees: MemberOption[];
 }) {
+  const [state, formAction] = useActionState(assignJobAction, initialState);
+
   return (
     <form
-      action={assignJobAction}
+      action={formAction}
       className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5"
     >
       <h2 className="text-lg font-semibold tracking-tight text-white">Assign assignee</h2>
@@ -30,12 +53,12 @@ export function JobAssigneeForm({
             </option>
           ))}
         </select>
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/[0.08]"
-        >
-          Save assignee
-        </button>
+        {state.error ? (
+          <p className="rounded-[1rem] border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            {state.error}
+          </p>
+        ) : null}
+        <SubmitButton />
       </div>
     </form>
   );

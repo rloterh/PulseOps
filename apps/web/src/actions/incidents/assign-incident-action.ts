@@ -12,7 +12,9 @@ import {
   assignIncidentInDb,
   getIncidentMutationTargetFromDb,
 } from '@/features/incidents/repositories/incidents.repository';
+import { canCreateIncidents } from '@/features/incidents/lib/incident-permissions';
 import { assignIncidentSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
+import type { CreateIncidentActionState } from '@/features/incidents/types/incident.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -31,7 +33,12 @@ function getMemberLabel(
   return members.find((member) => member.id === userId)?.label ?? 'Unknown assignee';
 }
 
-export async function assignIncidentAction(formData: FormData) {
+const invalidAssigneeError = 'Choose a valid assignee before saving.';
+
+export async function assignIncidentAction(
+  _previousState: CreateIncidentActionState,
+  formData: FormData,
+): Promise<CreateIncidentActionState> {
   const rawAssignee = formData.get('assigneeUserId');
   const assigneeUserId =
     typeof rawAssignee === 'string' && rawAssignee.length > 0 ? rawAssignee : null;
@@ -41,10 +48,18 @@ export async function assignIncidentAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidAssigneeError,
+    };
   }
 
   const context = await requireTenantMember();
+
+  if (!canCreateIncidents(context.membershipRole)) {
+    return {
+      error: 'You do not have permission to assign incidents in this workspace.',
+    };
+  }
 
   if (
     await isServerActionRateLimited({
@@ -54,7 +69,9 @@ export async function assignIncidentAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many incident assignment updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -65,13 +82,17 @@ export async function assignIncidentAction(formData: FormData) {
   });
 
   if (!current) {
-    return;
+    return {
+      error: 'This incident is no longer available in the selected branch.',
+    };
   }
 
   const assignees = await getMemberOptions(context.tenantId, current.location_id);
 
   if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
-    return;
+    return {
+      error: 'Selected assignee is no longer available for this branch.',
+    };
   }
 
   const updated = await assignIncidentInDb(supabase, {
@@ -82,7 +103,9 @@ export async function assignIncidentAction(formData: FormData) {
   });
 
   if (!updated) {
-    return;
+    return {
+      error: 'This incident is no longer available in the selected branch.',
+    };
   }
 
   if (updated.changed) {
@@ -152,5 +175,5 @@ export async function assignIncidentAction(formData: FormData) {
     revalidatePath('/inbox');
   }
 
-  return;
+  return {};
 }

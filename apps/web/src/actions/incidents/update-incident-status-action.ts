@@ -5,9 +5,11 @@ import { createSupabaseAdminClient } from '@pulseops/supabase/admin';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { getCollaborationTargetFromDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { insertAuditLogInDb } from '@/features/audit/repositories/audit.repository';
+import { canCreateIncidents } from '@/features/incidents/lib/incident-permissions';
 import { completeOpenIncidentEscalationsInDb } from '@/features/incidents/repositories/incident-escalations.repository';
 import { updateIncidentStatusInDb } from '@/features/incidents/repositories/incidents.repository';
 import { updateIncidentStatusSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
+import type { CreateIncidentActionState } from '@/features/incidents/types/incident.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
@@ -15,17 +17,30 @@ import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { formatTokenLabel } from '@/lib/formatting/format-token-label';
 import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 
-export async function updateIncidentStatusAction(formData: FormData) {
+const invalidStatusError = 'Choose a valid incident status before saving.';
+
+export async function updateIncidentStatusAction(
+  _previousState: CreateIncidentActionState,
+  formData: FormData,
+): Promise<CreateIncidentActionState> {
   const parsed = updateIncidentStatusSchema.safeParse({
     incidentId: formData.get('incidentId'),
     status: formData.get('status'),
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidStatusError,
+    };
   }
 
   const context = await requireTenantMember();
+
+  if (!canCreateIncidents(context.membershipRole)) {
+    return {
+      error: 'You do not have permission to update incidents in this workspace.',
+    };
+  }
 
   if (
     await isServerActionRateLimited({
@@ -35,7 +50,9 @@ export async function updateIncidentStatusAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many incident status updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -47,7 +64,9 @@ export async function updateIncidentStatusAction(formData: FormData) {
   });
 
   if (!updated) {
-    return;
+    return {
+      error: 'This incident is no longer available in the selected branch.',
+    };
   }
 
   if (updated.changed) {
@@ -118,5 +137,5 @@ export async function updateIncidentStatusAction(formData: FormData) {
     revalidatePath('/inbox');
   }
 
-  return;
+  return {};
 }

@@ -11,7 +11,9 @@ import {
   assignTaskInDb,
   getTaskMutationTargetFromDb,
 } from '@/features/tasks/repositories/tasks.repository';
+import { canCreateTasks } from '@/features/tasks/lib/task-permissions';
 import { assignTaskSchema } from '@/features/tasks/schemas/task-mutation.schemas';
+import type { CreateTaskActionState } from '@/features/tasks/types/task.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -30,7 +32,12 @@ function getMemberLabel(
   return members.find((member) => member.id === userId)?.label ?? 'Unknown assignee';
 }
 
-export async function assignTaskAction(formData: FormData) {
+const invalidAssigneeError = 'Choose a valid assignee before saving.';
+
+export async function assignTaskAction(
+  _previousState: CreateTaskActionState,
+  formData: FormData,
+): Promise<CreateTaskActionState> {
   const rawAssignee = formData.get('assigneeUserId');
   const assigneeUserId =
     typeof rawAssignee === 'string' && rawAssignee.length > 0 ? rawAssignee : null;
@@ -40,10 +47,18 @@ export async function assignTaskAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidAssigneeError,
+    };
   }
 
   const context = await requireTenantMember();
+
+  if (!canCreateTasks(context.membershipRole)) {
+    return {
+      error: 'You do not have permission to assign tasks in this workspace.',
+    };
+  }
 
   if (
     await isServerActionRateLimited({
@@ -53,7 +68,9 @@ export async function assignTaskAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many task assignment updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -64,13 +81,17 @@ export async function assignTaskAction(formData: FormData) {
   });
 
   if (!current) {
-    return;
+    return {
+      error: 'This task is no longer available in the selected branch.',
+    };
   }
 
   const assignees = await getMemberOptions(context.tenantId, current.location_id);
 
   if (!isMemberSelectionAllowed(assignees, parsed.data.assigneeUserId)) {
-    return;
+    return {
+      error: 'Selected assignee is no longer available for this branch.',
+    };
   }
 
   const updated = await assignTaskInDb(supabase, {
@@ -81,7 +102,9 @@ export async function assignTaskAction(formData: FormData) {
   });
 
   if (!updated) {
-    return;
+    return {
+      error: 'This task is no longer available in the selected branch.',
+    };
   }
 
   if (updated.changed) {
@@ -131,4 +154,6 @@ export async function assignTaskAction(formData: FormData) {
     revalidatePath('/tasks');
     revalidatePath(`/tasks/${parsed.data.taskId}`);
   }
+
+  return {};
 }

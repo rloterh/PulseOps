@@ -1,5 +1,28 @@
+'use client';
+
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { updateIncidentStatusAction } from '@/actions/incidents/update-incident-status-action';
-import type { IncidentStatus } from '@/features/incidents/types/incident.types';
+import type {
+  CreateIncidentActionState,
+  IncidentStatus,
+} from '@/features/incidents/types/incident.types';
+
+const initialState: CreateIncidentActionState = {};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex w-full justify-center rounded-full bg-white px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? 'Saving status...' : 'Save status'}
+    </button>
+  );
+}
 
 export function IncidentStatusForm({
   incidentId,
@@ -8,9 +31,14 @@ export function IncidentStatusForm({
   incidentId: string;
   currentStatus: IncidentStatus;
 }) {
+  const [state, formAction] = useActionState(
+    updateIncidentStatusAction,
+    initialState,
+  );
+
   return (
     <form
-      action={updateIncidentStatusAction}
+      action={formAction}
       className="rounded-[1.6rem] border border-white/8 bg-white/[0.04] p-5"
     >
       <h2 className="text-lg font-semibold tracking-tight text-white">Update status</h2>
@@ -27,12 +55,12 @@ export function IncidentStatusForm({
           <option value="resolved">Resolved</option>
           <option value="closed">Closed</option>
         </select>
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full bg-white px-4 py-2.5 text-sm font-medium text-neutral-950 transition hover:opacity-90"
-        >
-          Save status
-        </button>
+        {state.error ? (
+          <p className="rounded-[1rem] border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+            {state.error}
+          </p>
+        ) : null}
+        <SubmitButton />
       </div>
     </form>
   );
