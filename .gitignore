@@ -23,9 +23,6 @@ yarn-error.log*
 .env*
 
 .vercel
-.open-next
-.wrangler
-cloudflare-env.d.ts
 
 supabase/.branches/
 supabase/.temp/
