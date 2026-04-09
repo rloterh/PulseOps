@@ -1,9 +1,12 @@
 import type { Metadata, Route } from 'next';
 import Link from 'next/link';
 import { getSessionUser } from '@/lib/auth/get-session-user';
+import { canManageBilling } from '@/lib/billing/billing-access';
 import { getCurrentMembership } from '@/lib/organizations/get-current-membership';
 import { MarketingSectionHeading } from '@/components/marketing/marketing-section-heading';
-import { createCheckoutSessionAction } from '@/features/billing/actions/create-checkout-session-action';
+import { BillingCheckoutForm } from '@/features/billing/components/billing-action-forms';
+import { BillingStatusBanner } from '@/features/billing/components/billing-status-banner';
+import { getBillingFlashPresentation } from '@/features/billing/lib/get-billing-flash-presentation';
 import { PLAN_CONFIG, type PlanCode } from '@/lib/billing/plans';
 
 export const metadata: Metadata = {
@@ -85,6 +88,8 @@ export default async function PricingPage({
   const membership = user ? await getCurrentMembership(user.id) : null;
   const status =
     typeof params.status === 'string' ? params.status : undefined;
+  const canStartCheckout = membership ? canManageBilling(membership.role) : false;
+  const flashMessage = getBillingFlashPresentation(status);
 
   return (
     <main className="px-6 py-14 lg:px-10">
@@ -94,23 +99,9 @@ export default async function PricingPage({
           title="Plans that map directly to the product, billing rules, and entitlement checks."
           description="PulseOps charges per organization. The same plans shown here drive Stripe checkout, plan changes, billing portal behavior, and server-side premium feature enforcement inside the app."
         />
-        {status ? (
-          <div className="mt-6 rounded-[var(--radius-xl)] border border-amber-500/24 bg-amber-400/8 px-4 py-3 text-sm text-[var(--color-fg)]">
-            {status === 'billing-unavailable'
-              ? 'Stripe is not configured in this environment yet.'
-              : status === 'checkout-canceled'
-                ? 'Checkout was canceled before a subscription was created.'
-                : status === 'checkout-error'
-                  ? 'Stripe could not create a checkout session.'
-                    : status === 'invalid-plan'
-                      ? 'The selected plan was not valid.'
-                      : status === 'plan-updated'
-                        ? 'Your plan was updated successfully.'
-                        : status === 'no-change'
-                          ? 'That plan is already active for the current organization.'
-                          : status === 'rate-limited'
-                            ? 'Too many billing actions were requested. Wait a moment and try again.'
-                            : 'Billing returned a status update.'}
+        {flashMessage ? (
+          <div className="mt-6">
+            <BillingStatusBanner {...flashMessage} />
           </div>
         ) : null}
       </section>
@@ -187,16 +178,30 @@ export default async function PricingPage({
                   Free remains the fallback when no Stripe subscription is
                   active.
                 </div>
-              ) : user && membership ? (
-                <form action={createCheckoutSessionAction}>
-                  <input type="hidden" name="plan" value={plan.code} />
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-slate-950 transition hover:bg-white/90"
-                  >
-                    Start {plan.name}
-                  </button>
-                </form>
+              ) : membership && canStartCheckout ? (
+                <BillingCheckoutForm
+                  plan={plan.code}
+                  label={`Start ${plan.name}`}
+                  pendingLabel="Preparing checkout..."
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-slate-950 transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+                />
+              ) : membership ? (
+                <div className="rounded-[var(--radius-xl)] border border-amber-500/24 bg-amber-400/8 px-4 py-3 text-sm text-[var(--color-fg)]">
+                  {user && !canStartCheckout
+                    ? 'Ask an organization owner or admin to manage billing for this workspace.'
+                    : 'Finish workspace setup before starting a paid plan.'}
+                </div>
+              ) : user ? (
+                <Link
+                  href="/onboarding"
+                  className={`inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-sm font-semibold transition ${
+                    plan.code === 'business'
+                      ? 'border border-white/12 bg-white/5 text-white hover:bg-white/10'
+                      : 'border border-[var(--color-border)] bg-white text-[var(--color-fg)] hover:bg-[var(--color-surface-muted)]'
+                  }`}
+                >
+                  Set up workspace
+                </Link>
               ) : (
                 <Link
                   href="/sign-in"
