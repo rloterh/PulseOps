@@ -14,6 +14,7 @@ import {
 import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla';
 import { getIncidentMutationTargetFromDb } from '@/features/incidents/repositories/incidents.repository';
 import { acknowledgeIncidentEscalationSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
+import type { IncidentEscalationActionState } from '@/features/incidents/types/incident.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -26,14 +27,21 @@ function buildProfileLabelMap(
   return new Map(members.map((member) => [member.id, member.label]));
 }
 
-export async function acknowledgeIncidentEscalationAction(formData: FormData) {
+const invalidEscalationError = 'Choose a valid escalation before acknowledging it.';
+
+export async function acknowledgeIncidentEscalationAction(
+  _previousState: IncidentEscalationActionState,
+  formData: FormData,
+): Promise<IncidentEscalationActionState> {
   const parsed = acknowledgeIncidentEscalationSchema.safeParse({
     incidentId: formData.get('incidentId'),
     escalationId: formData.get('escalationId'),
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidEscalationError,
+    };
   }
 
   const context = await requireTenantMember();
@@ -46,7 +54,9 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many incident escalation acknowledgements. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -64,7 +74,9 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
   ]);
 
   if (!incident || !currentEscalation) {
-    return;
+    return {
+      error: 'This escalation is no longer available in the selected branch.',
+    };
   }
 
   if (
@@ -74,7 +86,9 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
       targetUserId: currentEscalation.target_user_id,
     })
   ) {
-    return;
+    return {
+      error: 'You do not have permission to acknowledge this escalation.',
+    };
   }
 
   const acknowledged = await acknowledgeIncidentEscalationInDb(supabase, {
@@ -84,8 +98,16 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
     viewerId: context.viewerId,
   });
 
-  if (!acknowledged?.changed) {
-    return;
+  if (!acknowledged) {
+    return {
+      error: 'This escalation is no longer available in the selected branch.',
+    };
+  }
+
+  if (!acknowledged.changed) {
+    return {
+      error: 'This escalation has already been acknowledged.',
+    };
   }
 
   const syncedSnapshot = await syncIncidentSlaState(supabase, {
@@ -149,4 +171,6 @@ export async function acknowledgeIncidentEscalationAction(formData: FormData) {
   revalidatePath(`/incidents/${parsed.data.incidentId}`);
   revalidatePath('/admin/activity');
   revalidatePath('/inbox');
+
+  return {};
 }

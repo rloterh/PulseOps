@@ -13,6 +13,7 @@ import {
 import { syncIncidentSlaState } from '@/features/incidents/lib/sync-incident-sla';
 import { getIncidentMutationTargetFromDb } from '@/features/incidents/repositories/incidents.repository';
 import { createIncidentEscalationSchema } from '@/features/incidents/schemas/incident-mutation.schemas';
+import type { IncidentEscalationActionState } from '@/features/incidents/types/incident.types';
 import { createRecordNotifications } from '@/features/notifications/repositories/notifications.repository';
 import { insertTimelineEvent } from '@/features/timeline/repositories/timeline.repository';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -26,7 +27,12 @@ function buildProfileLabelMap(
   return new Map(members.map((member) => [member.id, member.label]));
 }
 
-export async function createIncidentEscalationAction(formData: FormData) {
+const invalidEscalationError = 'Provide valid escalation details before submitting.';
+
+export async function createIncidentEscalationAction(
+  _previousState: IncidentEscalationActionState,
+  formData: FormData,
+): Promise<IncidentEscalationActionState> {
   const parsed = createIncidentEscalationSchema.safeParse({
     incidentId: formData.get('incidentId'),
     escalationLevel: formData.get('escalationLevel'),
@@ -37,7 +43,9 @@ export async function createIncidentEscalationAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidEscalationError,
+    };
   }
 
   const context = await requireTenantMember();
@@ -50,11 +58,15 @@ export async function createIncidentEscalationAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many incident escalations. Please wait a moment and try again.',
+    };
   }
 
   if (!canManageIncidentEscalations(context.membershipRole)) {
-    return;
+    return {
+      error: 'You do not have permission to manage incident escalations.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -65,7 +77,9 @@ export async function createIncidentEscalationAction(formData: FormData) {
   });
 
   if (!current) {
-    return;
+    return {
+      error: 'This incident is no longer available in the selected branch.',
+    };
   }
 
   const members = await getMemberOptions(context.tenantId, current.location_id);
@@ -75,7 +89,9 @@ export async function createIncidentEscalationAction(formData: FormData) {
       : null;
 
   if (!isMemberSelectionAllowed(members, parsed.data.targetUserId)) {
-    return;
+    return {
+      error: 'Selected escalation owner is no longer available for this branch.',
+    };
   }
 
   const created = await createIncidentEscalationInDb(supabase, {
@@ -91,7 +107,9 @@ export async function createIncidentEscalationAction(formData: FormData) {
   });
 
   if (!created) {
-    return;
+    return {
+      error: 'This incident is no longer available in the selected branch.',
+    };
   }
 
   const syncedSnapshot = await syncIncidentSlaState(supabase, {
@@ -169,4 +187,6 @@ export async function createIncidentEscalationAction(formData: FormData) {
   revalidatePath(`/incidents/${parsed.data.incidentId}`);
   revalidatePath('/admin/activity');
   revalidatePath('/inbox');
+
+  return {};
 }

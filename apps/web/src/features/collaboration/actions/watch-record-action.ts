@@ -11,8 +11,14 @@ import {
   getCollaborationTargetFromDb,
 } from '@/features/collaboration/repositories/collaboration.repository';
 import { recordWatchActionSchema } from '@/features/collaboration/schemas/record-comment.schema';
+import type { CollaborationActionState } from '@/features/collaboration/types/collaboration.types';
 
-export async function watchRecordAction(formData: FormData) {
+const invalidWatchError = 'Choose a valid record before updating your watch state.';
+
+export async function watchRecordAction(
+  _previousState: CollaborationActionState,
+  formData: FormData,
+): Promise<CollaborationActionState> {
   const parsed = recordWatchActionSchema.safeParse({
     entityType: formData.get('entityType'),
     entityId: formData.get('entityId'),
@@ -20,7 +26,9 @@ export async function watchRecordAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidWatchError,
+    };
   }
 
   const context = await requireTenantMember();
@@ -33,7 +41,9 @@ export async function watchRecordAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many watch updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -44,7 +54,9 @@ export async function watchRecordAction(formData: FormData) {
   });
 
   if (!target) {
-    return;
+    return {
+      error: 'This record is no longer available.',
+    };
   }
 
   await ensureRecordWatchersInDb(supabase, {
@@ -65,4 +77,6 @@ export async function watchRecordAction(formData: FormData) {
 
   revalidatePath(returnPath);
   redirect(returnPath);
+
+  return {};
 }

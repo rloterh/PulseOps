@@ -118,6 +118,10 @@ export interface CreateIncidentActionState {
   error?: string;
 }
 
+export interface IncidentEscalationActionState {
+  error?: string;
+}
+
 export interface IncidentEditRecord {
   id: string;
   branchId: string;

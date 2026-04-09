@@ -7,7 +7,11 @@ import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
 import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
-import { setRecordWatcherMuteStateInDb } from '@/features/collaboration/repositories/collaboration.repository';
+import {
+  getCollaborationTargetFromDb,
+  setRecordWatcherMuteStateInDb,
+} from '@/features/collaboration/repositories/collaboration.repository';
+import type { CollaborationActionState } from '@/features/collaboration/types/collaboration.types';
 
 const toggleWatchMuteSchema = z.object({
   entityType: z.enum(['incident', 'job', 'task']),
@@ -18,7 +22,12 @@ const toggleWatchMuteSchema = z.object({
     .transform((value) => value === true || value === 'true'),
 });
 
-export async function toggleWatchMuteAction(formData: FormData) {
+const invalidWatchError = 'Choose a valid record before updating your watch state.';
+
+export async function toggleWatchMuteAction(
+  _previousState: CollaborationActionState,
+  formData: FormData,
+): Promise<CollaborationActionState> {
   const parsed = toggleWatchMuteSchema.safeParse({
     entityType: formData.get('entityType'),
     entityId: formData.get('entityId'),
@@ -27,7 +36,9 @@ export async function toggleWatchMuteAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidWatchError,
+    };
   }
 
   const context = await requireTenantMember();
@@ -40,10 +51,24 @@ export async function toggleWatchMuteAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many watch updates. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
+  const target = await getCollaborationTargetFromDb(supabase, {
+    tenantId: context.tenantId,
+    entityType: parsed.data.entityType,
+    entityId: parsed.data.entityId,
+  });
+
+  if (!target) {
+    return {
+      error: 'This record is no longer available.',
+    };
+  }
+
   await setRecordWatcherMuteStateInDb(supabase, {
     tenantId: context.tenantId,
     entityType: parsed.data.entityType,
@@ -60,4 +85,6 @@ export async function toggleWatchMuteAction(formData: FormData) {
 
   revalidatePath(returnPath);
   redirect(returnPath);
+
+  return {};
 }

@@ -177,7 +177,7 @@ export async function setNotificationArchivedStateInDb(
     isArchived: boolean;
   },
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('record_notifications')
     .update({
       archived_at: input.isArchived ? new Date().toISOString() : null,
@@ -185,11 +185,15 @@ export async function setNotificationArchivedStateInDb(
     })
     .eq('organization_id', input.tenantId)
     .eq('recipient_user_id', input.viewerId)
-    .eq('id', input.notificationId);
+    .eq('id', input.notificationId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
+
+  return Boolean(data);
 }
 
 export async function createRecordNotifications(input: {

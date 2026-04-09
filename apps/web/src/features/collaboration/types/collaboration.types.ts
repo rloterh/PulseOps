@@ -42,4 +42,8 @@ export interface CommentActionState {
   error?: string;
 }
 
+export interface CollaborationActionState {
+  error?: string;
+}
+
 export type OrganizationRole = Database['public']['Enums']['organization_role'];

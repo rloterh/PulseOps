@@ -1,6 +1,59 @@
+'use client';
+
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { deleteRecordCommentAction } from '@/features/collaboration/actions/delete-record-comment-action';
-import type { CollaborationComment, RecordEntityType } from '@/features/collaboration/types/collaboration.types';
+import type {
+  CollaborationActionState,
+  CollaborationComment,
+  RecordEntityType,
+} from '@/features/collaboration/types/collaboration.types';
 import { CommentBody } from './comment-body';
+
+const initialState: CollaborationActionState = {};
+
+function DeleteCommentButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium uppercase tracking-[0.14em] text-white/64 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? 'Removing...' : 'Remove'}
+    </button>
+  );
+}
+
+function DeleteCommentForm({
+  commentId,
+  entityType,
+  entityId,
+  returnPath,
+}: {
+  commentId: string;
+  entityType: RecordEntityType;
+  entityId: string;
+  returnPath: string;
+}) {
+  const [state, formAction] = useActionState(deleteRecordCommentAction, initialState);
+
+  return (
+    <form action={formAction} className="space-y-2">
+      <input type="hidden" name="commentId" value={commentId} />
+      <input type="hidden" name="entityType" value={entityType} />
+      <input type="hidden" name="entityId" value={entityId} />
+      <input type="hidden" name="returnPath" value={returnPath} />
+      <DeleteCommentButton />
+      {state.error ? (
+        <p className="max-w-xs rounded-[1rem] border border-red-400/25 bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-100">
+          {state.error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
 
 export function RecordCommentFeed({
   entityType,
@@ -49,18 +102,12 @@ export function RecordCommentFeed({
             </div>
 
             {comment.canDelete ? (
-              <form action={deleteRecordCommentAction}>
-                <input type="hidden" name="commentId" value={comment.id} />
-                <input type="hidden" name="entityType" value={entityType} />
-                <input type="hidden" name="entityId" value={entityId} />
-                <input type="hidden" name="returnPath" value={returnPath} />
-                <button
-                  type="submit"
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium uppercase tracking-[0.14em] text-white/64 transition hover:bg-white/[0.08] hover:text-white"
-                >
-                  Remove
-                </button>
-              </form>
+              <DeleteCommentForm
+                commentId={comment.id}
+                entityType={entityType}
+                entityId={entityId}
+                returnPath={returnPath}
+              />
             ) : null}
           </div>
 

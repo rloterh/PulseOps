@@ -10,8 +10,14 @@ import { canDeleteRecordComment } from '@/features/collaboration/lib/collaborati
 import { getSafeRecordReturnPath } from '@/features/collaboration/lib/get-safe-record-return-path';
 import { softDeleteRecordCommentInDb } from '@/features/collaboration/repositories/collaboration.repository';
 import { deleteRecordCommentSchema } from '@/features/collaboration/schemas/record-comment.schema';
+import type { CollaborationActionState } from '@/features/collaboration/types/collaboration.types';
 
-export async function deleteRecordCommentAction(formData: FormData) {
+const invalidDeleteError = 'Choose a valid comment before removing it.';
+
+export async function deleteRecordCommentAction(
+  _previousState: CollaborationActionState,
+  formData: FormData,
+): Promise<CollaborationActionState> {
   const parsed = deleteRecordCommentSchema.safeParse({
     commentId: formData.get('commentId'),
     entityType: formData.get('entityType'),
@@ -20,7 +26,9 @@ export async function deleteRecordCommentAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return;
+    return {
+      error: parsed.error.issues[0]?.message ?? invalidDeleteError,
+    };
   }
 
   const context = await requireTenantMember();
@@ -33,7 +41,9 @@ export async function deleteRecordCommentAction(formData: FormData) {
       windowMs: 10 * 60 * 1000,
     })
   ) {
-    return;
+    return {
+      error: 'Too many comment removals. Please wait a moment and try again.',
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -54,7 +64,9 @@ export async function deleteRecordCommentAction(formData: FormData) {
         error: error.message,
       },
     });
-    return;
+    return {
+      error: 'We could not verify this comment right now. Please try again.',
+    };
   }
 
   if (
@@ -65,7 +77,11 @@ export async function deleteRecordCommentAction(formData: FormData) {
       context.membershipRole,
     )
   ) {
-    return;
+    return {
+      error: comment
+        ? 'You do not have permission to remove this comment.'
+        : 'This comment is no longer available.',
+    };
   }
 
   await softDeleteRecordCommentInDb(supabase, {
@@ -81,4 +97,6 @@ export async function deleteRecordCommentAction(formData: FormData) {
 
   revalidatePath(returnPath);
   redirect(returnPath);
+
+  return {};
 }

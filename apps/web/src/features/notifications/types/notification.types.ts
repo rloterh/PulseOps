@@ -35,3 +35,7 @@ export interface NotificationInboxData {
   totalCount: number;
   view: NotificationView;
 }
+
+export interface NotificationActionState {
+  error?: string;
+}
