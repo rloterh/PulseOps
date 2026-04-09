@@ -1,9 +1,24 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalDependencies": [".env*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": [".next/**", "dist/**"],
+      "env": [
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_PRICE_PRO_MONTHLY",
+        "STRIPE_PRICE_BUSINESS_MONTHLY",
+        "AI_PROVIDER",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
