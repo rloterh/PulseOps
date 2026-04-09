@@ -1,48 +1,47 @@
 # Deployment
 
-## Cloudflare Workers
+## Primary Target: Vercel
 
-PulseOps is now wired for Cloudflare Workers deployment through `@opennextjs/cloudflare`.
+PulseOps is a Next.js App Router monorepo, and Vercel is now the primary recommended deployment target for `apps/web`.
 
-### Why the earlier deploy failed
+Official Vercel monorepo guidance:
+- https://vercel.com/docs/monorepos
+- https://vercel.com/docs/frameworks/nextjs
 
-The failing command was:
+### Vercel Project Setup
 
-```bash
-npx wrangler deploy
-```
+Create a single Vercel project for the web app and point it at:
 
-run from the monorepo root. Wrangler cannot auto-detect a Next.js Worker project from the root of this workspace. The Worker configuration now lives in `apps/web`, and the repo root exposes wrapper scripts so Cloudflare can still install dependencies once at the workspace root and deploy the correct app.
+- Root Directory: `apps/web`
+- Framework Preset: `Next.js`
 
-### Cloudflare Build Settings
+In most cases you can leave the install and build commands at Vercel defaults.
 
-Use the repository root as the build root, then configure:
+If you want to set them explicitly, use:
 
-- Install command:
-
-```bash
-corepack pnpm install --frozen-lockfile
-```
-
-- Build command:
+- Install Command:
 
 ```bash
-corepack pnpm cf:build
+pnpm install --frozen-lockfile
 ```
 
-- Deploy command:
+- Build Command:
 
 ```bash
-corepack pnpm cf:deploy
+next build
 ```
 
-Do not use `npm run build` plus `npx wrangler deploy` at the workspace root.
+- Output Directory:
 
-Cloudflare connected builds also expect the Worker name in [`apps/web/wrangler.jsonc`](../../apps/web/wrangler.jsonc) to match the actual Worker project name. In this repo that name is `pulseops`, and the `WORKER_SELF_REFERENCE` binding must point to the same value.
+```text
+.next
+```
+
+Do not point Vercel at the monorepo root as the app root for this project. The deployable app is `apps/web`.
 
 ### Required Environment Variables
 
-Set these in Cloudflare Workers for both preview and production as appropriate:
+Set these in Vercel for Preview and Production as appropriate:
 
 ```env
 NEXT_PUBLIC_APP_URL=https://your-real-domain
@@ -73,31 +72,25 @@ Production callback and webhook expectations:
 - Stripe webhook route is `/api/stripe/webhooks`
 - Stripe checkout and billing portal return URLs derive from `NEXT_PUBLIC_APP_URL`
 
-### Local Cloudflare Preview
+### Post-Deploy Configuration
 
-For local Workers-runtime preview:
+After the first successful Vercel deploy:
 
-```bash
-corepack pnpm cf:preview
+1. Add the deployed domain to Supabase site URL and redirect configuration.
+2. Add the Stripe production webhook endpoint:
+
+```text
+https://your-real-domain/api/stripe/webhooks
 ```
 
-The app-local `.dev.vars` file sets `NEXTJS_ENV=development` so OpenNext loads development-flavored Next.js env files during preview.
+3. Set `STRIPE_WEBHOOK_SECRET` from that production webhook endpoint.
+4. Verify:
+   - `/`
+   - `/pricing`
+   - `/sign-in`
+   - `/callback`
+   - `/api/health`
 
-### Windows Note
+### Cloudflare Note
 
-OpenNext's Cloudflare build path currently relies on symlink-heavy bundling and is much more reliable on Linux or WSL than on native Windows. In this repo, the Cloudflare build now reaches the OpenNext bundling phase successfully, but native Windows can still fail with `EPERM` during symlink creation. Cloudflare's Linux build environment does not share that limitation.
-
-### Optional Type Generation
-
-If you add Cloudflare bindings later, generate local Worker env typings with:
-
-```bash
-corepack pnpm cf:typegen
-```
-
-### Current Cloudflare Files
-
-- Worker config: [`apps/web/wrangler.jsonc`](../../apps/web/wrangler.jsonc)
-- OpenNext config: [`apps/web/open-next.config.ts`](../../apps/web/open-next.config.ts)
-- Local preview vars: [`apps/web/.dev.vars`](../../apps/web/.dev.vars)
-- Static asset cache headers: [`apps/web/public/_headers`](../../apps/web/public/_headers)
+Cloudflare Workers support was explored for this branch, but the built Worker exceeded Cloudflare's deploy-size limits for the current app bundle. If Cloudflare becomes a target again later, it should be treated as a separate deployment track rather than the default hosting path.
