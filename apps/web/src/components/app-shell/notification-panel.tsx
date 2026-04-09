@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@pulseops/utils';
 import { IconButton } from '@/components/system/icon-button';
-import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
-import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
 import { openNotificationAction } from '@/features/notifications/actions/open-notification-action';
+import { NotificationMarkAllReadForm } from '@/features/notifications/components/notification-mark-all-read-form';
+import { NotificationMarkReadForm } from '@/features/notifications/components/notification-mark-read-form';
 import type { NotificationFeed, NotificationItem } from '@/features/notifications/types/notification.types';
 import { useShellUiStore } from '@/features/shell/stores/shell-ui.store';
 import { AppIcon } from './app-icon';
@@ -76,15 +76,12 @@ export function NotificationPanel({
           </div>
           <div className="flex items-center gap-2">
             {notifications.unreadCount > 0 ? (
-              <form action={markAllNotificationsReadAction}>
-                <input type="hidden" name="returnPath" value={returnPath} />
-                <button
-                  type="submit"
-                  className="rounded-full border border-white/10 bg-white/6 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
-                >
-                  Mark all read
-                </button>
-              </form>
+              <NotificationMarkAllReadForm
+                returnPath={returnPath}
+                label="Mark all read"
+                buttonClassName="rounded-full border border-white/10 bg-white/6 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                errorClassName="max-w-xs rounded-[1rem] border border-red-400/25 bg-red-500/10 px-3 py-2 text-[11px] leading-5 text-red-100"
+              />
             ) : null}
             <IconButton
               label="Close notifications"
@@ -144,16 +141,12 @@ export function NotificationPanel({
                   </span>
                   <div className="flex items-center gap-2">
                     {item.unread ? (
-                      <form action={markNotificationReadAction}>
-                        <input type="hidden" name="notificationId" value={item.id} />
-                        <input type="hidden" name="returnPath" value={returnPath} />
-                        <button
-                          type="submit"
-                          className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white"
-                        >
-                          Mark read
-                        </button>
-                      </form>
+                      <NotificationMarkReadForm
+                        notificationId={item.id}
+                        returnPath={returnPath}
+                        buttonClassName="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        errorClassName="max-w-xs rounded-[1rem] border border-red-400/25 bg-red-500/10 px-3 py-2 text-[11px] leading-5 text-red-100"
+                      />
                     ) : null}
                     <form action={openNotificationAction}>
                       <input type="hidden" name="notificationId" value={item.id} />

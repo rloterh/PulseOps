@@ -1,9 +1,9 @@
 import type { Route } from 'next';
 import Link from 'next/link';
-import { markAllNotificationsReadAction } from '@/features/notifications/actions/mark-all-notifications-read-action';
-import { markNotificationReadAction } from '@/features/notifications/actions/mark-notification-read-action';
 import { openNotificationAction } from '@/features/notifications/actions/open-notification-action';
 import { NotificationArchiveForm } from '@/features/notifications/components/notification-archive-form';
+import { NotificationMarkAllReadForm } from '@/features/notifications/components/notification-mark-all-read-form';
+import { NotificationMarkReadForm } from '@/features/notifications/components/notification-mark-read-form';
 import { parseNotificationView } from '@/features/notifications/lib/parse-notification-view';
 import { getInboxNotifications } from '@/features/notifications/queries/get-inbox-notifications';
 import { requireTenantMember } from '@/lib/auth/require-tenant-member';
@@ -48,15 +48,7 @@ export default async function InboxPage({
           </div>
 
           {inbox.unreadCount > 0 ? (
-            <form action={markAllNotificationsReadAction}>
-              <input type="hidden" name="returnPath" value={returnPath} />
-              <button
-                type="submit"
-                className="inline-flex rounded-full border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
-              >
-                Mark all unread as read
-              </button>
-            </form>
+            <NotificationMarkAllReadForm returnPath={returnPath} />
           ) : null}
         </div>
 
@@ -156,16 +148,10 @@ export default async function InboxPage({
                     </button>
                   </form>
                   {item.unread ? (
-                    <form action={markNotificationReadAction}>
-                      <input type="hidden" name="notificationId" value={item.id} />
-                      <input type="hidden" name="returnPath" value={returnPath} />
-                      <button
-                        type="submit"
-                        className="inline-flex rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
-                      >
-                        Mark read
-                      </button>
-                    </form>
+                    <NotificationMarkReadForm
+                      notificationId={item.id}
+                      returnPath={returnPath}
+                    />
                   ) : null}
                   <NotificationArchiveForm
                     archived={item.archived}

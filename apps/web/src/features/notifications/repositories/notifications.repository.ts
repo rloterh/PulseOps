@@ -130,7 +130,7 @@ export async function markNotificationReadInDb(
     notificationId: string;
   },
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('record_notifications')
     .update({
       read_at: new Date().toISOString(),
@@ -139,11 +139,15 @@ export async function markNotificationReadInDb(
     .eq('recipient_user_id', input.viewerId)
     .eq('id', input.notificationId)
     .is('archived_at', null)
-    .is('read_at', null);
+    .is('read_at', null)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
+
+  return Boolean(data);
 }
 
 export async function markAllNotificationsReadInDb(
