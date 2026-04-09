@@ -29,3 +29,4 @@ supabase/.temp/
 
 *.tsbuildinfo
 next-env.d.ts
+.vercel
