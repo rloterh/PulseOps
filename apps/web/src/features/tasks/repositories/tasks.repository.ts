@@ -301,12 +301,17 @@ async function getScopedTaskForMutation(
   supabase: SupabaseClient<Database>,
   input: ScopedTaskInput,
 ): Promise<TaskMutationRecord | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('tasks')
     .select('id, title, status, assignee_user_id, location_id')
     .eq('organization_id', input.tenantId)
-    .eq('id', input.taskId)
-    .maybeSingle();
+    .eq('id', input.taskId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     throw new Error(error.message);

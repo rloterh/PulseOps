@@ -266,12 +266,17 @@ async function getScopedJobForMutation(
   supabase: SupabaseClient<Database>,
   input: ScopedJobInput,
 ): Promise<JobMutationRecord | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('jobs')
     .select('id, title, status, assignee_user_id, location_id')
     .eq('organization_id', input.tenantId)
-    .eq('id', input.jobId)
-    .maybeSingle();
+    .eq('id', input.jobId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     throw new Error(error.message);

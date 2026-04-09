@@ -346,14 +346,19 @@ async function getScopedIncidentForMutation(
   supabase: SupabaseClient<Database>,
   input: ScopedIncidentInput,
 ): Promise<IncidentMutationRecord | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from('incidents')
     .select(
       'id, title, reference, status, assignee_user_id, location_id, organization_id, severity, opened_at, first_response_at, acknowledged_at, resolved_at, closed_at',
     )
     .eq('organization_id', input.tenantId)
-    .eq('id', input.incidentId)
-    .maybeSingle();
+    .eq('id', input.incidentId);
+
+  if (input.branchId) {
+    query = query.eq('location_id', input.branchId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     throw new Error(error.message);
