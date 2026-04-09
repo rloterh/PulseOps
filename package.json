@@ -23,7 +23,7 @@
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "prettier": "^3.6.2",
-    "supabase": "^2.84.10",
+    "supabase": "^2.84.2",
     "turbo": "^2.5.8",
     "typescript": "^5.8.3"
   }
