@@ -119,6 +119,8 @@ export function createAdminClient() {
     );
   }
 
+  assertSafeDemoSeedTarget(supabaseUrl);
+
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
@@ -178,6 +180,32 @@ export function minutesFromNow(minutes) {
 
 export function minutesAgo(minutes) {
   return new Date(Date.now() - minutes * 60_000).toISOString();
+}
+
+function assertSafeDemoSeedTarget(supabaseUrl) {
+  if (process.env.PULSEOPS_ALLOW_REMOTE_DEMO_SEED === 'true') {
+    return;
+  }
+
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(supabaseUrl);
+  } catch {
+    throw new Error(
+      `Invalid NEXT_PUBLIC_SUPABASE_URL "${supabaseUrl}". Demo seeding only supports a local Supabase target by default.`,
+    );
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const isLocalHost =
+    hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '0.0.0.0';
+
+  if (!isLocalHost) {
+    throw new Error(
+      `Refusing to seed demo data against non-local Supabase target "${supabaseUrl}". Update .env.local to your local Supabase URL or set PULSEOPS_ALLOW_REMOTE_DEMO_SEED=true only if you intentionally want a remote seed.`,
+    );
+  }
 }
 
 function loadEnvFiles() {

@@ -27,6 +27,7 @@ export function CreateOrganizationForm() {
           id="name"
           name="name"
           type="text"
+          autoComplete="organization"
           value={name}
           onChange={(event) => {
             const nextName = event.target.value;
@@ -49,6 +50,7 @@ export function CreateOrganizationForm() {
           id="slug"
           name="slug"
           type="text"
+          autoComplete="off"
           value={slug}
           onChange={(event) => {
             setSlugTouched(true);
