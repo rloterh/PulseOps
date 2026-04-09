@@ -38,6 +38,8 @@ corepack pnpm cf:deploy
 
 Do not use `npm run build` plus `npx wrangler deploy` at the workspace root.
 
+Cloudflare connected builds also expect the Worker name in [`apps/web/wrangler.jsonc`](../../apps/web/wrangler.jsonc) to match the actual Worker project name. In this repo that name is `pulseops`, and the `WORKER_SELF_REFERENCE` binding must point to the same value.
+
 ### Required Environment Variables
 
 Set these in Cloudflare Workers for both preview and production as appropriate:
