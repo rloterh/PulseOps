@@ -23,7 +23,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `corepack pnpm dev -- --hostname 127.0.0.1 --port ${String(port)}`,
+    command: `corepack pnpm exec next dev --hostname 127.0.0.1 --port ${String(port)}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
