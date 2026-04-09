@@ -4,8 +4,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
-    "lint": "eslint src e2e next.config.ts vitest.config.ts playwright.config.ts",
+    "lint": "eslint src e2e next.config.ts open-next.config.ts playwright.config.ts vitest.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.e2e.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -27,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@opennextjs/cloudflare": "^1.18.1",
     "@pulseops/config-eslint": "workspace:*",
     "@pulseops/config-prettier": "workspace:*",
     "@pulseops/config-typescript": "workspace:*",
@@ -41,6 +46,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.8.3",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "wrangler": "^4.81.0"
   }
 }

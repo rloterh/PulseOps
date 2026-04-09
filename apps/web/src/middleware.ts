@@ -14,7 +14,7 @@ function shouldSkipSessionRefresh(pathname: string) {
   return sessionRefreshExclusions.some((path) => pathname === path);
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (shouldSkipSessionRefresh(pathname)) {

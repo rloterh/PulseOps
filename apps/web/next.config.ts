@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import { securityHeaders } from './src/lib/security/headers';
 
 const nextConfig: NextConfig = {
@@ -21,3 +22,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+void initOpenNextCloudflareForDev();
