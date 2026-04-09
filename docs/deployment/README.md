@@ -71,12 +71,23 @@ Production callback and webhook expectations:
 - Supabase auth callback route is `/callback`
 - Stripe webhook route is `/api/stripe/webhooks`
 - Stripe checkout and billing portal return URLs derive from `NEXT_PUBLIC_APP_URL`
+- if `NEXT_PUBLIC_APP_URL` includes a trailing slash, app code must normalize it before appending routes
+- Supabase Auth must allow the exact confirmation redirect origin and callback URL you send from the app
 
 ### Post-Deploy Configuration
 
 After the first successful Vercel deploy:
 
 1. Add the deployed domain to Supabase site URL and redirect configuration.
+   Use the same normalized URL shape the app sends, for example:
+
+```text
+Site URL: https://pulseops.app
+Additional Redirect URLs:
+- https://pulseops.app/callback
+- https://pulseops-ruby.vercel.app/callback
+```
+
 2. Add the Stripe production webhook endpoint:
 
 ```text

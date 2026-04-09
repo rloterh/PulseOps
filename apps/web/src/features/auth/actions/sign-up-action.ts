@@ -1,11 +1,11 @@
 'use server';
 
 import { getClientEnvResult } from '@pulseops/env/client';
-import { getServerEnv } from '@pulseops/env/server';
 import { createSupabaseServerClient } from '@pulseops/supabase/server';
 import { redirect } from 'next/navigation';
 import { getPostAuthRedirectPath } from '@/lib/auth/get-post-auth-redirect-path';
 import { isServerActionRateLimited } from '@/lib/security/action-rate-limit';
+import { buildEmailRedirectUrl } from '../lib/build-email-redirect-url';
 import type { AuthActionState } from '../types';
 import { signUpSchema } from '../schemas/sign-up-schema';
 
@@ -44,8 +44,6 @@ export async function signUpAction(
       error: 'Too many sign-up attempts. Please wait a moment and try again.',
     };
   }
-
-  const env = getServerEnv();
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -54,7 +52,7 @@ export async function signUpAction(
       data: {
         full_name: parsed.data.fullName,
       },
-      emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}/callback?next=/dashboard`,
+      emailRedirectTo: buildEmailRedirectUrl(),
     },
   });
 
