@@ -29,6 +29,48 @@ function SaveViewButton({ disabled }: { disabled: boolean }) {
   );
 }
 
+function DeleteViewButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-full px-1 text-xs text-white/44 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? 'Removing...' : 'Remove'}
+    </button>
+  );
+}
+
+function DeleteSavedViewForm({
+  resourceType,
+  savedViewId,
+  viewName,
+}: {
+  resourceType: SavedListViewResource;
+  savedViewId: string;
+  viewName: string;
+}) {
+  const [state, formAction] = useActionState(deleteSavedListViewAction, initialState);
+
+  return (
+    <form action={formAction} className="space-y-2">
+      <input type="hidden" name="resourceType" value={resourceType} />
+      <input type="hidden" name="savedViewId" value={savedViewId} />
+      <DeleteViewButton />
+      {state.error ? (
+        <p
+          className="max-w-xs rounded-[1rem] border border-red-400/25 bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-100"
+          aria-label={`${viewName} delete error`}
+        >
+          {state.error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
 export function SavedListViewsBar<TResource extends SavedListViewResource>({
   resourceType,
   pageHref,
@@ -131,17 +173,11 @@ export function SavedListViewsBar<TResource extends SavedListViewResource>({
               <Link href={view.href as Route} className="transition hover:text-white">
                 {view.name}
               </Link>
-              <form action={deleteSavedListViewAction}>
-                <input type="hidden" name="resourceType" value={resourceType} />
-                <input type="hidden" name="savedViewId" value={view.id} />
-                <button
-                  type="submit"
-                  className="rounded-full px-1 text-xs text-white/44 transition hover:text-white"
-                  aria-label={`Delete ${view.name} saved view`}
-                >
-                  Remove
-                </button>
-              </form>
+              <DeleteSavedViewForm
+                resourceType={resourceType}
+                savedViewId={view.id}
+                viewName={view.name}
+              />
             </div>
           ))}
 

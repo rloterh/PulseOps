@@ -91,17 +91,21 @@ export async function deleteSavedListViewFromDb(
     savedViewId: string;
   },
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('saved_list_views')
     .delete()
     .eq('organization_id', input.tenantId)
     .eq('user_id', input.viewerId)
     .eq('resource_type', input.resourceType)
-    .eq('id', input.savedViewId);
+    .eq('id', input.savedViewId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
+
+  return Boolean(data);
 }
 
 function toFilterRecord(filters: Database['public']['Tables']['saved_list_views']['Row']['filters']) {
