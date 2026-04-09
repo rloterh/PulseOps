@@ -131,8 +131,8 @@ for select
 to authenticated
 using (
   public.has_org_role(
-    array['owner', 'admin']::public.organization_role[],
-    organization_id
+    organization_id,
+    array['owner', 'admin']::public.organization_role[]
   )
 );
 
@@ -142,8 +142,8 @@ for select
 to authenticated
 using (
   public.has_org_role(
-    array['owner', 'admin']::public.organization_role[],
-    organization_id
+    organization_id,
+    array['owner', 'admin']::public.organization_role[]
   )
 );
 
