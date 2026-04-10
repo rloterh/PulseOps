@@ -7,6 +7,7 @@ import type {
   CreateIncidentActionState,
   IncidentEditRecord,
 } from '@/features/incidents/types/incident.types';
+import { DateTimePickerField } from '@/components/shared/date-time-picker-field';
 import { toDateTimeLocalInputValue } from '@/lib/forms/to-date-time-local-input-value';
 
 const initialState: CreateIncidentActionState = {};
@@ -47,12 +48,12 @@ export function EditIncidentForm({ incident }: { incident: IncidentEditRecord })
           <label htmlFor="reportedAt" className="text-sm font-medium text-white">
             Reported at
           </label>
-          <input
+          <DateTimePickerField
             id="reportedAt"
             name="reportedAt"
-            type="datetime-local"
             defaultValue={toDateTimeLocalInputValue(incident.reportedAt)}
-            className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+            variant="reported"
+            allowClear={false}
           />
         </div>
 

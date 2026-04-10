@@ -7,6 +7,7 @@ import type { DirectoryUser } from '@/features/directory/types/directory.types';
 import type { CreateIncidentActionState } from '@/features/incidents/types/incident.types';
 import { createIncidentAction } from '@/features/incidents/actions/create-incident-action';
 import { AssigneeCombobox } from '@/components/directory/assignee-combobox';
+import { DateTimePickerField } from '@/components/shared/date-time-picker-field';
 
 const initialState: CreateIncidentActionState = {};
 
@@ -124,11 +125,10 @@ export function CreateIncidentForm({
           <label htmlFor="reportedAt" className="text-sm font-medium text-white">
             Reported at
           </label>
-          <input
+          <DateTimePickerField
             id="reportedAt"
             name="reportedAt"
-            type="datetime-local"
-            className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+            variant="reported"
           />
         </div>
 

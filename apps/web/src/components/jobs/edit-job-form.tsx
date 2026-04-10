@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateJobAction } from '@/features/jobs/actions/update-job-action';
+import { DateTimePickerField } from '@/components/shared/date-time-picker-field';
 import type { CreateJobActionState, JobEditRecord } from '@/features/jobs/types/job.types';
 import { toDateTimeLocalInputValue } from '@/lib/forms/to-date-time-local-input-value';
 
@@ -44,12 +45,11 @@ export function EditJobForm({ job }: { job: JobEditRecord }) {
           <label htmlFor="dueAt" className="text-sm font-medium text-white">
             Due at
           </label>
-          <input
+          <DateTimePickerField
             id="dueAt"
             name="dueAt"
-            type="datetime-local"
             defaultValue={toDateTimeLocalInputValue(job.dueAt)}
-            className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+            variant="due"
           />
         </div>
 

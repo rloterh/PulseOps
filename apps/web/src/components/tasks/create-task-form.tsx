@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { AssigneeCombobox } from '@/components/directory/assignee-combobox';
+import { DateTimePickerField } from '@/components/shared/date-time-picker-field';
 import { createTaskAction } from '@/features/tasks/actions/create-task-action';
 import type { DirectoryUser } from '@/features/directory/types/directory.types';
 import type { BranchOption } from '@/features/shell/types/shell.types';
@@ -147,11 +148,10 @@ export function CreateTaskForm({
           <label htmlFor="dueAt" className="text-sm font-medium text-white">
             Due at
           </label>
-          <input
+          <DateTimePickerField
             id="dueAt"
             name="dueAt"
-            type="datetime-local"
-            className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+            variant="due"
           />
         </div>
       </section>

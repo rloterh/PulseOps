@@ -7,6 +7,7 @@ import type { DirectoryUser } from '@/features/directory/types/directory.types';
 import type { CreateJobActionState } from '@/features/jobs/types/job.types';
 import { createJobAction } from '@/features/jobs/actions/create-job-action';
 import { AssigneeCombobox } from '@/components/directory/assignee-combobox';
+import { DateTimePickerField } from '@/components/shared/date-time-picker-field';
 
 const initialState: CreateJobActionState = {};
 
@@ -124,11 +125,10 @@ export function CreateJobForm({
           <label htmlFor="dueAt" className="text-sm font-medium text-white">
             Due at
           </label>
-          <input
+          <DateTimePickerField
             id="dueAt"
             name="dueAt"
-            type="datetime-local"
-            className="h-11 w-full rounded-[1rem] border border-white/10 bg-black/20 px-4 text-sm text-white outline-none"
+            variant="due"
           />
         </div>
 
