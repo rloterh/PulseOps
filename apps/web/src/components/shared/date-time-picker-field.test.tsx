@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DateTimePickerField } from './date-time-picker-field';
 
@@ -49,5 +49,43 @@ describe('DateTimePickerField', () => {
     fireEvent.click(screen.getByRole('button', { name: /incident timing/i }));
 
     expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+  });
+
+  it('supports keyboard navigation across the calendar and returns focus on close', async () => {
+    const { container } = render(
+      <DateTimePickerField
+        id="reportedAt"
+        name="reportedAt"
+        defaultValue="2026-04-10T09:30"
+        variant="reported"
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: /incident timing/i });
+
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+
+    const initialDay = screen.getByRole('button', { name: /Friday, 10 April 2026/i });
+    await waitFor(() => {
+      expect(initialDay).toHaveFocus();
+    });
+
+    fireEvent.keyDown(initialDay, { key: 'ArrowRight' });
+
+    const nextDay = screen.getByRole('button', { name: /Saturday, 11 April 2026/i });
+    await waitFor(() => {
+      expect(nextDay).toHaveFocus();
+    });
+
+    fireEvent.keyDown(nextDay, { key: 'Enter' });
+
+    expect(container.querySelector('input[name="reportedAt"]')).toHaveValue('2026-04-11T09:30');
+
+    fireEvent.keyDown(nextDay, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog', { name: /incident timing picker/i })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(trigger).toHaveFocus();
+    });
   });
 });

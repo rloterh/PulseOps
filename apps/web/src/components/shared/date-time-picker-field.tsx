@@ -212,6 +212,20 @@ function buildCalendarDays(displayMonth: Date) {
   });
 }
 
+function formatDayKey(date: Date) {
+  return `${String(date.getFullYear())}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function moveDay(date: Date, offset: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + offset);
+  return next;
+}
+
+function moveMonth(date: Date, offset: number) {
+  return new Date(date.getFullYear(), date.getMonth() + offset, date.getDate());
+}
+
 function getActiveDate(value: string | null, variant: DateTimePickerVariant) {
   return parseLocalDateTime(value) ?? getDefaultSeedDate(variant);
 }
@@ -297,16 +311,24 @@ export function DateTimePickerField({
   const [value, setValue] = useState(defaultValue || '');
   const panelId = useId();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dayButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const selectedDate = parseLocalDateTime(value);
+  const initialActiveDate = selectedDate ?? getDefaultSeedDate(variant);
   const [displayMonth, setDisplayMonth] = useState(
-    selectedDate ?? getDefaultSeedDate(variant),
+    initialActiveDate,
   );
+  const [focusedDayKey, setFocusedDayKey] = useState(formatDayKey(initialActiveDate));
   const config = VARIANT_CONFIG[variant];
 
   useEffect(() => {
-    setValue(defaultValue || '');
-    setDisplayMonth(parseLocalDateTime(defaultValue) ?? getDefaultSeedDate(variant));
+    const nextValue = defaultValue || '';
+    const nextActiveDate = parseLocalDateTime(nextValue) ?? getDefaultSeedDate(variant);
+
+    setValue(nextValue);
+    setDisplayMonth(nextActiveDate);
+    setFocusedDayKey(formatDayKey(nextActiveDate));
   }, [defaultValue, variant]);
 
   useEffect(() => {
@@ -335,20 +357,68 @@ export function DateTimePickerField({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const nextFrame = window.requestAnimationFrame(() => {
+      dayButtonRefs.current[focusedDayKey]?.focus();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(nextFrame);
+    };
+  }, [focusedDayKey, isOpen]);
+
   const hoursValue = pad((selectedDate ?? getDefaultSeedDate(variant)).getHours());
   const minutesValue = pad((selectedDate ?? getDefaultSeedDate(variant)).getMinutes());
   const calendarDays = buildCalendarDays(displayMonth);
+
+  function openPicker() {
+    const nextActiveDate = getActiveDate(value || null, variant);
+    setDisplayMonth(new Date(nextActiveDate.getFullYear(), nextActiveDate.getMonth(), 1));
+    setFocusedDayKey(formatDayKey(nextActiveDate));
+    setIsOpen(true);
+  }
+
+  function closePicker(focusTrigger = false) {
+    setIsOpen(false);
+
+    if (focusTrigger) {
+      window.requestAnimationFrame(() => {
+        triggerRef.current?.focus();
+      });
+    }
+  }
+
+  function moveFocusedDay(nextDate: Date) {
+    setDisplayMonth(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
+    setFocusedDayKey(formatDayKey(nextDate));
+  }
 
   return (
     <div ref={wrapperRef} className="relative">
       <input type="hidden" name={name} value={value} />
       <button
+        ref={triggerRef}
         id={id}
         type="button"
         aria-expanded={isOpen}
         aria-controls={panelId}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openPicker();
+          }
+        }}
         onClick={() => {
-          setIsOpen((current) => !current);
+          if (isOpen) {
+            closePicker();
+            return;
+          }
+
+          openPicker();
         }}
         className={`group flex min-h-14 w-full items-center justify-between rounded-[1.15rem] border px-4 py-3 text-left transition ${
           isOpen
@@ -370,13 +440,24 @@ export function DateTimePickerField({
       </button>
 
       {isOpen ? (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-modal="false"
-          className="absolute left-0 right-0 top-[calc(100%+0.75rem)] z-30 overflow-hidden rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(6,11,22,0.98),rgba(7,17,29,0.98))] shadow-[0_30px_90px_rgba(2,6,23,0.56)] backdrop-blur-xl"
-        >
-          <div className="border-b border-white/8 bg-[linear-gradient(135deg,rgba(17,24,39,0.82),rgba(8,47,73,0.52))] px-5 py-5">
+        <>
+          <button
+            type="button"
+            aria-label="Close date picker"
+            onClick={() => {
+              closePicker(true);
+            }}
+            className="fixed inset-0 z-20 bg-[#020617]/56 backdrop-blur-[2px] sm:hidden"
+          />
+
+          <div
+            id={panelId}
+            role="dialog"
+            aria-modal="false"
+            aria-label={`${config.eyebrow} picker`}
+            className="fixed inset-x-3 bottom-3 top-3 z-30 overflow-y-auto rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(6,11,22,0.98),rgba(7,17,29,0.98))] shadow-[0_30px_90px_rgba(2,6,23,0.56)] backdrop-blur-xl sm:absolute sm:left-0 sm:right-0 sm:top-[calc(100%+0.75rem)] sm:bottom-auto sm:max-h-[min(46rem,calc(100dvh-8rem))]"
+          >
+          <div className="sticky top-0 z-10 border-b border-white/8 bg-[linear-gradient(135deg,rgba(17,24,39,0.96),rgba(8,47,73,0.78))] px-4 py-4 sm:px-5 sm:py-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-100/70">
               {config.eyebrow}
             </p>
@@ -391,7 +472,7 @@ export function DateTimePickerField({
                   onClick={() => {
                     const next = quickAction.resolve();
                     setValue(formatLocalDateTimeValue(next));
-                    setDisplayMonth(next);
+                    moveFocusedDay(next);
                   }}
                   className="rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-3 text-left transition hover:bg-white/[0.08]"
                 >
@@ -404,7 +485,7 @@ export function DateTimePickerField({
             </div>
           </div>
 
-          <div className="grid gap-6 px-5 py-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.9fr)]">
+          <div className="grid gap-5 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(15rem,0.9fr)] lg:gap-6">
             <div>
               <div className="flex items-center justify-between">
                 <button
@@ -434,7 +515,7 @@ export function DateTimePickerField({
                 </button>
               </div>
 
-              <div className="mt-4 grid grid-cols-7 gap-2">
+              <div role="presentation" className="mt-4 grid grid-cols-7 gap-2">
                 {WEEKDAY_LABELS.map((label) => (
                   <span
                     key={label}
@@ -445,33 +526,94 @@ export function DateTimePickerField({
                 ))}
               </div>
 
-              <div className="mt-3 grid grid-cols-7 gap-2">
+              <div role="group" aria-label={`${config.eyebrow} calendar`} className="mt-3 grid grid-cols-7 gap-2">
                 {calendarDays.map((day) => {
+                  const dayKey = formatDayKey(day);
                   const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
                   const isToday = isSameDay(day, new Date());
                   const isInActiveMonth = day.getMonth() === displayMonth.getMonth();
 
                   return (
                     <button
-                      key={day.toISOString()}
+                      key={dayKey}
+                      ref={(node) => {
+                        dayButtonRefs.current[dayKey] = node;
+                      }}
                       type="button"
+                      tabIndex={focusedDayKey === dayKey ? 0 : -1}
+                      aria-pressed={isSelected}
+                      aria-current={isToday ? 'date' : undefined}
                       aria-label={new Intl.DateTimeFormat('en-GB', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
                       }).format(day)}
+                      onFocus={() => {
+                        setFocusedDayKey(dayKey);
+                      }}
+                      onKeyDown={(event) => {
+                        let nextDate: Date | null = null;
+
+                        if (event.key === 'ArrowRight') {
+                          nextDate = moveDay(day, 1);
+                        }
+
+                        if (event.key === 'ArrowLeft') {
+                          nextDate = moveDay(day, -1);
+                        }
+
+                        if (event.key === 'ArrowDown') {
+                          nextDate = moveDay(day, 7);
+                        }
+
+                        if (event.key === 'ArrowUp') {
+                          nextDate = moveDay(day, -7);
+                        }
+
+                        if (event.key === 'Home') {
+                          nextDate = moveDay(day, -((day.getDay() + 6) % 7));
+                        }
+
+                        if (event.key === 'End') {
+                          nextDate = moveDay(day, 6 - ((day.getDay() + 6) % 7));
+                        }
+
+                        if (event.key === 'PageUp') {
+                          nextDate = moveMonth(day, -1);
+                        }
+
+                        if (event.key === 'PageDown') {
+                          nextDate = moveMonth(day, 1);
+                        }
+
+                        if (nextDate) {
+                          event.preventDefault();
+                          moveFocusedDay(nextDate);
+                        }
+
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setValue((current) => setDatePart(current, day, variant));
+                          moveFocusedDay(day);
+                        }
+
+                        if (event.key === 'Escape') {
+                          event.preventDefault();
+                          closePicker(true);
+                        }
+                      }}
                       onClick={() => {
                         setValue((current) => setDatePart(current, day, variant));
-                        setDisplayMonth(day);
+                        moveFocusedDay(day);
                       }}
-                      className={`relative flex aspect-square items-center justify-center rounded-[1rem] text-sm font-medium transition ${
+                      className={`relative flex aspect-square min-h-11 items-center justify-center rounded-[1rem] text-sm font-medium transition ${
                         isSelected
                           ? 'border border-cyan-200/45 bg-cyan-300/16 text-white shadow-[0_12px_32px_rgba(6,182,212,0.24)]'
                           : isInActiveMonth
                             ? 'border border-white/6 bg-white/[0.03] text-white/82 hover:bg-white/[0.08]'
                             : 'border border-transparent bg-transparent text-white/28 hover:bg-white/[0.04] hover:text-white/58'
-                      }`}
+                      } ${focusedDayKey === dayKey ? 'outline-none ring-2 ring-cyan-200/55 ring-offset-2 ring-offset-[#07111d]' : ''}`}
                     >
                       <span>{day.getDate()}</span>
                       {isToday && !isSelected ? (
@@ -570,7 +712,7 @@ export function DateTimePickerField({
                 <button
                   type="button"
                   onClick={() => {
-                    setIsOpen(false);
+                    closePicker(true);
                   }}
                   className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-slate-950 transition hover:opacity-92"
                 >
@@ -579,7 +721,8 @@ export function DateTimePickerField({
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );
